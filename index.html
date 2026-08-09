@@ -516,10 +516,49 @@ button{
   padding-top:28px;
 }
 
+.board-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
 .board h3{
   margin:0;
 
   font-size:26px;
+}
+
+.discord-admin-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:9px 15px;
+  border:1px solid #5865F2;
+  border-radius:10px;
+  color:#fff;
+  background:#5865F2;
+  text-decoration:none;
+  font-weight:800;
+  font-size:13px;
+  transition:.2s ease;
+  white-space:nowrap;
+}
+
+.discord-admin-link:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.08);
+}
+
+@media(max-width:700px){
+  .board-title{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .discord-admin-link{
+    width:100%;
+  }
 }
 
 .board>p{
@@ -1207,9 +1246,22 @@ dialog::backdrop{
 
 <section class="board">
 
-  <h3>
-    留言板
-  </h3>
+  <div class="board-title">
+
+    <h3>
+      留言板
+    </h3>
+
+    <a
+      class="discord-admin-link"
+      href="https://discord.gg/621734178228273155"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      聯絡管理員 Discord
+    </a>
+
+  </div>
 
   <p>
     想詢問商品可以在這裡留言，管理員看到後會直接在留言下方回覆。
