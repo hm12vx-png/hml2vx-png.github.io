@@ -1222,23 +1222,12 @@ dialog::backdrop{
     class="board-form"
   >
 
-    <!-- Discord 暱稱 -->
+    <!-- 暱稱 -->
 
     <input
       id="messageName"
       maxlength="30"
-      placeholder="Discord 暱稱"
-      required
-    >
-
-
-    <!-- Discord User ID -->
-
-    <input
-      id="messageDiscordId"
-      maxlength="30"
-      inputmode="numeric"
-      placeholder="Discord User ID"
+      placeholder="暱稱"
       required
     >
 
@@ -1271,8 +1260,7 @@ dialog::backdrop{
 
   <div class="note">
 
-    Discord User ID 可以在 Discord 開啟「開發者模式」後，
-    右鍵使用者名稱 →「複製使用者 ID」取得。
+    請填寫你希望顯示在留言區的暱稱。
 
   </div>
 
@@ -2369,33 +2357,7 @@ function renderMessages(){
       );
 
 
-      /* =================================================
-         只有管理員看到 Discord ID
-      ================================================= */
 
-      if(
-        isAdmin()
-      ){
-
-        const discordId =
-          document.createElement(
-            "div"
-          );
-
-
-        discordId.className =
-          "message-discord-id";
-
-
-        discordId.textContent =
-          `Discord User ID：${message.discordId || "未提供"}`;
-
-
-        left.appendChild(
-          discordId
-        );
-
-      }
 
 
       /* 時間 */
@@ -3317,11 +3279,6 @@ $("#messageForm")
         .trim();
 
 
-    const discordId =
-      $("#messageDiscordId")
-        .value
-        .trim();
-
 
     const text =
       $("#messageText")
@@ -3331,37 +3288,17 @@ $("#messageForm")
 
     if(
       !name ||
-      !discordId ||
       !text
     ){
 
       toast(
-        "請完整填寫 Discord 暱稱、User ID 和留言"
+        "請完整填寫暱稱和留言"
       );
 
       return;
 
     }
 
-
-    /* =================================================
-       Discord User ID 格式
-       一般 Discord ID 為 17~20 位左右數字
-    ================================================= */
-
-    if(
-      !/^\d{15,25}$/.test(
-        discordId
-      )
-    ){
-
-      toast(
-        "Discord User ID 格式不正確"
-      );
-
-      return;
-
-    }
 
 
     try{
@@ -3375,9 +3312,6 @@ $("#messageForm")
 
           name:
             name,
-
-          discordId:
-            discordId,
 
           text:
             text,
