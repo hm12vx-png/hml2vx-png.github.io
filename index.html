@@ -1,520 +1,3556 @@
-<!doctype html>
-
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>O² M★STAR交易區</title>
 
-<style> :root{   --bg:#0d0d0f;   --panel:#161619;   --line:#35353b;   --text:#f5f5f5;   --muted:#aaa;   --danger:#ff7582;   --success:#72e6a8; }  *{box-sizing:border-box}  body{   margin:0;   background:var(--bg);   color:var(--text);   font-family:Arial,"Microsoft JhengHei",sans-serif; }  button,input,textarea,select{   font:inherit; }  button{   cursor:pointer; }  .hidden{   display:none!important; }  .topbar{   position:sticky;   top:0;   z-index:20;   display:flex;   justify-content:space-between;   align-items:center;   padding:16px 5vw;   background:#0a0a0bf2;   border-bottom:1px solid #333;   backdrop-filter:blur(10px); }  .brand{   display:flex;   gap:12px;   align-items:center; }  .logo{   width:44px;   height:44px;   border:1px solid #fff;   border-radius:50%;   display:grid;   place-items:center;   font-weight:900; }  h1,h2,h3,p{   margin:0; }  .brand h1{   font-size:20px; }  .brand small{   color:#aaa; }  .btn{   border:1px solid #3a3a40;   background:#1b1b1f;   color:#fff;   padding:10px 14px;   border-radius:11px; }  .btn.primary{   background:#fff;   color:#111;   font-weight:800; }  .btn.danger{   color:#ff9aa4;   border-color:#6d3439; }  .btn.small{   padding:7px 10px;   font-size:13px; }  .btn.success{   color:#8ff0b8;   border-color:#326348; }  .wrap{   width:min(1180px,calc(100% - 32px));   margin:auto; }  .hero{   padding:36px 0 30px; }  .hero-banner{   display:flex;   justify-content:center; }  .hero-banner img{   width:min(650px,100%);   height:auto;   object-fit:contain;   border-radius:22px;   border:1px solid #34343b;   box-shadow:0 20px 60px rgba(103,69,255,.18); }  .toolbar{   display:flex;   gap:10px;   flex-wrap:wrap;   margin:15px 0; }  .search{   flex:1;   min-width:220px;   background:#151518;   color:#fff;   border:1px solid #333;   padding:11px 13px;   border-radius:11px;   outline:none; }  .tabs{   display:flex;   gap:8px;   overflow:auto;   padding-bottom:18px; }  .tab{   white-space:nowrap;   background:#19191d;   color:#ddd;   border:1px solid #38383e;   padding:9px 13px;   border-radius:999px; }  .tab.active{   background:#fff;   color:#111;   font-weight:800; }  .section-head{   display:flex;   justify-content:space-between;   align-items:end;   margin:10px 0 18px; }  .section-head h3{   font-size:24px; }  .count{   color:#888;   font-size:13px;   margin-top:5px; }  /* =========================================================    商品區：桌面版固定 6 個商品一排 ========================================================= */  .grid{   display:grid;   grid-template-columns:repeat(6,minmax(0,1fr));   gap:12px; }  .card{   background:#161619;   border:1px solid #333;   border-radius:16px;   overflow:hidden;   min-width:0; }  .media{   background:#222;   display:flex;   justify-content:center;   align-items:center;   color:#888;   overflow:hidden;   padding:10px;   min-height:150px;   position:relative; }  .media img{   display:block;   width:100%;   height:auto;   max-height:220px;   object-fit:contain;   background:#111;   border-radius:8px; }  .body{   padding:11px; }  .badge{   font-size:10px;   color:#aaa; }  .name{   font-size:15px;   font-weight:800;   margin-top:6px;   line-height:1.35;   min-height:40px; }  .price{   font-size:16px;   font-weight:900;   margin-top:7px; }  .stock{   margin-top:6px;   font-size:13px;   color:#aaa; }  .stock.available{   color:#8ee9b5; }  .stock.soldout{   color:#ff7582;   font-weight:900; }  .soldout-label{   position:absolute;   left:8px;   top:8px;   background:#ff7582;   color:#111;   padding:5px 8px;   border-radius:7px;   font-size:11px;   font-weight:900; }  .card-actions{   display:flex;   gap:6px;   margin-top:10px; }  .card-actions .btn{   flex:1; }  .empty{   grid-column:1/-1;   color:#777;   padding:40px 0;   text-align:center; }  /* =========================================================    留言板 ========================================================= */  .board{   margin:55px 0;   border-top:1px solid #333;   padding-top:28px; }  .board h3{   font-size:26px; }  .board>p{   color:#aaa;   margin-top:6px; }  .board-form{   display:grid;   grid-template-columns:180px 1fr;   gap:10px;   margin:18px 0; }  .board-form .full{   grid-column:1/-1; }  .board input, .board textarea{   width:100%;   background:#151518;   color:#fff;   border:1px solid #333;   border-radius:11px;   padding:11px;   outline:none; }  .board textarea{   min-height:80px;   resize:vertical; }  .board button{   width:fit-content; }  .discord-hint{   grid-column:1/-1;   color:#777;   font-size:12px;   margin-top:-3px; }  .messages{   display:grid;   gap:12px; }  .message{   background:#151518;   border:1px solid #333;   border-radius:13px;   padding:15px; }  .message-top{   display:flex;   justify-content:space-between;   gap:12px;   align-items:flex-start; }  .message-user{   display:flex;   align-items:center;   gap:9px; }  .discord-dot{   width:30px;   height:30px;   border-radius:50%;   background:#5865f2;   display:grid;   place-items:center;   font-weight:900;   font-size:14px;   flex:none; }  .message-name{   font-weight:800; }  .message-name a{   color:#fff;   text-decoration:none; }  .message-name a:hover{   text-decoration:underline; }  .message-time{   color:#777;   font-size:11px;   margin-top:4px; }  .message-text{   margin-top:10px;   white-space:pre-wrap;   word-break:break-word;   line-height:1.6; }  .admin-reply{   margin-top:14px;   margin-left:25px;   padding:12px 14px;   border-left:3px solid #fff;   background:#1c1c20;   border-radius:0 10px 10px 0; }  .admin-reply-title{   font-weight:900;   font-size:13px; }  .admin-reply-text{   margin-top:6px;   white-space:pre-wrap;   word-break:break-word;   line-height:1.55; }  .admin-reply-time{   color:#777;   font-size:11px;   margin-top:5px; }  .reply-form{   display:flex;   gap:8px;   margin-top:12px; }  .reply-form textarea{   flex:1;   min-height:44px;   background:#101014;   color:#fff;   border:1px solid #3b3b42;   border-radius:10px;   padding:10px;   resize:vertical;   outline:none; }  .reply-actions{   display:flex;   gap:6px;   margin-top:8px; }  .note{   color:#777;   font-size:12px;   margin-top:10px; }  /* =========================================================    Dialog ========================================================= */  dialog{   width:min(520px,calc(100% - 28px));   border:1px solid #3d3d44;   border-radius:16px;   background:#17171b;   color:#fff;   padding:0;   box-shadow:0 24px 80px #0009; }  dialog::backdrop{   background:#000b; }  .dialog-wrap{   padding:20px; }  .dialog-head{   display:flex;   justify-content:space-between;   align-items:center;   margin-bottom:16px; }  .dialog-head h3{   font-size:21px; }  .icon-btn{   background:transparent;   border:0;   color:#aaa;   font-size:24px; }  .form{   display:grid;   gap:12px; }  .form label{   display:grid;   gap:6px;   color:#cfcfd4;   font-size:13px; }  .form input, .form select{   width:100%;   background:#101014;   color:#fff;   border:1px solid #3b3b42;   border-radius:10px;   padding:11px 12px;   outline:none; }  .dialog-actions{   display:flex;   justify-content:flex-end;   gap:10px;   margin-top:16px; }  .preview{   width:100%;   aspect-ratio:4/3;   border:1px dashed #444;   border-radius:12px;   display:grid;   place-items:center;   color:#777;   overflow:hidden;   background:#111; }  .preview img{   width:100%;   height:100%;   object-fit:contain; }  .toast{   position:fixed;   right:18px;   bottom:18px;   z-index:100;   background:#fff;   color:#111;   padding:11px 14px;   border-radius:10px;   box-shadow:0 12px 40px #0008;   font-weight:700; }  /* =========================================================    RWD ========================================================= */  @media(max-width:1100px){   .grid{     grid-template-columns:repeat(5,minmax(0,1fr));   } }  @media(max-width:900px){   .grid{     grid-template-columns:repeat(4,minmax(0,1fr));   } }  @media(max-width:760px){   .grid{     grid-template-columns:repeat(3,minmax(0,1fr));   }    .board-form{     grid-template-columns:1fr;   }    .board-form .full,   .discord-hint{     grid-column:auto;   } }  @media(max-width:560px){   .grid{     grid-template-columns:repeat(2,minmax(0,1fr));   }    .brand small{     display:none;   }    .topbar{     padding:12px 14px;   }    .name{     font-size:14px;   }    .price{     font-size:15px;   } }  @media(max-width:360px){   .grid{     grid-template-columns:1fr;   } } </style>
+<style>
+:root{
+  --bg:#0d0d0f;
+  --panel:#161619;
+  --line:#35353b;
+  --text:#f5f5f5;
+  --muted:#aaa;
+  --danger:#ff7582;
+  --success:#8cffb0;
+}
 
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,"Microsoft JhengHei",sans-serif;
+}
+
+button,
+input,
+textarea,
+select{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.hidden{
+  display:none!important;
+}
+
+
+/* =========================================================
+   頂部
+========================================================= */
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:16px 5vw;
+
+  background:#0a0a0bf2;
+  border-bottom:1px solid #333;
+
+  backdrop-filter:blur(10px);
+}
+
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.logo{
+  width:44px;
+  height:44px;
+
+  border:1px solid #fff;
+  border-radius:50%;
+
+  display:grid;
+  place-items:center;
+
+  font-weight:900;
+}
+
+.brand h1{
+  margin:0;
+  font-size:20px;
+}
+
+.brand small{
+  color:#aaa;
+}
+
+
+/* =========================================================
+   按鈕
+========================================================= */
+
+.btn{
+  border:1px solid #3a3a40;
+  background:#1b1b1f;
+  color:#fff;
+
+  padding:10px 14px;
+
+  border-radius:11px;
+
+  transition:
+    background .15s,
+    transform .15s;
+}
+
+.btn:hover{
+  background:#27272c;
+}
+
+.btn:active{
+  transform:scale(.98);
+}
+
+.btn.primary{
+  background:#fff;
+  color:#111;
+  font-weight:800;
+}
+
+.btn.primary:hover{
+  background:#e8e8e8;
+}
+
+.btn.danger{
+  color:#ff9aa4;
+  border-color:#6d3439;
+}
+
+.btn.danger:hover{
+  background:#2a1719;
+}
+
+.btn.small{
+  padding:7px 10px;
+  font-size:13px;
+}
+
+
+/* =========================================================
+   主體
+========================================================= */
+
+.wrap{
+  width:min(1500px,calc(100% - 32px));
+  margin:auto;
+}
+
+
+/* =========================================================
+   Banner
+========================================================= */
+
+.hero{
+  padding:36px 0 30px;
+}
+
+.hero-banner{
+  display:flex;
+  justify-content:center;
+}
+
+.hero-banner img{
+  width:min(650px,100%);
+  height:auto;
+
+  object-fit:contain;
+
+  border-radius:22px;
+  border:1px solid #34343b;
+
+  box-shadow:
+    0 20px 60px rgba(103,69,255,.18);
+}
+
+
+/* =========================================================
+   搜尋工具列
+========================================================= */
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+
+  margin:15px 0;
+}
+
+.search{
+  flex:1;
+  min-width:220px;
+
+  background:#151518;
+  color:#fff;
+
+  border:1px solid #333;
+
+  padding:11px 13px;
+
+  border-radius:11px;
+
+  outline:none;
+}
+
+.search:focus{
+  border-color:#666;
+}
+
+
+/* =========================================================
+   分類
+========================================================= */
+
+.tabs{
+  display:flex;
+  gap:8px;
+
+  overflow:auto;
+
+  padding-bottom:18px;
+
+  scrollbar-width:thin;
+}
+
+.tab{
+  white-space:nowrap;
+
+  background:#19191d;
+  color:#ddd;
+
+  border:1px solid #38383e;
+
+  padding:9px 13px;
+
+  border-radius:999px;
+}
+
+.tab:hover{
+  background:#242429;
+}
+
+.tab.active{
+  background:#fff;
+  color:#111;
+  font-weight:800;
+}
+
+
+/* =========================================================
+   商品標題
+========================================================= */
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+
+  margin:10px 0 18px;
+}
+
+.section-head h3{
+  margin:0;
+  font-size:24px;
+}
+
+.count{
+  color:#888;
+  font-size:13px;
+  margin-top:5px;
+}
+
+
+/* =========================================================
+   商品網格
+   桌機固定 6 個一排
+========================================================= */
+
+.grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(6,minmax(0,1fr));
+
+  gap:14px;
+}
+
+
+/* =========================================================
+   商品卡片
+========================================================= */
+
+.card{
+  background:#161619;
+
+  border:1px solid #333;
+
+  border-radius:16px;
+
+  overflow:hidden;
+
+  min-width:0;
+
+  display:flex;
+  flex-direction:column;
+
+  height:100%;
+}
+
+
+/* =========================================================
+   商品圖片區
+   所有圖片固定高度
+========================================================= */
+
+.media{
+  background:#222;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  color:#888;
+
+  overflow:hidden;
+
+  padding:14px;
+
+  width:100%;
+
+  height:210px;
+  min-height:210px;
+}
+
+.media img{
+  display:block;
+
+  width:100%;
+  max-width:240px;
+
+  height:180px;
+
+  object-fit:contain;
+
+  background:#111;
+}
+
+
+/* =========================================================
+   商品內容
+========================================================= */
+
+.body{
+  padding:12px;
+
+  display:flex;
+  flex-direction:column;
+
+  flex:1;
+
+  min-width:0;
+}
+
+
+/* =========================================================
+   商品分類
+========================================================= */
+
+.badge{
+  font-size:11px;
+  color:#bbb;
+
+  height:18px;
+  min-height:18px;
+
+  line-height:18px;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+}
+
+
+/* =========================================================
+   商品名稱
+   固定兩行高度
+========================================================= */
+
+.name{
+  font-size:17px;
+  font-weight:800;
+
+  margin-top:7px;
+
+  line-height:1.4;
+
+  height:48px;
+  min-height:48px;
+
+  overflow:hidden;
+
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+
+  word-break:break-word;
+}
+
+
+/* =========================================================
+   商品價格
+========================================================= */
+
+.price{
+  font-size:18px;
+  font-weight:900;
+
+  margin-top:7px;
+
+  height:27px;
+  min-height:27px;
+
+  line-height:27px;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+}
+
+
+/* =========================================================
+   庫存
+========================================================= */
+
+.stock{
+  margin-top:7px;
+
+  color:var(--success);
+
+  font-size:13px;
+
+  height:22px;
+  min-height:22px;
+
+  line-height:22px;
+}
+
+.stock.soldout{
+  color:var(--danger);
+
+  font-weight:900;
+
+  font-size:15px;
+
+  height:22px;
+  min-height:22px;
+
+  line-height:22px;
+}
+
+
+/* =========================================================
+   管理員商品按鈕
+========================================================= */
+
+.card-actions{
+  display:flex;
+
+  gap:8px;
+
+  margin-top:12px;
+
+  height:34px;
+  min-height:34px;
+}
+
+.card-actions .btn{
+  flex:1;
+}
+
+
+/* =========================================================
+   空白
+========================================================= */
+
+.empty{
+  grid-column:1/-1;
+
+  color:#777;
+
+  padding:40px 0;
+
+  text-align:center;
+}
+
+
+/* =========================================================
+   留言板
+========================================================= */
+
+.board{
+  margin:55px 0;
+
+  border-top:1px solid #333;
+
+  padding-top:28px;
+}
+
+.board h3{
+  margin:0;
+
+  font-size:26px;
+}
+
+.board>p{
+  color:#aaa;
+
+  margin-top:6px;
+}
+
+
+/* =========================================================
+   留言表單
+========================================================= */
+
+.board-form{
+  display:grid;
+
+  grid-template-columns:
+    180px
+    240px
+    1fr
+    auto;
+
+  gap:10px;
+
+  margin:18px 0;
+}
+
+.board input,
+.board textarea{
+  background:#151518;
+
+  color:#fff;
+
+  border:1px solid #333;
+
+  border-radius:11px;
+
+  padding:11px;
+
+  outline:none;
+}
+
+.board input:focus,
+.board textarea:focus{
+  border-color:#666;
+}
+
+.board textarea{
+  min-height:44px;
+
+  resize:vertical;
+}
+
+
+/* =========================================================
+   留言列表
+========================================================= */
+
+.messages{
+  display:grid;
+  gap:12px;
+}
+
+.message{
+  background:#151518;
+
+  border:1px solid #333;
+
+  border-radius:13px;
+
+  padding:14px;
+}
+
+
+/* =========================================================
+   留言上方
+========================================================= */
+
+.message-top{
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:12px;
+}
+
+.message-name{
+  font-weight:800;
+
+  font-size:16px;
+}
+
+
+/* 管理員看到的 Discord ID */
+
+.message-discord-id{
+  color:#777;
+
+  font-size:11px;
+
+  margin-top:4px;
+
+  word-break:break-all;
+}
+
+.message-time{
+  color:#777;
+
+  font-size:11px;
+
+  margin-top:4px;
+}
+
+
+/* =========================================================
+   留言內容
+========================================================= */
+
+.message-text{
+  margin-top:10px;
+
+  white-space:pre-wrap;
+
+  word-break:break-word;
+
+  line-height:1.6;
+}
+
+
+/* =========================================================
+   管理員回覆
+========================================================= */
+
+.reply-box{
+  margin-top:12px;
+
+  margin-left:20px;
+
+  padding:12px;
+
+  background:#1b1b20;
+
+  border-left:3px solid #fff;
+
+  border-radius:8px;
+}
+
+.reply-label{
+  font-size:12px;
+
+  color:#aaa;
+
+  margin-bottom:5px;
+}
+
+.reply-text{
+  white-space:pre-wrap;
+
+  word-break:break-word;
+
+  line-height:1.5;
+}
+
+.reply-time{
+  color:#666;
+
+  font-size:11px;
+
+  margin-top:5px;
+}
+
+
+/* =========================================================
+   管理員回覆輸入
+========================================================= */
+
+.admin-reply-form{
+  display:flex;
+
+  gap:8px;
+
+  margin-top:12px;
+}
+
+.admin-reply-form input{
+  flex:1;
+
+  background:#101014;
+
+  color:#fff;
+
+  border:1px solid #3b3b42;
+
+  border-radius:9px;
+
+  padding:9px 10px;
+
+  outline:none;
+}
+
+
+/* =========================================================
+   說明文字
+========================================================= */
+
+.note{
+  color:#777;
+
+  font-size:12px;
+
+  margin-top:10px;
+
+  line-height:1.6;
+}
+
+
+/* =========================================================
+   Dialog
+========================================================= */
+
+dialog{
+  width:min(520px,calc(100% - 28px));
+
+  border:1px solid #3d3d44;
+
+  border-radius:16px;
+
+  background:#17171b;
+
+  color:#fff;
+
+  padding:0;
+
+  box-shadow:
+    0 24px 80px #0009;
+}
+
+dialog::backdrop{
+  background:#000b;
+}
+
+.dialog-wrap{
+  padding:20px;
+}
+
+.dialog-head{
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  margin-bottom:16px;
+}
+
+.dialog-head h3{
+  margin:0;
+
+  font-size:21px;
+}
+
+.icon-btn{
+  background:transparent;
+
+  border:0;
+
+  color:#aaa;
+
+  font-size:24px;
+
+  line-height:1;
+}
+
+
+/* =========================================================
+   商品表單
+========================================================= */
+
+.form{
+  display:grid;
+
+  gap:12px;
+}
+
+.form label{
+  display:grid;
+
+  gap:6px;
+
+  color:#cfcfd4;
+
+  font-size:13px;
+}
+
+.form input,
+.form select{
+  width:100%;
+
+  background:#101014;
+
+  color:#fff;
+
+  border:1px solid #3b3b42;
+
+  border-radius:10px;
+
+  padding:11px 12px;
+
+  outline:none;
+}
+
+.form input:focus,
+.form select:focus{
+  border-color:#666;
+}
+
+
+/* =========================================================
+   Dialog 按鈕
+========================================================= */
+
+.dialog-actions{
+  display:flex;
+
+  justify-content:flex-end;
+
+  gap:10px;
+
+  margin-top:16px;
+}
+
+
+/* =========================================================
+   圖片預覽
+========================================================= */
+
+.preview{
+  width:100%;
+
+  aspect-ratio:4/3;
+
+  border:1px dashed #444;
+
+  border-radius:12px;
+
+  display:grid;
+
+  place-items:center;
+
+  color:#777;
+
+  overflow:hidden;
+
+  background:#111;
+}
+
+.preview img{
+  width:100%;
+
+  height:100%;
+
+  object-fit:contain;
+}
+
+
+/* =========================================================
+   Toast
+========================================================= */
+
+.toast{
+  position:fixed;
+
+  right:18px;
+  bottom:18px;
+
+  z-index:100;
+
+  background:#fff;
+
+  color:#111;
+
+  padding:11px 14px;
+
+  border-radius:10px;
+
+  box-shadow:
+    0 12px 40px #0008;
+
+  font-weight:700;
+}
+
+
+/* =========================================================
+   RWD
+========================================================= */
+
+/* 1200 以下 */
+@media(max-width:1200px){
+
+  .grid{
+    grid-template-columns:
+      repeat(5,1fr);
+  }
+
+}
+
+
+/* 1000 以下 */
+@media(max-width:1000px){
+
+  .grid{
+    grid-template-columns:
+      repeat(4,1fr);
+  }
+
+  .board-form{
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+}
+
+
+/* 800 以下 */
+@media(max-width:800px){
+
+  .grid{
+    grid-template-columns:
+      repeat(3,1fr);
+  }
+
+  .board-form{
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
+
+/* 600 以下 */
+@media(max-width:600px){
+
+  .grid{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .brand small{
+    display:none;
+  }
+
+  .topbar{
+    padding:12px 14px;
+  }
+
+  .admin-reply-form{
+    flex-direction:column;
+  }
+
+  .media{
+    height:190px;
+    min-height:190px;
+  }
+
+  .media img{
+    height:160px;
+  }
+
+}
+
+
+/* 400 以下 */
+@media(max-width:400px){
+
+  .grid{
+    grid-template-columns:
+      1fr;
+  }
+
+}
+</style>
 </head>
 
+
 <body>
+
+
+<!-- ========================================================
+     頂部
+========================================================= -->
 
 <header class="topbar">
 
   <div class="brand">
-    <div class="logo">O²</div>
 
+    <div class="logo">
+      O²
+    </div>
 
-<div>
-  <h1>O² M★STAR交易區</h1>
-  <small>販售・收購・交流</small>
-</div>
+    <div>
 
+      <h1>
+        O² M★STAR交易區
+      </h1>
+
+      <small>
+        販售・收購・交流
+      </small>
+
+    </div>
 
   </div>
 
-  <button id="adminBtn" class="btn">
+
+  <button
+    id="adminBtn"
+    class="btn"
+  >
     管理員登入
   </button>
 
 </header>
 
+
 <main class="wrap">
 
-  <!-- ================================
-       LOGO
-  ================================= -->
 
-  <section class="hero">
+<!-- ========================================================
+     Banner
+========================================================= -->
 
+<section class="hero">
 
-<div class="hero-banner">
-  <img
-    src="ostar-logo.PNG"
-    alt="O² M★STAR交易區"
-  >
-</div>
+  <div class="hero-banner">
 
+    <img
+      src="ostar-logo.PNG"
+      alt="O² M★STAR交易區"
+    >
 
-  </section>
-
-  <!-- ================================        搜尋 / 新增商品   ================================= -->
-
-  <section class="toolbar">
-
-
-<input
-  id="searchInput"
-  class="search"
-  placeholder="搜尋商品名稱…"
->
-
-<button
-  id="addBtn"
-  class="btn primary hidden"
->
-  ＋ 新增商品
-</button>
-
-
-  </section>
-
-  <!-- ================================
-       商品分類
-  ================================= -->
-
-  <nav id="tabs" class="tabs">
-
-
-<button
-  class="tab active"
-  data-category="新傢俱"
->
-  新傢俱
-</button>
-
-<button
-  class="tab"
-  data-category="傢俱"
->
-  傢俱
-</button>
-
-<button
-  class="tab"
-  data-category="花盆"
->
-  花盆
-</button>
-
-<button
-  class="tab"
-  data-category="戒指限男"
->
-  戒指限男
-</button>
-
-<button
-  class="tab"
-  data-category="戒指限女"
->
-  戒指限女
-</button>
-
-<button
-  class="tab"
-  data-category="作物限男"
->
-  作物限男
-</button>
-
-<button
-  class="tab"
-  data-category="作物限女"
->
-  作物限女
-</button>
-
-<button
-  class="tab"
-  data-category="出清區"
->
-  出清區
-</button>
-
-
-  </nav>
-
-  <!-- ================================
-       商品標題
-  ================================= -->
-
-  <section class="section-head">
-
-
-<div>
-
-  <h3 id="sectionTitle">
-    新家具
-  </h3>
-
-  <div id="productCount" class="count">
-    0 件商品
   </div>
 
-</div>
+</section>
 
 
-  </section>
+<!-- ========================================================
+     搜尋
+========================================================= -->
 
-  <!-- ================================
-       商品
-  ================================= -->
-
-  <section
-    id="productGrid"
-    class="grid"
-  >
-
-
-<div class="empty">
-  讀取商品中…
-</div>
-
-
-  </section>
-
-  <!-- ================================
-       留言板
-  ================================= -->
-
-  <section class="board">
-
-
-<h3>
-  留言板
-</h3>
-
-<p>
-  想詢問商品或留言，可以留下你的 Discord 資訊。
-</p>
-
-
-<form
-  id="messageForm"
-  class="board-form"
->
+<section class="toolbar">
 
   <input
-    id="messageName"
-    maxlength="40"
-    placeholder="Discord 暱稱，例如：小明"
-    required
+    id="searchInput"
+    class="search"
+    placeholder="搜尋商品名稱…"
   >
-
-  <input
-    id="messageDiscord"
-    type="url"
-    maxlength="300"
-    placeholder="Discord 個人檔案連結"
-    required
-  >
-
-  <textarea
-    id="messageText"
-    class="full"
-    maxlength="300"
-    placeholder="留言內容"
-    required
-  ></textarea>
-
-  <div class="discord-hint">
-    例如：https://discord.com/users/你的Discord使用者ID
-  </div>
 
   <button
-    class="btn primary"
-    type="submit"
+    id="addBtn"
+    class="btn primary hidden"
   >
-    送出留言
+    ＋ 新增商品
   </button>
 
-</form>
+</section>
 
 
-<div
-  id="messages"
-  class="messages"
-></div>
+<!-- ========================================================
+     分類
+========================================================= -->
+
+<nav
+  id="tabs"
+  class="tabs"
+>
+
+  <button
+    class="tab active"
+    data-category="新家具"
+  >
+    新家具
+  </button>
 
 
-<div class="note">
-  留言送出後會公開顯示。請勿留下密碼、電話或其他敏感資訊。
-</div>
+  <button
+    class="tab"
+    data-category="家具"
+  >
+    家具
+  </button>
 
 
-  </section>
+  <button
+    class="tab"
+    data-category="花盆"
+  >
+    花盆
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="戒指限男"
+  >
+    戒指限男
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="戒指限女"
+  >
+    戒指限女
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="作物限男"
+  >
+    作物限男
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="作物限女"
+  >
+    作物限女
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="出清區"
+  >
+    出清區
+  </button>
+
+</nav>
+
+
+<!-- ========================================================
+     商品標題
+========================================================= -->
+
+<section class="section-head">
+
+  <div>
+
+    <h3 id="sectionTitle">
+      新家具
+    </h3>
+
+    <div
+      id="productCount"
+      class="count"
+    >
+      0 件商品
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ========================================================
+     商品
+========================================================= -->
+
+<section
+  id="productGrid"
+  class="grid"
+>
+
+  <div class="empty">
+    讀取商品中…
+  </div>
+
+</section>
+
+
+<!-- ========================================================
+     留言板
+========================================================= -->
+
+<section class="board">
+
+  <h3>
+    留言板
+  </h3>
+
+  <p>
+    想詢問商品可以在這裡留言，管理員看到後會直接在留言下方回覆。
+  </p>
+
+
+  <form
+    id="messageForm"
+    class="board-form"
+  >
+
+    <!-- Discord 暱稱 -->
+
+    <input
+      id="messageName"
+      maxlength="30"
+      placeholder="Discord 暱稱"
+      required
+    >
+
+
+    <!-- Discord User ID -->
+
+    <input
+      id="messageDiscordId"
+      maxlength="30"
+      inputmode="numeric"
+      placeholder="Discord User ID"
+      required
+    >
+
+
+    <!-- 留言 -->
+
+    <textarea
+      id="messageText"
+      maxlength="300"
+      placeholder="留言內容"
+      required
+    ></textarea>
+
+
+    <button
+      class="btn primary"
+      type="submit"
+    >
+      送出留言
+    </button>
+
+  </form>
+
+
+  <div
+    id="messages"
+    class="messages"
+  ></div>
+
+
+  <div class="note">
+
+    Discord User ID 可以在 Discord 開啟「開發者模式」後，
+    右鍵使用者名稱 →「複製使用者 ID」取得。
+
+  </div>
+
+</section>
 
 </main>
 
-<!-- =====================================================
+
+<!-- ========================================================
      管理員登入
-===================================================== -->
+========================================================= -->
 
 <dialog id="loginDialog">
 
   <div class="dialog-wrap">
 
+    <div class="dialog-head">
 
-<div class="dialog-head">
+      <h3>
+        管理員登入
+      </h3>
 
-  <h3>
-    管理員登入
-  </h3>
+      <button
+        class="icon-btn"
+        type="button"
+        data-close="loginDialog"
+      >
+        ×
+      </button>
 
-  <button
-    class="icon-btn"
-    type="button"
-    data-close="loginDialog"
-  >
-    ×
-  </button>
-
-</div>
+    </div>
 
 
-<form
-  id="loginForm"
-  class="form"
->
-
-  <label>
-    Email
-
-    <input
-      id="loginEmail"
-      type="email"
-      autocomplete="username"
-      required
+    <form
+      id="loginForm"
+      class="form"
     >
 
-  </label>
+      <label>
+
+        Email
+
+        <input
+          id="loginEmail"
+          type="email"
+          autocomplete="username"
+          required
+        >
+
+      </label>
 
 
-  <label>
-    密碼
+      <label>
 
-    <input
-      id="loginPassword"
-      type="password"
-      autocomplete="current-password"
-      required
-    >
+        密碼
 
-  </label>
+        <input
+          id="loginPassword"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+
+      </label>
 
 
-  <div class="dialog-actions">
+      <div class="dialog-actions">
 
-    <button
-      class="btn"
-      type="button"
-      data-close="loginDialog"
-    >
-      取消
-    </button>
+        <button
+          class="btn"
+          type="button"
+          data-close="loginDialog"
+        >
+          取消
+        </button>
 
-    <button
-      class="btn primary"
-      type="submit"
-    >
-      登入
-    </button>
 
-  </div>
+        <button
+          class="btn primary"
+          type="submit"
+        >
+          登入
+        </button>
 
-</form>
+      </div>
 
+    </form>
 
   </div>
 
 </dialog>
 
-<!-- =====================================================      新增 / 編輯商品 ===================================================== -->
+
+<!-- ========================================================
+     新增 / 編輯商品
+========================================================= -->
 
 <dialog id="productDialog">
 
   <div class="dialog-wrap">
 
+    <div class="dialog-head">
 
-<div class="dialog-head">
+      <h3 id="productDialogTitle">
+        新增商品
+      </h3>
 
-  <h3 id="productDialogTitle">
-    新增商品
-  </h3>
+      <button
+        class="icon-btn"
+        type="button"
+        data-close="productDialog"
+      >
+        ×
+      </button>
 
-  <button
-    class="icon-btn"
-    type="button"
-    data-close="productDialog"
-  >
-    ×
-  </button>
-
-</div>
-
-
-<form
-  id="productForm"
-  class="form"
->
-
-  <input
-    id="productId"
-    type="hidden"
-  >
+    </div>
 
 
-  <label>
-    分類
-
-    <select
-      id="productCategory"
-      required
+    <form
+      id="productForm"
+      class="form"
     >
 
-      <option value="新傢俱">
-        新傢俱
-      </option>
-
-      <option value="傢俱">
-        傢俱
-      </option>
-
-      <option value="花盆">
-        花盆
-      </option>
-
-      <option value="戒指限男">
-        戒指限男
-      </option>
-
-      <option value="戒指限女">
-        戒指限女
-      </option>
-
-      <option value="作物限男">
-        作物限男
-      </option>
-
-      <option value="作物限女">
-        作物限女
-      </option>
-
-      <option value="出清區">
-        出清區
-      </option>
-
-    </select>
-
-  </label>
+      <input
+        id="productId"
+        type="hidden"
+      >
 
 
-  <label>
-    商品名稱
+      <!-- 分類 -->
 
-    <input
-      id="productName"
-      maxlength="80"
-      required
-      placeholder="輸入商品名稱"
-    >
+      <label>
 
-  </label>
+        分類
 
+        <select
+          id="productCategory"
+          required
+        >
 
-  <label>
-    價格
+          <option value="新家具">
+            新家具
+          </option>
 
-    <input
-      id="productPrice"
-      maxlength="40"
-      required
-      placeholder="例如：100T、80糖"
-    >
+          <option value="家具">
+            家具
+          </option>
 
-  </label>
+          <option value="花盆">
+            花盆
+          </option>
 
+          <option value="戒指限男">
+            戒指限男
+          </option>
 
-  <label>
-    庫存數量
+          <option value="戒指限女">
+            戒指限女
+          </option>
 
-    <input
-      id="productStock"
-      type="number"
-      min="0"
-      step="1"
-      value="0"
-      required
-      placeholder="例如：5"
-    >
+          <option value="作物限男">
+            作物限男
+          </option>
 
-  </label>
+          <option value="作物限女">
+            作物限女
+          </option>
 
+          <option value="出清區">
+            出清區
+          </option>
 
-  <label>
-    商品圖片
+        </select>
 
-    <input
-      id="productImage"
-      type="file"
-      accept="image/*"
-    >
-
-  </label>
+      </label>
 
 
-  <div
-    id="imagePreview"
-    class="preview"
-  >
-    尚未選擇圖片
-  </div>
+      <!-- 商品名稱 -->
+
+      <label>
+
+        商品名稱
+
+        <input
+          id="productName"
+          maxlength="80"
+          required
+          placeholder="輸入商品名稱"
+        >
+
+      </label>
 
 
-  <div class="dialog-actions">
+      <!-- 價格 -->
 
-    <button
-      class="btn"
-      type="button"
-      data-close="productDialog"
-    >
-      取消
-    </button>
+      <label>
 
-    <button
-      class="btn primary"
-      type="submit"
-    >
-      儲存商品
-    </button>
+        價格
 
-  </div>
+        <input
+          id="productPrice"
+          maxlength="40"
+          required
+          placeholder="例如：100T、80糖"
+        >
 
-</form>
+      </label>
 
+
+      <!-- 庫存 -->
+
+      <label>
+
+        庫存數量
+
+        <input
+          id="productStock"
+          type="number"
+          min="0"
+          step="1"
+          required
+          value="1"
+          placeholder="例如：10"
+        >
+
+      </label>
+
+
+      <!-- 圖片 -->
+
+      <label>
+
+        商品圖片
+
+        <input
+          id="productImage"
+          type="file"
+          accept="image/*"
+        >
+
+      </label>
+
+
+      <!-- 圖片預覽 -->
+
+      <div
+        id="imagePreview"
+        class="preview"
+      >
+        尚未選擇圖片
+      </div>
+
+
+      <div class="dialog-actions">
+
+        <button
+          class="btn"
+          type="button"
+          data-close="productDialog"
+        >
+          取消
+        </button>
+
+
+        <button
+          class="btn primary"
+          type="submit"
+        >
+          儲存商品
+        </button>
+
+      </div>
+
+    </form>
 
   </div>
 
 </dialog>
 
-<!-- =====================================================
+
+<!-- ========================================================
      Toast
-===================================================== -->
+========================================================= -->
 
 <div
   id="toast"
   class="toast hidden"
 ></div>
 
-<!-- =====================================================
-     Firebase
-===================================================== -->
 
-<script type="module">  import {   initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";  import {   getAuth,   signInWithEmailAndPassword,   signOut,   onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";  import {   getFirestore,   collection,   addDoc,   updateDoc,   deleteDoc,   doc,   onSnapshot,   query,   orderBy,   serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";   /* =====================================================    Firebase 設定 ===================================================== */  const firebaseConfig = {    apiKey:     "AIzaSyBWH6HxuAXNbTpRQKGhNU10P5oLWcE36yQ",    authDomain:     "ostar-shop.firebaseapp.com",    projectId:     "ostar-shop",    storageBucket:     "ostar-shop.firebasestorage.app",    messagingSenderId:     "1070557199066",    appId:     "1:1070557199066:web:aa8ce9dc1b5eb3710683e3"  };   /* =====================================================    管理員 UID ===================================================== */  const ADMIN_UID =   "IhFebcTe8tTN0jtpyjKgGvN6NmY2";   /* =====================================================    Firebase 初始化 ===================================================== */  const app =   initializeApp(firebaseConfig);  const auth =   getAuth(app);  const db =   getFirestore(app);   /* =====================================================    快捷選擇器 ===================================================== */  const $ =   selector =>     document.querySelector(selector);  const $$ =   selector =>     [...document.querySelectorAll(selector)];   /* =====================================================    全域資料 ===================================================== */  let products = [];  let messages = [];  let currentCategory = "新家具";  let currentUser = null;  let editingImage = "";   /* =====================================================    Toast ===================================================== */  function toast(text){    const el =     $("#toast");    el.textContent =     text;    el.classList.remove("hidden");    clearTimeout(window.__toastTimer);    window.__toastTimer =     setTimeout(       () => el.classList.add("hidden"),       2200     );  }   /* =====================================================    管理員判斷 ===================================================== */  function isAdmin(){    return !!currentUser &&     currentUser.uid === ADMIN_UID;  }   /* =====================================================    時間格式 ===================================================== */  function formatTime(ts){    if(!ts?.toDate){     return "";   }    return ts.toDate().toLocaleString(     "zh-TW",     {       year:"numeric",       month:"2-digit",       day:"2-digit",       hour:"2-digit",       minute:"2-digit"     }   );  }   /* =====================================================    商品庫存 ===================================================== */  function getStock(product){    const stock =     Number(product.stock);    if(     !Number.isFinite(stock) ||     stock < 0   ){     return 0;   }    return Math.floor(stock);  }   /* =====================================================    商品顯示 ===================================================== */  function renderProducts(){    const search =     $("#searchInput")       .value       .trim()       .toLowerCase();     const list =     products.filter(       product => {          const categoryOK =           product.category ===           currentCategory;          const searchOK =           !search ||           (product.name || "")             .toLowerCase()             .includes(search);          return categoryOK &&           searchOK;        }     );     $("#sectionTitle")     .textContent =     currentCategory;     $("#productCount")     .textContent =     `${list.length} 件商品`;     const grid =     $("#productGrid");    grid.innerHTML = "";     if(!list.length){      grid.innerHTML =       `<div class="empty">         這個分類目前沒有商品       </div>`;      return;    }     list.forEach(     product => {        const card =         document.createElement("article");        card.className =         "card";         /* 商品圖片 */        const media =         document.createElement("div");        media.className =         "media";         const stock =         getStock(product);         if(stock === 0){          const soldout =           document.createElement("div");          soldout.className =           "soldout-label";          soldout.textContent =           "售罄";          media.appendChild(           soldout         );        }         if(product.image){          const img =           document.createElement("img");          img.src =           product.image;          img.alt =           product.name ||           "商品圖片";          img.loading =           "lazy";          media.appendChild(           img         );        }else{          const noImage =           document.createElement("span");          noImage.textContent =           "無商品圖片";          media.appendChild(           noImage         );        }         /* 商品內容 */        const body =         document.createElement("div");        body.className =         "body";         const badge =         document.createElement("div");        badge.className =         "badge";        badge.textContent =         product.category || "";         const name =         document.createElement("div");        name.className =         "name";        name.textContent =         product.name || "";         const price =         document.createElement("div");        price.className =         "price";        price.textContent =         product.price || "";         const stockText =         document.createElement("div");        stockText.className =         "stock " +         (           stock === 0           ? "soldout"           : "available"         );         stockText.textContent =         stock === 0         ? "庫存：售罄"         : `庫存：${stock}`;         body.append(         badge,         name,         price,         stockText       );         /* 管理員按鈕 */        if(isAdmin()){          const actions =           document.createElement("div");          actions.className =           "card-actions";           const edit =           document.createElement("button");          edit.className =           "btn small";          edit.textContent =           "編輯";          edit.onclick =           () => openProductDialog(product);           const del =           document.createElement("button");          del.className =           "btn small danger";          del.textContent =           "刪除";           del.onclick =           async () => {              if(               confirm(                 `確定刪除「${product.name}」嗎？`               )             ){                try{                  await deleteDoc(                   doc(                     db,                     "products",                     product.id                   )                 );                  toast(                   "商品已刪除"                 );                }catch(error){                  console.error(error);                  toast(                   "刪除失敗"                 );                }              }            };           actions.append(           edit,           del         );          body.appendChild(           actions         );        }         card.append(         media,         body       );        grid.appendChild(         card       );      }   );  }   /* =====================================================    Discord 連結基本安全處理 ===================================================== */  function getSafeDiscordURL(url){    try{      const parsed =       new URL(url);      if(       parsed.protocol !==       "https:"     ){        return "";      }       const host =       parsed.hostname.toLowerCase();       if(       host !== "discord.com" &&       host !== "[www.discord.com](http://www.discord.com)"     ){        return "";      }       return parsed.href;    }catch{      return "";    }  }   /* =====================================================    留言板 ===================================================== */  function renderMessages(){    const box =     $("#messages");    box.innerHTML = "";     if(!messages.length){      box.innerHTML =       `<div class="message">         目前還沒有留言       </div>`;      return;    }     messages.forEach(     message => {        const item =         document.createElement("div");        item.className =         "message";         /* 上方 */        const top =         document.createElement("div");        top.className =         "message-top";         const user =         document.createElement("div");        user.className =         "message-user";         const dot =         document.createElement("div");        dot.className =         "discord-dot";        dot.textContent =         "D";         const userInfo =         document.createElement("div");         const name =         document.createElement("div");        name.className =         "message-name";         const safeURL =         getSafeDiscordURL(           message.discordUrl || ""         );         if(safeURL){          const link =           document.createElement("a");          link.href =           safeURL;          link.target =           "_blank";          link.rel =           "noopener noreferrer";          link.textContent =           message.name ||           "Discord 使用者";          name.appendChild(           link         );        }else{          name.textContent =           message.name ||           "Discord 使用者";        }         const time =         document.createElement("div");        time.className =         "message-time";        time.textContent =         formatTime(           message.createdAt         );         userInfo.append(         name,         time       );         user.append(         dot,         userInfo       );         top.appendChild(         user       );         /* 管理員刪除留言 */        if(isAdmin()){          const deleteButton =           document.createElement("button");          deleteButton.className =           "btn small danger";          deleteButton.textContent =           "刪除留言";           deleteButton.onclick =           async () => {              if(               !confirm(                 "確定刪除這則留言嗎？"               )             ){                return;              }               try{                await deleteDoc(                 doc(                   db,                   "messages",                   message.id                 )               );                toast(                 "留言已刪除"               );              }catch(error){                console.error(error);                toast(                 "刪除失敗"               );              }            };           top.appendChild(           deleteButton         );        }         item.appendChild(         top       );         /* 留言內容 */        const text =         document.createElement("div");        text.className =         "message-text";        text.textContent =         message.text || "";         item.appendChild(         text       );         /* 管理員回覆 */        if(message.reply){          const reply =           document.createElement("div");          reply.className =           "admin-reply";           const replyTitle =           document.createElement("div");          replyTitle.className =           "admin-reply-title";          replyTitle.textContent =           "★ 管理員回覆";           const replyText =           document.createElement("div");          replyText.className =           "admin-reply-text";          replyText.textContent =           message.reply;           const replyTime =           document.createElement("div");          replyTime.className =           "admin-reply-time";          replyTime.textContent =           message.replyAt           ? formatTime(               message.replyAt             )           : "";           reply.append(           replyTitle,           replyText,           replyTime         );           if(isAdmin()){            const replyActions =             document.createElement("div");            replyActions.className =             "reply-actions";             const editReply =             document.createElement("button");            editReply.className =             "btn small";            editReply.textContent =             "修改回覆";             editReply.onclick =             () =>               openReplyBox(                 item,                 message,                 true               );             const deleteReply =             document.createElement("button");            deleteReply.className =             "btn small danger";            deleteReply.textContent =             "刪除回覆";             deleteReply.onclick =             async () => {                if(                 !confirm(                   "確定刪除管理員回覆嗎？"                 )               ){                  return;                }                 try{                  await updateDoc(                   doc(                     db,                     "messages",                     message.id                   ),                   {                     reply:"",                     replyAt:null                   }                 );                  toast(                   "回覆已刪除"                 );                }catch(error){                  console.error(error);                  toast(                   "刪除回覆失敗"                 );                }              };             replyActions.append(             editReply,             deleteReply           );            reply.appendChild(             replyActions           );          }           item.appendChild(           reply         );        }else if(isAdmin()){          /* 沒有回覆時 */          openReplyBox(           item,           message,           false,           true         );        }         box.appendChild(         item       );      }   );  }   /* =====================================================    管理員回覆輸入框 ===================================================== */  function openReplyBox(   container,   message,   editing = false,   autoCreate = false ){    const existing =     container.querySelector(       ".reply-form"     );     if(existing){      existing.remove();    }     const form =     document.createElement("div");    form.className =     "reply-form";     const textarea =     document.createElement("textarea");    textarea.placeholder =     "輸入管理員回覆…";    textarea.maxLength =     300;    textarea.value =     editing       ? message.reply || ""       : "";     const button =     document.createElement("button");    button.className =     "btn small primary";    button.textContent =     editing       ? "更新回覆"       : "回覆";     button.onclick =     async () => {        const reply =         textarea.value.trim();         if(!reply){          toast(           "請輸入回覆內容"         );          return;        }         try{          await updateDoc(           doc(             db,             "messages",             message.id           ),           {             reply,             replyAt:               serverTimestamp()           }         );          toast(           editing             ? "回覆已更新"             : "回覆已送出"         );         }catch(error){          console.error(error);          toast(           "回覆失敗"         );        }      };     form.append(     textarea,     button   );     container.appendChild(     form   );     if(!autoCreate){      textarea.focus();    }  }   /* =====================================================    圖片壓縮 ===================================================== */  function compressImage(file){    return new Promise(     (resolve,reject)=>{        const reader =         new FileReader();         reader.onerror =         reject;         reader.onload =         () => {            const img =             new Image();             img.onerror =             reject;             img.onload =             () => {                const max =                 900;                 const scale =                 Math.min(                   1,                   max /                   Math.max(                     img.width,                     img.height                   )                 );                 const width =                 Math.round(                   img.width *                   scale                 );                 const height =                 Math.round(                   img.height *                   scale                 );                 const canvas =                 document.createElement(                   "canvas"                 );                 canvas.width =                 width;                canvas.height =                 height;                 const ctx =                 canvas.getContext(                   "2d"                 );                 ctx.drawImage(                 img,                 0,                 0,                 width,                 height               );                 let quality =                 0.75;                 let output =                 canvas.toDataURL(                   "image/jpeg",                   quality                 );                 while(                 output.length > 650000 &&                 quality > 0.4               ){                  quality -=                   0.08;                   output =                   canvas.toDataURL(                     "image/jpeg",                     quality                   );                }                 if(                 output.length >                 780000               ){                  reject(                   new Error(                     "圖片太大"                   )                 );                  return;                }                 resolve(                 output               );              };             img.src =             reader.result;          };         reader.readAsDataURL(         file       );      }   );  }   /* =====================================================    開啟商品視窗 ===================================================== */  function openProductDialog(   product = null ){    $("#productForm")     .reset();     $("#productId")     .value =     product?.id || "";     $("#productDialogTitle")     .textContent =     product       ? "編輯商品"       : "新增商品";     $("#productCategory")     .value =     product?.category ||     currentCategory;     $("#productName")     .value =     product?.name ||     "";     $("#productPrice")     .value =     product?.price ||     "";     $("#productStock")     .value =     getStock(product || {});     editingImage =     product?.image ||     "";     const preview =     $("#imagePreview");     preview.innerHTML =     "";     if(editingImage){      const img =       document.createElement(         "img"       );      img.src =       editingImage;      preview.appendChild(       img     );    }else{      preview.textContent =       "尚未選擇圖片";    }     $("#productDialog")     .showModal();  }   /* =====================================================    商品圖片預覽 ===================================================== */  $("#productImage")   .addEventListener(     "change",     async event => {        const file =         event.target.files?.[0];         if(!file){          return;        }         try{          const data =           await compressImage(             file           );           const preview =           $("#imagePreview");           preview.innerHTML =           "";           const img =           document.createElement(             "img"           );           img.src =           data;           preview.appendChild(           img         );         }catch(error){          console.error(           error         );          toast(           "圖片處理失敗"         );        }      }   );   /* =====================================================    儲存商品 ===================================================== */  $("#productForm")   .addEventListener(     "submit",     async event => {        event.preventDefault();         if(!isAdmin()){          toast(           "只有管理員可以管理商品"         );          return;        }         const id =         $("#productId").value;         const file =         $("#productImage")           .files?.[0];         try{          let image =           editingImage;           if(file){            image =             await compressImage(               file             );          }           const stock =           Math.max(             0,             Math.floor(               Number(                 $("#productStock").value               ) || 0             )           );           const payload = {            category:             $("#productCategory")               .value,            name:             $("#productName")               .value               .trim(),            price:             $("#productPrice")               .value               .trim(),            stock,            image,            updatedAt:             serverTimestamp()          };           if(id){            await updateDoc(             doc(               db,               "products",               id             ),             payload           );             toast(             "商品已更新"           );          }else{            payload.createdAt =             serverTimestamp();             await addDoc(             collection(               db,               "products"             ),             payload           );             toast(             "商品已新增"           );          }           $("#productDialog")           .close();         }catch(error){          console.error(           error         );          toast(           "儲存失敗"         );        }      }   );   /* =====================================================    管理員登入 ===================================================== */  $("#loginForm")   .addEventListener(     "submit",     async event => {        event.preventDefault();         try{          const credential =           await signInWithEmailAndPassword(             auth,             $("#loginEmail").value.trim(),             $("#loginPassword").value           );           if(           credential.user.uid !==           ADMIN_UID         ){            await signOut(             auth           );             toast(             "這個帳號不是管理員"           );             return;          }           $("#loginDialog")           .close();           $("#loginForm")           .reset();           toast(           "管理員登入成功"         );         }catch(error){          console.error(           error         );           toast(           "登入失敗，請檢查帳號密碼"         );        }      }   );   /* =====================================================    管理員按鈕 ===================================================== */  $("#adminBtn")   .onclick =   async () => {      if(isAdmin()){        await signOut(         auth       );         toast(         "已登出"       );      }else{        $("#loginDialog")         .showModal();      }    };   /* =====================================================    新增商品按鈕 ===================================================== */  $("#addBtn")   .onclick =   () =>     openProductDialog();   /* =====================================================    Firebase Auth 狀態 ===================================================== */  onAuthStateChanged(   auth,   user => {      currentUser =       user;       $("#adminBtn")       .textContent =       isAdmin()         ? "登出管理員"         : "管理員登入";       $("#addBtn")       .classList       .toggle(         "hidden",         !isAdmin()       );       renderProducts();      renderMessages();    } );   /* =====================================================    分類切換 ===================================================== */  $("#tabs")   .addEventListener(     "click",     event => {        const button =         event.target.closest(           ".tab"         );         if(!button){          return;        }         $$(".tab")         .forEach(           item =>             item.classList.remove(               "active"             )         );         button.classList.add(         "active"       );         currentCategory =         button.dataset.category;         renderProducts();      }   );   /* =====================================================    商品搜尋 ===================================================== */  $("#searchInput")   .addEventListener(     "input",     renderProducts   );   /* =====================================================    留言送出 ===================================================== */  $("#messageForm")   .addEventListener(     "submit",     async event => {        event.preventDefault();         const name =         $("#messageName")           .value           .trim();         const discordUrl =         $("#messageDiscord")           .value           .trim();         const text =         $("#messageText")           .value           .trim();         if(         !name ||         !discordUrl ||         !text       ){          return;        }         const safeURL =         getSafeDiscordURL(           discordUrl         );         if(!safeURL){          toast(           "請輸入有效的 Discord 個人檔案連結"         );          return;        }         try{          await addDoc(           collection(             db,             "messages"           ),           {              name,              discordUrl:               safeURL,              text,              reply:"",              replyAt:null,              createdAt:               serverTimestamp()            }         );           $("#messageText")           .value =           "";           toast(           "留言已送出"         );         }catch(error){          console.error(           error         );           toast(           "留言送出失敗"         );        }      }   );   /* =====================================================    關閉 Dialog ===================================================== */  $$("[data-close]")   .forEach(     button => {        button.onclick =         () => {            const dialog =             document.getElementById(               button.dataset.close             );             dialog?.close();          };      }   );   /* =====================================================    商品即時更新 ===================================================== */  onSnapshot(   query(     collection(       db,       "products"     ),     orderBy(       "createdAt",       "desc"     )   ),    snapshot => {      products =       snapshot.docs.map(         document => ({           id:document.id,           ...document.data()         })       );       renderProducts();    },    error => {      console.error(       error     );       $("#productGrid")       .innerHTML =       `<div class="empty">         商品讀取失敗       </div>`;    } );   /* =====================================================    留言即時更新 ===================================================== */  onSnapshot(   query(     collection(       db,       "messages"     ),     orderBy(       "createdAt",       "desc"     )   ),    snapshot => {      messages =       snapshot.docs.map(         document => ({           id:document.id,           ...document.data()         })       );       renderMessages();    },    error => {      console.error(       error     );       $("#messages")       .innerHTML =       `<div class="message">         留言讀取失敗       </div>`;    } );  </script>
+<!-- ========================================================
+     Firebase
+========================================================= -->
+
+<script type="module">
+
+import {
+  initializeApp
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+/* =========================================================
+   Firebase 設定
+========================================================= */
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyBWH6HxuAXNbTpRQKGhNU10P5oLWcE36yQ",
+
+  authDomain:
+    "ostar-shop.firebaseapp.com",
+
+  projectId:
+    "ostar-shop",
+
+  storageBucket:
+    "ostar-shop.firebasestorage.app",
+
+  messagingSenderId:
+    "1070557199066",
+
+  appId:
+    "1:1070557199066:web:aa8ce9dc1b5eb3710683e"
+
+};
+
+
+const ADMIN_UID =
+  "IhFebcTe8tTN0jtpyjKgGvN6NmY2";
+
+
+const app =
+  initializeApp(
+    firebaseConfig
+  );
+
+
+const auth =
+  getAuth(app);
+
+
+const db =
+  getFirestore(app);
+
+
+const $ =
+  selector =>
+    document.querySelector(
+      selector
+    );
+
+
+const $$ =
+  selector =>
+    [
+      ...document.querySelectorAll(
+        selector
+      )
+    ];
+
+
+let products = [];
+
+let messages = [];
+
+let currentCategory =
+  "新家具";
+
+let currentUser =
+  null;
+
+let editingImage =
+  "";
+
+
+/* =========================================================
+   Toast
+========================================================= */
+
+function toast(text){
+
+  const el =
+    $("#toast");
+
+  el.textContent =
+    text;
+
+  el.classList.remove(
+    "hidden"
+  );
+
+  clearTimeout(
+    window.__toastTimer
+  );
+
+  window.__toastTimer =
+    setTimeout(
+      () => {
+
+        el.classList.add(
+          "hidden"
+        );
+
+      },
+      2200
+    );
+
+}
+
+
+/* =========================================================
+   管理員判斷
+========================================================= */
+
+function isAdmin(){
+
+  return Boolean(
+    currentUser &&
+    currentUser.uid === ADMIN_UID
+  );
+
+}
+
+
+/* =========================================================
+   時間
+========================================================= */
+
+function formatTime(timestamp){
+
+  if(
+    !timestamp ||
+    !timestamp.toDate
+  ){
+
+    return "";
+
+  }
+
+  return timestamp
+    .toDate()
+    .toLocaleString(
+      "zh-TW",
+      {
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit",
+        hour:"2-digit",
+        minute:"2-digit"
+      }
+    );
+
+}
+
+
+/* =========================================================
+   圖片壓縮
+========================================================= */
+
+function compressImage(file){
+
+  return new Promise(
+    (resolve,reject) => {
+
+      const reader =
+        new FileReader();
+
+
+      reader.onerror =
+        reject;
+
+
+      reader.onload = () => {
+
+        const img =
+          new Image();
+
+
+        img.onerror =
+          reject;
+
+
+        img.onload = () => {
+
+          const maxSize =
+            900;
+
+
+          const scale =
+            Math.min(
+              1,
+              maxSize /
+              Math.max(
+                img.width,
+                img.height
+              )
+            );
+
+
+          const width =
+            Math.round(
+              img.width * scale
+            );
+
+
+          const height =
+            Math.round(
+              img.height * scale
+            );
+
+
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
+
+
+          canvas.width =
+            width;
+
+          canvas.height =
+            height;
+
+
+          const context =
+            canvas.getContext(
+              "2d"
+            );
+
+
+          context.drawImage(
+            img,
+            0,
+            0,
+            width,
+            height
+          );
+
+
+          let quality =
+            0.75;
+
+
+          let output =
+            canvas.toDataURL(
+              "image/jpeg",
+              quality
+            );
+
+
+          while(
+            output.length > 650000 &&
+            quality > 0.4
+          ){
+
+            quality -= 0.08;
+
+
+            output =
+              canvas.toDataURL(
+                "image/jpeg",
+                quality
+              );
+
+          }
+
+
+          if(
+            output.length > 780000
+          ){
+
+            reject(
+              new Error(
+                "圖片太大"
+              )
+            );
+
+            return;
+
+          }
+
+
+          resolve(
+            output
+          );
+
+        };
+
+
+        img.src =
+          reader.result;
+
+      };
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   顯示商品
+========================================================= */
+
+function renderProducts(){
+
+  const keyword =
+    $("#searchInput")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const list =
+    products.filter(
+      product => {
+
+        const categoryMatch =
+          product.category ===
+          currentCategory;
+
+
+        const nameMatch =
+          !keyword ||
+          (product.name || "")
+            .toLowerCase()
+            .includes(
+              keyword
+            );
+
+
+        return (
+          categoryMatch &&
+          nameMatch
+        );
+
+      }
+    );
+
+
+  $("#sectionTitle")
+    .textContent =
+      currentCategory;
+
+
+  $("#productCount")
+    .textContent =
+      `${list.length} 件商品`;
+
+
+  const grid =
+    $("#productGrid");
+
+
+  grid.innerHTML =
+    "";
+
+
+  if(!list.length){
+
+    grid.innerHTML =
+      '<div class="empty">這個分類目前沒有商品</div>';
+
+    return;
+
+  }
+
+
+  list.forEach(
+    product => {
+
+      /* =================================================
+         商品卡片
+      ================================================= */
+
+      const card =
+        document.createElement(
+          "article"
+        );
+
+
+      card.className =
+        "card";
+
+
+      /* =================================================
+         圖片
+      ================================================= */
+
+      const media =
+        document.createElement(
+          "div"
+        );
+
+
+      media.className =
+        "media";
+
+
+      if(product.image){
+
+        const img =
+          document.createElement(
+            "img"
+          );
+
+
+        img.src =
+          product.image;
+
+
+        img.alt =
+          product.name ||
+          "商品圖片";
+
+
+        img.loading =
+          "lazy";
+
+
+        media.appendChild(
+          img
+        );
+
+      }
+      else{
+
+        media.textContent =
+          "無商品圖片";
+
+      }
+
+
+      /* =================================================
+         商品內容
+      ================================================= */
+
+      const body =
+        document.createElement(
+          "div"
+        );
+
+
+      body.className =
+        "body";
+
+
+      /* 分類 */
+
+      const badge =
+        document.createElement(
+          "div"
+        );
+
+
+      badge.className =
+        "badge";
+
+
+      badge.textContent =
+        product.category ||
+        "";
+
+
+      /* 商品名稱 */
+
+      const name =
+        document.createElement(
+          "div"
+        );
+
+
+      name.className =
+        "name";
+
+
+      name.textContent =
+        product.name ||
+        "";
+
+
+      name.title =
+        product.name ||
+        "";
+
+
+      /* 價格 */
+
+      const price =
+        document.createElement(
+          "div"
+        );
+
+
+      price.className =
+        "price";
+
+
+      price.textContent =
+        product.price ||
+        "";
+
+
+      /* =================================================
+         庫存
+      ================================================= */
+
+      const stock =
+        document.createElement(
+          "div"
+        );
+
+
+      stock.className =
+        "stock";
+
+
+      const stockNumber =
+        Number(
+          product.stock ?? 0
+        );
+
+
+      if(
+        stockNumber <= 0
+      ){
+
+        stock.classList.add(
+          "soldout"
+        );
+
+
+        stock.textContent =
+          "售罄";
+
+      }
+      else{
+
+        stock.textContent =
+          `庫存：${stockNumber}`;
+
+      }
+
+
+      body.append(
+        badge,
+        name,
+        price,
+        stock
+      );
+
+
+      /* =================================================
+         管理員按鈕
+      ================================================= */
+
+      if(
+        isAdmin()
+      ){
+
+        const actions =
+          document.createElement(
+            "div"
+          );
+
+
+        actions.className =
+          "card-actions";
+
+
+        /* 編輯 */
+
+        const edit =
+          document.createElement(
+            "button"
+          );
+
+
+        edit.className =
+          "btn small";
+
+
+        edit.textContent =
+          "編輯";
+
+
+        edit.onclick =
+          () =>
+            openProductDialog(
+              product
+            );
+
+
+        /* 刪除 */
+
+        const remove =
+          document.createElement(
+            "button"
+          );
+
+
+        remove.className =
+          "btn small danger";
+
+
+        remove.textContent =
+          "刪除";
+
+
+        remove.onclick =
+          async () => {
+
+            if(
+              !confirm(
+                `確定刪除「${product.name}」嗎？`
+              )
+            ){
+
+              return;
+
+            }
+
+
+            try{
+
+              await deleteDoc(
+                doc(
+                  db,
+                  "products",
+                  product.id
+                )
+              );
+
+
+              toast(
+                "商品已刪除"
+              );
+
+            }
+            catch(error){
+
+              console.error(
+                error
+              );
+
+
+              toast(
+                "商品刪除失敗"
+              );
+
+            }
+
+          };
+
+
+        actions.append(
+          edit,
+          remove
+        );
+
+
+        body.appendChild(
+          actions
+        );
+
+      }
+
+
+      card.append(
+        media,
+        body
+      );
+
+
+      grid.appendChild(
+        card
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   顯示留言
+========================================================= */
+
+function renderMessages(){
+
+  const box =
+    $("#messages");
+
+
+  box.innerHTML =
+    "";
+
+
+  if(
+    !messages.length
+  ){
+
+    box.innerHTML =
+      '<div class="message">目前還沒有留言</div>';
+
+    return;
+
+  }
+
+
+  messages.forEach(
+    message => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "message";
+
+
+      /* =================================================
+         留言頂部
+      ================================================= */
+
+      const top =
+        document.createElement(
+          "div"
+        );
+
+
+      top.className =
+        "message-top";
+
+
+      const left =
+        document.createElement(
+          "div"
+        );
+
+
+      /* Discord 暱稱 */
+
+      const name =
+        document.createElement(
+          "div"
+        );
+
+
+      name.className =
+        "message-name";
+
+
+      name.textContent =
+        message.name ||
+        "匿名";
+
+
+      left.appendChild(
+        name
+      );
+
+
+      /* =================================================
+         只有管理員看到 Discord ID
+      ================================================= */
+
+      if(
+        isAdmin()
+      ){
+
+        const discordId =
+          document.createElement(
+            "div"
+          );
+
+
+        discordId.className =
+          "message-discord-id";
+
+
+        discordId.textContent =
+          `Discord User ID：${message.discordId || "未提供"}`;
+
+
+        left.appendChild(
+          discordId
+        );
+
+      }
+
+
+      /* 時間 */
+
+      const time =
+        document.createElement(
+          "div"
+        );
+
+
+      time.className =
+        "message-time";
+
+
+      time.textContent =
+        formatTime(
+          message.createdAt
+        );
+
+
+      left.appendChild(
+        time
+      );
+
+
+      top.appendChild(
+        left
+      );
+
+
+      /* =================================================
+         管理員刪除留言
+      ================================================= */
+
+      if(
+        isAdmin()
+      ){
+
+        const remove =
+          document.createElement(
+            "button"
+          );
+
+
+        remove.className =
+          "btn small danger";
+
+
+        remove.textContent =
+          "刪除";
+
+
+        remove.onclick =
+          async () => {
+
+            if(
+              !confirm(
+                "確定刪除這則留言嗎？"
+              )
+            ){
+
+              return;
+
+            }
+
+
+            try{
+
+              await deleteDoc(
+                doc(
+                  db,
+                  "messages",
+                  message.id
+                )
+              );
+
+
+              toast(
+                "留言已刪除"
+              );
+
+            }
+            catch(error){
+
+              console.error(
+                error
+              );
+
+
+              toast(
+                "留言刪除失敗"
+              );
+
+            }
+
+          };
+
+
+        top.appendChild(
+          remove
+        );
+
+      }
+
+
+      item.appendChild(
+        top
+      );
+
+
+      /* =================================================
+         留言內容
+      ================================================= */
+
+      const text =
+        document.createElement(
+          "div"
+        );
+
+
+      text.className =
+        "message-text";
+
+
+      text.textContent =
+        message.text ||
+        "";
+
+
+      item.appendChild(
+        text
+      );
+
+
+      /* =================================================
+         管理員已回覆
+      ================================================= */
+
+      if(
+        message.reply
+      ){
+
+        const replyBox =
+          document.createElement(
+            "div"
+          );
+
+
+        replyBox.className =
+          "reply-box";
+
+
+        const replyLabel =
+          document.createElement(
+            "div"
+          );
+
+
+        replyLabel.className =
+          "reply-label";
+
+
+        replyLabel.textContent =
+          "管理員回覆";
+
+
+        const replyText =
+          document.createElement(
+            "div"
+          );
+
+
+        replyText.className =
+          "reply-text";
+
+
+        replyText.textContent =
+          message.reply;
+
+
+        const replyTime =
+          document.createElement(
+            "div"
+          );
+
+
+        replyTime.className =
+          "reply-time";
+
+
+        replyTime.textContent =
+          formatTime(
+            message.replyAt
+          );
+
+
+        replyBox.append(
+          replyLabel,
+          replyText,
+          replyTime
+        );
+
+
+        item.appendChild(
+          replyBox
+        );
+
+      }
+
+
+      /* =================================================
+         管理員回覆輸入框
+      ================================================= */
+
+      if(
+        isAdmin()
+      ){
+
+        const replyForm =
+          document.createElement(
+            "form"
+          );
+
+
+        replyForm.className =
+          "admin-reply-form";
+
+
+        const replyInput =
+          document.createElement(
+            "input"
+          );
+
+
+        replyInput.maxLength =
+          300;
+
+
+        replyInput.placeholder =
+          message.reply
+            ? "修改管理員回覆…"
+            : "輸入管理員回覆…";
+
+
+        replyInput.value =
+          message.reply ||
+          "";
+
+
+        const replyButton =
+          document.createElement(
+            "button"
+          );
+
+
+        replyButton.type =
+          "submit";
+
+
+        replyButton.className =
+          "btn primary";
+
+
+        replyButton.textContent =
+          message.reply
+            ? "修改回覆"
+            : "回覆";
+
+
+        replyForm.append(
+          replyInput,
+          replyButton
+        );
+
+
+        replyForm.onsubmit =
+          async event => {
+
+            event.preventDefault();
+
+
+            const reply =
+              replyInput.value
+                .trim();
+
+
+            if(!reply){
+
+              toast(
+                "請輸入回覆內容"
+              );
+
+              return;
+
+            }
+
+
+            try{
+
+              await updateDoc(
+                doc(
+                  db,
+                  "messages",
+                  message.id
+                ),
+                {
+
+                  reply:
+                    reply,
+
+                  replyAt:
+                    serverTimestamp()
+
+                }
+              );
+
+
+              toast(
+                "回覆已送出"
+              );
+
+            }
+            catch(error){
+
+              console.error(
+                error
+              );
+
+
+              toast(
+                "回覆失敗"
+              );
+
+            }
+
+          };
+
+
+        item.appendChild(
+          replyForm
+        );
+
+      }
+
+
+      box.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   開啟商品新增 / 編輯視窗
+========================================================= */
+
+function openProductDialog(
+  product = null
+){
+
+  $("#productForm")
+    .reset();
+
+
+  $("#productId")
+    .value =
+      product?.id ||
+      "";
+
+
+  $("#productDialogTitle")
+    .textContent =
+      product
+        ? "編輯商品"
+        : "新增商品";
+
+
+  $("#productCategory")
+    .value =
+      product?.category ||
+      currentCategory;
+
+
+  $("#productName")
+    .value =
+      product?.name ||
+      "";
+
+
+  $("#productPrice")
+    .value =
+      product?.price ||
+      "";
+
+
+  $("#productStock")
+    .value =
+      product?.stock ??
+      0;
+
+
+  editingImage =
+    product?.image ||
+    "";
+
+
+  const preview =
+    $("#imagePreview");
+
+
+  preview.innerHTML =
+    "";
+
+
+  if(
+    editingImage
+  ){
+
+    const image =
+      document.createElement(
+        "img"
+      );
+
+
+    image.src =
+      editingImage;
+
+
+    preview.appendChild(
+      image
+    );
+
+  }
+  else{
+
+    preview.textContent =
+      "尚未選擇圖片";
+
+  }
+
+
+  $("#productDialog")
+    .showModal();
+
+}
+
+
+/* =========================================================
+   商品圖片預覽
+========================================================= */
+
+$("#productImage")
+.addEventListener(
+  "change",
+  async event => {
+
+    const file =
+      event.target
+        .files?.[0];
+
+
+    if(!file){
+
+      return;
+
+    }
+
+
+    try{
+
+      const imageData =
+        await compressImage(
+          file
+        );
+
+
+      const preview =
+        $("#imagePreview");
+
+
+      preview.innerHTML =
+        "";
+
+
+      const image =
+        document.createElement(
+          "img"
+        );
+
+
+      image.src =
+        imageData;
+
+
+      preview.appendChild(
+        image
+      );
+
+    }
+    catch(error){
+
+      console.error(
+        error
+      );
+
+
+      toast(
+        "圖片處理失敗"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   儲存商品
+========================================================= */
+
+$("#productForm")
+.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    if(
+      !isAdmin()
+    ){
+
+      toast(
+        "只有管理員可以管理商品"
+      );
+
+      return;
+
+    }
+
+
+    const id =
+      $("#productId")
+        .value;
+
+
+    const file =
+      $("#productImage")
+        .files?.[0];
+
+
+    try{
+
+      let image =
+        editingImage;
+
+
+      if(file){
+
+        image =
+          await compressImage(
+            file
+          );
+
+      }
+
+
+      let stock =
+        parseInt(
+          $("#productStock")
+            .value,
+          10
+        );
+
+
+      if(
+        Number.isNaN(stock) ||
+        stock < 0
+      ){
+
+        stock = 0;
+
+      }
+
+
+      const payload = {
+
+        category:
+          $("#productCategory")
+            .value,
+
+        name:
+          $("#productName")
+            .value
+            .trim(),
+
+        price:
+          $("#productPrice")
+            .value
+            .trim(),
+
+        stock:
+          stock,
+
+        image:
+          image,
+
+        updatedAt:
+          serverTimestamp()
+
+      };
+
+
+      /* 編輯 */
+
+      if(id){
+
+        await updateDoc(
+          doc(
+            db,
+            "products",
+            id
+          ),
+          payload
+        );
+
+
+        toast(
+          "商品已更新"
+        );
+
+      }
+
+
+      /* 新增 */
+
+      else{
+
+        payload.createdAt =
+          serverTimestamp();
+
+
+        await addDoc(
+          collection(
+            db,
+            "products"
+          ),
+          payload
+        );
+
+
+        toast(
+          "商品已新增"
+        );
+
+      }
+
+
+      $("#productDialog")
+        .close();
+
+    }
+    catch(error){
+
+      console.error(
+        error
+      );
+
+
+      toast(
+        "商品儲存失敗"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   管理員登入
+========================================================= */
+
+$("#loginForm")
+.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    try{
+
+      const credential =
+        await signInWithEmailAndPassword(
+          auth,
+          $("#loginEmail")
+            .value
+            .trim(),
+          $("#loginPassword")
+            .value
+        );
+
+
+      if(
+        credential.user.uid !==
+        ADMIN_UID
+      ){
+
+        await signOut(
+          auth
+        );
+
+
+        toast(
+          "這個帳號不是管理員"
+        );
+
+
+        return;
+
+      }
+
+
+      $("#loginDialog")
+        .close();
+
+
+      $("#loginForm")
+        .reset();
+
+
+      toast(
+        "管理員登入成功"
+      );
+
+    }
+    catch(error){
+
+      console.error(
+        error
+      );
+
+
+      toast(
+        "登入失敗，請檢查帳號密碼"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   管理員按鈕
+========================================================= */
+
+$("#adminBtn")
+.onclick =
+  async () => {
+
+    if(
+      isAdmin()
+    ){
+
+      await signOut(
+        auth
+      );
+
+
+      toast(
+        "已登出"
+      );
+
+    }
+    else{
+
+      $("#loginDialog")
+        .showModal();
+
+    }
+
+  };
+
+
+/* =========================================================
+   新增商品按鈕
+========================================================= */
+
+$("#addBtn")
+.onclick =
+  () => {
+
+    openProductDialog();
+
+  };
+
+
+/* =========================================================
+   Firebase 登入狀態
+========================================================= */
+
+onAuthStateChanged(
+  auth,
+  user => {
+
+    currentUser =
+      user;
+
+
+    $("#adminBtn")
+      .textContent =
+        isAdmin()
+          ? "登出管理員"
+          : "管理員登入";
+
+
+    $("#addBtn")
+      .classList
+      .toggle(
+        "hidden",
+        !isAdmin()
+      );
+
+
+    renderProducts();
+
+    renderMessages();
+
+  }
+);
+
+
+/* =========================================================
+   分類切換
+========================================================= */
+
+$("#tabs")
+.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        ".tab"
+      );
+
+
+    if(!button){
+
+      return;
+
+    }
+
+
+    $$(".tab")
+      .forEach(
+        tab => {
+
+          tab.classList
+            .remove(
+              "active"
+            );
+
+        }
+      );
+
+
+    button.classList
+      .add(
+        "active"
+      );
+
+
+    currentCategory =
+      button.dataset.category;
+
+
+    renderProducts();
+
+  }
+);
+
+
+/* =========================================================
+   商品搜尋
+========================================================= */
+
+$("#searchInput")
+.addEventListener(
+  "input",
+  () => {
+
+    renderProducts();
+
+  }
+);
+
+
+/* =========================================================
+   留言送出
+========================================================= */
+
+$("#messageForm")
+.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const name =
+      $("#messageName")
+        .value
+        .trim();
+
+
+    const discordId =
+      $("#messageDiscordId")
+        .value
+        .trim();
+
+
+    const text =
+      $("#messageText")
+        .value
+        .trim();
+
+
+    if(
+      !name ||
+      !discordId ||
+      !text
+    ){
+
+      toast(
+        "請完整填寫 Discord 暱稱、User ID 和留言"
+      );
+
+      return;
+
+    }
+
+
+    /* =================================================
+       Discord User ID 格式
+       一般 Discord ID 為 17~20 位左右數字
+    ================================================= */
+
+    if(
+      !/^\d{15,25}$/.test(
+        discordId
+      )
+    ){
+
+      toast(
+        "Discord User ID 格式不正確"
+      );
+
+      return;
+
+    }
+
+
+    try{
+
+      await addDoc(
+        collection(
+          db,
+          "messages"
+        ),
+        {
+
+          name:
+            name,
+
+          discordId:
+            discordId,
+
+          text:
+            text,
+
+          createdAt:
+            serverTimestamp(),
+
+          reply:
+            "",
+
+          replyAt:
+            null
+
+        }
+      );
+
+
+      $("#messageText")
+        .value =
+        "";
+
+
+      toast(
+        "留言已送出"
+      );
+
+    }
+    catch(error){
+
+      console.error(
+        error
+      );
+
+
+      toast(
+        "留言送出失敗"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   Dialog 關閉
+========================================================= */
+
+$$("[data-close]")
+.forEach(
+  button => {
+
+    button.onclick =
+      () => {
+
+        const dialog =
+          document.getElementById(
+            button.dataset.close
+          );
+
+
+        if(dialog){
+
+          dialog.close();
+
+        }
+
+      };
+
+  }
+);
+
+
+/* =========================================================
+   Firebase 商品即時監聽
+========================================================= */
+
+onSnapshot(
+  query(
+    collection(
+      db,
+      "products"
+    ),
+    orderBy(
+      "createdAt",
+      "desc"
+    )
+  ),
+
+  snapshot => {
+
+    products =
+      snapshot.docs.map(
+        document => ({
+
+          id:
+            document.id,
+
+          ...document.data()
+
+        })
+      );
+
+
+    renderProducts();
+
+  },
+
+  error => {
+
+    console.error(
+      error
+    );
+
+
+    $("#productGrid")
+      .innerHTML =
+        '<div class="empty">商品讀取失敗</div>';
+
+  }
+);
+
+
+/* =========================================================
+   Firebase 留言即時監聽
+========================================================= */
+
+onSnapshot(
+  query(
+    collection(
+      db,
+      "messages"
+    ),
+    orderBy(
+      "createdAt",
+      "desc"
+    )
+  ),
+
+  snapshot => {
+
+    messages =
+      snapshot.docs.map(
+        document => ({
+
+          id:
+            document.id,
+
+          ...document.data()
+
+        })
+      );
+
+
+    renderMessages();
+
+  },
+
+  error => {
+
+    console.error(
+      error
+    );
+
+
+    $("#messages")
+      .innerHTML =
+        '<div class="message">留言讀取失敗</div>';
+
+  }
+);
+
+</script>
 
 </body>
 </html>
