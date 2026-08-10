@@ -419,7 +419,7 @@ button{
 
 /* =========================================================
    商品名稱
-   固定兩行高度
+   統一兩行高度，讓所有商品文字對齊
 ========================================================= */
 
 .name{
@@ -430,15 +430,19 @@ button{
 
   line-height:18px;
 
-  height:18px;
-  min-height:18px;
+  height:36px;
+  min-height:36px;
 
   overflow:hidden;
 
-  white-space:nowrap;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+
+  white-space:normal;
   text-overflow:ellipsis;
 
-  word-break:normal;
+  word-break:break-word;
 }
 
 
@@ -471,6 +475,7 @@ button{
 
 .stock{
   margin-top:7px;
+  margin-top:auto;
 
   color:var(--success);
 
@@ -483,6 +488,7 @@ button{
 }
 
 .stock.soldout{
+  margin-top:auto;
   color:var(--danger);
 
   font-weight:900;
@@ -1101,6 +1107,11 @@ dialog::backdrop{
   color:var(--success);
 }
 .variant-summary{
+  min-height:40px;
+  max-height:40px;
+  overflow:hidden;
+  line-height:20px;
+  word-break:break-word;
   margin-top:8px;
   color:#aaa;
   font-size:12px;
