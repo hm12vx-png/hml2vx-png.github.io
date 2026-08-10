@@ -1010,6 +1010,32 @@ dialog::backdrop{
   font-size:11px;
 }
 
+.image-switch-btn{
+  position:absolute;
+  top:7px;
+  left:7px;
+  z-index:4;
+  min-width:42px;
+  height:30px;
+  padding:4px 9px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:14px;
+  background:rgba(0,0,0,.68);
+  color:#fff;
+  font-size:12px;
+  line-height:20px;
+  cursor:pointer;
+  backdrop-filter:blur(3px);
+}
+
+.image-switch-btn:hover{
+  background:rgba(0,0,0,.84);
+}
+
+.image-switch-btn:active{
+  transform:scale(.96);
+}
+
 .image-error{
   width:100%;
   height:100%;
@@ -2391,10 +2417,14 @@ function renderProducts(){
         media.appendChild(img);
 
         if(productImages.length > 1){
-          const count = document.createElement("span");
-          count.style.cssText = "position:absolute;right:8px;bottom:8px;z-index:3;padding:4px 8px;border-radius:12px;background:rgba(0,0,0,.72);color:#fff;font-size:12px";
-          count.textContent = `📷 ${productImages.length} 張`;
-          media.appendChild(count);
+          /* 多圖片切換按鈕：移到左上角，避免遮住商品主圖 */
+          const switchButton = document.createElement("button");
+          switchButton.type = "button";
+          switchButton.className = "image-switch-btn";
+          switchButton.title = "點擊切換商品圖片";
+          switchButton.setAttribute("aria-label", "點擊切換商品圖片");
+          switchButton.textContent = `📷 ${productImages.length}`;
+          media.appendChild(switchButton);
         }
 
       }else{
@@ -2404,15 +2434,18 @@ function renderProducts(){
 
       if(productImages.length > 1){
         let imageIndex = 0;
-        media.style.cursor = "pointer";
-        media.title = "點擊切換商品圖片";
-        media.addEventListener("click", () => {
-          imageIndex = (imageIndex + 1) % productImages.length;
-          const mainImg = media.querySelector("img");
-          if(mainImg){
-            mainImg.src = productImages[imageIndex];
-          }
-        });
+        const switchButton = media.querySelector(".image-switch-btn");
+
+        if(switchButton){
+          switchButton.addEventListener("click", event => {
+            event.stopPropagation();
+            imageIndex = (imageIndex + 1) % productImages.length;
+            const mainImg = media.querySelector("img");
+            if(mainImg){
+              mainImg.src = productImages[imageIndex];
+            }
+          });
+        }
       }
 
 
