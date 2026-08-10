@@ -325,8 +325,6 @@ button{
 ========================================================= */
 
 .card{
-  content-visibility:auto;
-  contain-intrinsic-size: 360px 520px;
   background:#161619;
 
   border:1px solid #333;
@@ -350,7 +348,6 @@ button{
 ========================================================= */
 
 .media{
-  position:relative;
   background:#222;
 
   display:flex;
@@ -369,40 +366,20 @@ button{
   min-height:210px;
 }
 
-.media::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:#17171b;
-  z-index:0;
-}
-
 .media img{
-  /* 所有商品使用完全一致的 4:3 顯示畫布 */
-  width:240px;
-  height:180px;
-  max-width:100%;
   display:block;
+
+  /* 所有商品使用完全一致的圖片畫布 */
+  width:100%;
+  height:180px;
+  max-width:240px;
+  min-width:240px;
+
   object-fit:contain;
   object-position:center center;
+
   margin:auto;
-  background:transparent;
-  transition:opacity .15s ease;
-}
-
-.media img.image-pending{
-  opacity:0;
-}
-
-.media.image-loading::after{
-  content:'圖片處理中…';
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  color:#777;
-  font-size:12px;
-  z-index:1;
+  background:#111;
 }
 
 
@@ -1848,7 +1825,6 @@ const $$ =
 let products = [];
 
 let messages = [];
-let searchTimer = null;
 
 let currentCategory =
   "新家具";
@@ -1948,16 +1924,10 @@ function formatTime(timestamp){
    - 舊商品也會在前台顯示時自動標準化
 ========================================================= */
 
-const NORMAL_IMAGE_WIDTH = 600;
-const NORMAL_IMAGE_HEIGHT = 450;
-const NORMAL_OBJECT_WIDTH = 480;
-const NORMAL_OBJECT_HEIGHT = 360;
-
-const PRODUCT_PERFORMANCE = {
-  lazyImages: true,
-  batchDom: true,
-  webpQuality: 0.82
-};
+const NORMAL_IMAGE_WIDTH = 900;
+const NORMAL_IMAGE_HEIGHT = 675;
+const NORMAL_OBJECT_WIDTH = 720;
+const NORMAL_OBJECT_HEIGHT = 540;
 
 function loadImageFromDataURL(src){
 
@@ -1973,310 +1943,281 @@ function loadImageFromDataURL(src){
 
 }
 
-function getPixel(data, width, x, y){
-  x = Math.max(0, Math.min(width - 1, x));
-  y = Math.max(0, Math.min(data.length / 4 / width - 1, y));
-  const i = (Math.floor(y) * width + Math.floor(x)) * 4;
-  return [data[i], data[i + 1], data[i + 2], data[i + 3]];
-}
+function getImageBackgroundColor(data, width, height){
 
-function colorDistance(a, b){
-  return Math.sqrt(
-    Math.pow(a[0] - b[0], 2) +
-    Math.pow(a[1] - b[1], 2) +
-    Math.pow(a[2] - b[2], 2)
-  );
-}
+  const samples = [];
 
-/*
-  自動去背：從圖片四周開始做 flood-fill。
-  只有「從邊緣連通」且與背景顏色相近的像素才會被設為透明，
-  因此不會把商品內部相同顏色的小區塊整片誤刪。
-*/
-function removeEdgeBackground(canvas, threshold = 48){
-  const ctx = canvas.getContext('2d', {willReadFrequently:true});
-  const w = canvas.width;
-  const h = canvas.height;
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
-  const visited = new Uint8Array(w * h);
-  const queue = [];
+  const pushSample = (x,y) => {
 
-  const seeds = [
-    [0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]
-  ];
+    const i = (y * width + x) * 4;
 
-  seeds.forEach(([x,y]) => {
-    const i = y * w + x;
-    if(!visited[i]){
-      visited[i] = 1;
-      queue.push([x,y,data[i*4],data[i*4+1],data[i*4+2]]);
+    if(data[i + 3] > 10){
+      samples.push([
+        data[i],
+        data[i + 1],
+        data[i + 2]
+      ]);
     }
-  });
 
-  let head = 0;
-  while(head < queue.length){
-    const [x,y,sr,sg,sb] = queue[head++];
-    const idx = y * w + x;
-    const di = idx * 4;
+  };
 
-    if(data[di + 3] < 18) continue;
+  const step = Math.max(1, Math.floor(Math.min(width,height) / 30));
 
-    const pixel = [data[di], data[di+1], data[di+2]];
-    const distance = Math.sqrt(
-      Math.pow(pixel[0] - sr, 2) +
-      Math.pow(pixel[1] - sg, 2) +
-      Math.pow(pixel[2] - sb, 2)
+  for(let x=0; x<width; x+=step){
+    pushSample(x,0);
+    pushSample(x,height-1);
+  }
+
+  for(let y=0; y<height; y+=step){
+    pushSample(0,y);
+    pushSample(width-1,y);
+  }
+
+  if(!samples.length){
+    return [17,17,17];
+  }
+
+  const avg = channel =>
+    Math.round(
+      samples.reduce((sum, rgb)=>sum + rgb[channel],0) /
+      samples.length
     );
 
-    if(distance > threshold) continue;
+  return [avg(0),avg(1),avg(2)];
 
-    data[di + 3] = 0;
-
-    const neighbors = [
-      [x-1,y], [x+1,y], [x,y-1], [x,y+1]
-    ];
-
-    for(const [nx,ny] of neighbors){
-      if(nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-      const ni = ny * w + nx;
-      if(visited[ni]) continue;
-      visited[ni] = 1;
-      const n4 = ni * 4;
-      queue.push([nx,ny,data[n4],data[n4+1],data[n4+2]]);
-    }
-  }
-
-  ctx.putImageData(imageData, 0, 0);
 }
 
-function getAlphaBounds(canvas){
-  const ctx = canvas.getContext('2d', {willReadFrequently:true});
-  const {data} = ctx.getImageData(0,0,canvas.width,canvas.height);
-  let minX = canvas.width, minY = canvas.height;
-  let maxX = -1, maxY = -1;
+function findImageSubjectBounds(data,width,height){
 
-  for(let y=0; y<canvas.height; y++){
-    for(let x=0; x<canvas.width; x++){
-      const a = data[(y * canvas.width + x) * 4 + 3];
-      if(a > 18){
-        if(x < minX) minX = x;
-        if(y < minY) minY = y;
-        if(x > maxX) maxX = x;
-        if(y > maxY) maxY = y;
+  const bg = getImageBackgroundColor(data,width,height);
+  const threshold = 34;
+  const points = [];
+
+  for(let y=0; y<height; y++){
+
+    for(let x=0; x<width; x++){
+
+      const i = (y * width + x) * 4;
+      const alpha = data[i + 3];
+
+      if(alpha < 18){
+        continue;
       }
+
+      const dr = data[i] - bg[0];
+      const dg = data[i + 1] - bg[1];
+      const db = data[i + 2] - bg[2];
+      const distance = Math.sqrt(dr*dr + dg*dg + db*db);
+
+      if(alpha > 30 && distance > threshold){
+        points.push([x,y]);
+      }
+
     }
+
   }
 
-  if(maxX < 0){
-    return {x:0,y:0,width:canvas.width,height:canvas.height};
+  if(points.length < width * height * 0.002){
+    return {
+      x:0,
+      y:0,
+      width,
+      height
+    };
+  }
+
+  let minX = width;
+  let minY = height;
+  let maxX = 0;
+  let maxY = 0;
+
+  points.forEach(([x,y])=>{
+    if(x < minX) minX = x;
+    if(y < minY) minY = y;
+    if(x > maxX) maxX = x;
+    if(y > maxY) maxY = y;
+  });
+
+  const boxWidth = maxX - minX + 1;
+  const boxHeight = maxY - minY + 1;
+
+  /* 偵測結果太小時，避免把雜訊當成商品 */
+  if(
+    boxWidth < width * 0.08 ||
+    boxHeight < height * 0.08
+  ){
+    return {
+      x:0,
+      y:0,
+      width,
+      height
+    };
   }
 
   return {
     x:minX,
     y:minY,
-    width:maxX-minX+1,
-    height:maxY-minY+1
+    width:boxWidth,
+    height:boxHeight
   };
-}
 
-function cropCanvas(canvas, bounds, padding = 0.015){
-  const padX = Math.round(bounds.width * padding);
-  const padY = Math.round(bounds.height * padding);
-  const x = Math.max(0, bounds.x - padX);
-  const y = Math.max(0, bounds.y - padY);
-  const right = Math.min(canvas.width, bounds.x + bounds.width + padX);
-  const bottom = Math.min(canvas.height, bounds.y + bounds.height + padY);
-
-  const out = document.createElement('canvas');
-  out.width = Math.max(1, right - x);
-  out.height = Math.max(1, bottom - y);
-  out.getContext('2d').drawImage(
-    canvas,
-    x,y,out.width,out.height,
-    0,0,out.width,out.height
-  );
-  return out;
 }
 
 function normalizeImageDataURL(src){
+
   return loadImageFromDataURL(src).then(img=>{
-    const maxSource = 1600;
-    const sourceScale = Math.min(
+
+    const maxSource = 1200;
+    const scale = Math.min(
       1,
-      maxSource / Math.max(img.naturalWidth, img.naturalHeight)
+      maxSource / Math.max(img.naturalWidth,img.naturalHeight)
     );
 
-    const source = document.createElement('canvas');
-    source.width = Math.max(1, Math.round(img.naturalWidth * sourceScale));
-    source.height = Math.max(1, Math.round(img.naturalHeight * sourceScale));
-    const sourceCtx = source.getContext('2d', {willReadFrequently:true});
-    sourceCtx.clearRect(0,0,source.width,source.height);
-    sourceCtx.drawImage(img,0,0,source.width,source.height);
+    const sourceWidth = Math.max(1,Math.round(img.naturalWidth * scale));
+    const sourceHeight = Math.max(1,Math.round(img.naturalHeight * scale));
 
-    /* 第一層：去除最外圍的白色／透明留白 */
-    removeEdgeBackground(source, 55);
+    const sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = sourceWidth;
+    sourceCanvas.height = sourceHeight;
 
-    let bounds = getAlphaBounds(source);
-    let subject = cropCanvas(source, bounds, 0.02);
+    const sourceCtx = sourceCanvas.getContext('2d',{willReadFrequently:true});
+    sourceCtx.clearRect(0,0,sourceWidth,sourceHeight);
+    sourceCtx.drawImage(img,0,0,sourceWidth,sourceHeight);
 
-    /* 第二層：若商品外還包著深色方形背景，再自動去掉 */
-    removeEdgeBackground(subject, 52);
-    bounds = getAlphaBounds(subject);
-    subject = cropCanvas(subject, bounds, 0.02);
+    const imageData = sourceCtx.getImageData(0,0,sourceWidth,sourceHeight);
+    const bounds = findImageSubjectBounds(
+      imageData.data,
+      sourceWidth,
+      sourceHeight
+    );
 
     const output = document.createElement('canvas');
     output.width = NORMAL_IMAGE_WIDTH;
     output.height = NORMAL_IMAGE_HEIGHT;
+
     const ctx = output.getContext('2d');
-    ctx.clearRect(0,0,output.width,output.height);
+
+    /* 保留原圖四角背景色，讓標準化後的圖片看起來自然 */
+    const bg = getImageBackgroundColor(
+      imageData.data,
+      sourceWidth,
+      sourceHeight
+    );
+
+    ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+    ctx.fillRect(0,0,NORMAL_IMAGE_WIDTH,NORMAL_IMAGE_HEIGHT);
+
+    const padding = 0.08;
+    const maxW = NORMAL_OBJECT_WIDTH;
+    const maxH = NORMAL_OBJECT_HEIGHT;
+
+    const scaleToFit = Math.min(
+      maxW / bounds.width,
+      maxH / bounds.height
+    );
+
+    const drawWidth = Math.max(1,Math.round(bounds.width * scaleToFit));
+    const drawHeight = Math.max(1,Math.round(bounds.height * scaleToFit));
+
+    const dx = Math.round((NORMAL_IMAGE_WIDTH - drawWidth) / 2);
+    const dy = Math.round((NORMAL_IMAGE_HEIGHT - drawHeight) / 2);
+
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    const maxW = NORMAL_OBJECT_WIDTH;
-    const maxH = NORMAL_OBJECT_HEIGHT;
-    const scaleToFit = Math.min(
-      maxW / subject.width,
-      maxH / subject.height
+    ctx.drawImage(
+      sourceCanvas,
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+      dx,
+      dy,
+      drawWidth,
+      drawHeight
     );
 
-    const drawWidth = Math.max(1, Math.round(subject.width * scaleToFit));
-    const drawHeight = Math.max(1, Math.round(subject.height * scaleToFit));
-    const dx = Math.round((output.width - drawWidth) / 2);
-    const dy = Math.round((output.height - drawHeight) / 2);
+    return output.toDataURL('image/jpeg',0.82);
 
-    ctx.drawImage(subject, 0, 0, subject.width, subject.height,
-      dx, dy, drawWidth, drawHeight);
-
-    /* WebP 保留透明背景，同時大幅降低檔案體積；不支援時才退回 PNG */
-    try{
-      const webp = output.toDataURL('image/webp', 0.82);
-      if(webp.startsWith('data:image/webp')) return webp;
-    }catch(error){
-      console.warn('WebP 產生失敗，改用 PNG', error);
-    }
-    return output.toDataURL('image/png');
   });
 }
 
 function compressImage(file){
+
   return new Promise((resolve,reject)=>{
+
     const reader = new FileReader();
+
     reader.onerror = reject;
+
     reader.onload = async () => {
+
       try{
         const normalized = await normalizeImageDataURL(reader.result);
-        resolve(normalized);
-      }catch(error){
+
+        let quality = 0.82;
+        let output = normalized;
+
+        while(
+          output.length > 650000 &&
+          quality > 0.45
+        ){
+
+          quality -= 0.07;
+
+          const img = await loadImageFromDataURL(normalized);
+          const canvas = document.createElement('canvas');
+          canvas.width = NORMAL_IMAGE_WIDTH;
+          canvas.height = NORMAL_IMAGE_HEIGHT;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img,0,0,NORMAL_IMAGE_WIDTH,NORMAL_IMAGE_HEIGHT);
+          output = canvas.toDataURL('image/jpeg',quality);
+
+        }
+
+        if(output.length > 780000){
+          reject(new Error('圖片太大'));
+          return;
+        }
+
+        resolve(output);
+
+      }
+      catch(error){
         reject(error);
       }
+
     };
+
     reader.readAsDataURL(file);
+
   });
+
 }
 
-/* =========================================================
-   舊商品圖片快取：第一次看到才自動處理，處理後存 IndexedDB。
-   之後重新整理網站不必再次去背／裁切，大幅降低讀取時間。
-========================================================= */
-let imageCacheDBPromise = null;
+function normalizeExistingProductImage(img){
 
-function openImageCacheDB(){
-  if(imageCacheDBPromise) return imageCacheDBPromise;
-  imageCacheDBPromise = new Promise((resolve, reject)=>{
-    if(!('indexedDB' in window)){
-      resolve(null);
-      return;
-    }
-    const req = indexedDB.open('O2_MSTAR_IMAGE_CACHE', 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if(!db.objectStoreNames.contains('images')){
-        db.createObjectStore('images', {keyPath:'key'});
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => resolve(null);
-  });
-  return imageCacheDBPromise;
-}
-
-async function getCachedNormalizedImage(key){
-  const db = await openImageCacheDB();
-  if(!db) return null;
-  return new Promise(resolve=>{
-    try{
-      const tx = db.transaction('images','readonly');
-      const req = tx.objectStore('images').get(key);
-      req.onsuccess = () => resolve(req.result?.data || null);
-      req.onerror = () => resolve(null);
-    }catch(e){
-      resolve(null);
-    }
-  });
-}
-
-async function setCachedNormalizedImage(key, data){
-  const db = await openImageCacheDB();
-  if(!db) return;
-  try{
-    const tx = db.transaction('images','readwrite');
-    tx.objectStore('images').put({key, data, savedAt:Date.now()});
-  }catch(e){
-    console.warn('圖片快取寫入失敗', e);
-  }
-}
-
-async function normalizeExistingProductImage(img){
-  if(!img || img.dataset.normalized === '1' || img.dataset.normalized === 'processing') return;
-
-  const original = img.dataset.original || img.getAttribute('src');
-  if(!original) return;
-
-  /* 已經是本系統產生的 data:image 時，不需要再次處理。 */
-  if(original.startsWith('data:image/')){
-    img.dataset.normalized = '1';
-    img.classList.remove('image-pending');
-    img.closest('.media')?.classList.remove('image-loading');
+  if(!img || img.dataset.normalized === '1'){
     return;
   }
 
   img.dataset.normalized = 'processing';
 
-  try{
-    const cached = await getCachedNormalizedImage(original);
-    if(cached){
-      img.src = cached;
-      img.dataset.normalized = '1';
-      img.classList.remove('image-pending');
-      img.closest('.media')?.classList.remove('image-loading');
-      return;
-    }
+  const original = img.src;
 
-    const normalized = await normalizeImageDataURL(original);
-    await setCachedNormalizedImage(original, normalized);
-    img.src = normalized;
-    img.dataset.normalized = '1';
-  }catch(error){
-    console.warn('商品圖片自動去背／裁切失敗，保留原圖', error);
-    img.src = original;
-    img.dataset.normalized = '1';
-  }finally{
-    img.classList.remove('image-pending');
-    img.closest('.media')?.classList.remove('image-loading');
-  }
+  normalizeImageDataURL(original)
+    .then(normalized=>{
+      img.src = normalized;
+      img.dataset.normalized = '1';
+    })
+    .catch(error=>{
+      console.warn('商品圖片標準化失敗，保留原圖',error);
+      img.dataset.normalized = '1';
+    });
+
 }
 
-const productImageObserver = ('IntersectionObserver' in window)
-  ? new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting) return;
-        const img = entry.target;
-        productImageObserver.unobserve(img);
-        normalizeExistingProductImage(img);
-      });
-    }, {rootMargin:'600px 0px'})
-  : null;
 
 /* =========================================================
    顯示商品
@@ -2370,8 +2311,6 @@ function renderProducts(){
   grid.innerHTML =
     "";
 
-  const fragment = document.createDocumentFragment();
-
 
   if(!list.length){
 
@@ -2422,43 +2361,27 @@ function renderProducts(){
           );
 
 
+        /* 新舊商品都自動把商品主體統一成相近視覺大小 */
+        img.addEventListener(
+          'load',
+          () => normalizeExistingProductImage(img),
+          {once:true}
+        );
+
         img.alt =
           product.name ||
           "商品圖片";
 
+
         img.loading =
           "lazy";
 
-        img.decoding =
-          "async";
-
-        img.width = 240;
-        img.height = 180;
-
-        img.fetchPriority =
-          "low";
-
-        img.dataset.original =
+        img.src =
           product.image;
-
-        /* 已標準化的 data:image 直接顯示；舊圖片先保持透明，
-           等進入視窗附近才背景自動去背／裁切／縮放。 */
-        if(String(product.image).startsWith('data:image/')){
-          img.src = product.image;
-          img.dataset.normalized = '1';
-        }else{
-          img.className = 'image-pending';
-          media.classList.add('image-loading');
-          img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
-        }
 
         media.appendChild(
           img
         );
-
-        if(!img.dataset.normalized && productImageObserver){
-          productImageObserver.observe(img);
-        }
 
       }
       else{
@@ -2735,14 +2658,12 @@ function renderProducts(){
       );
 
 
-      fragment.appendChild(
+      grid.appendChild(
         card
       );
 
     }
   );
-
-  grid.appendChild(fragment);
 
 }
 
@@ -3825,8 +3746,7 @@ $("#searchInput")
   "input",
   () => {
 
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(renderProducts, 80);
+    renderProducts();
 
   }
 );
