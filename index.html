@@ -1177,6 +1177,55 @@ dialog::backdrop{
   background:#111 !important;
 }
 
+
+
+/* === 商品圖片：頂端高度完全一致 === */
+.media{
+  width:100% !important;
+  height:280px !important;
+  min-height:280px !important;
+  max-height:280px !important;
+  padding:0 !important;
+  position:relative !important;
+  display:block !important;
+  overflow:hidden !important;
+  background:#111 !important;
+}
+
+.media img{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  max-height:none !important;
+  object-fit:contain !important;
+  object-position:center top !important;
+  display:block !important;
+  background:#111 !important;
+}
+
+/* 編輯預覽同步從相同頂端開始 */
+.preview{
+  width:100% !important;
+  height:280px !important;
+  aspect-ratio:auto !important;
+  position:relative !important;
+  overflow:hidden !important;
+  background:#111 !important;
+}
+
+.preview img{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center top !important;
+  display:block !important;
+  background:#111 !important;
+}
+
 </style>
 </head>
 
