@@ -3294,7 +3294,12 @@ $("#productImage")
     const preview =
       $("#imagePreview");
 
-    /* 先立即顯示原始圖片，不等待圖片處理。 */
+    /* =====================================================
+       原始圖片預覽
+       - 選檔後立即顯示真正的原始圖片
+       - 壓縮／標準化在背景執行
+       - 不再用壓縮後圖片覆蓋原始預覽
+    ===================================================== */
     const originalUrl =
       URL.createObjectURL(file);
 
@@ -3312,11 +3317,28 @@ $("#productImage")
     image.alt =
       "商品原始圖片";
 
+    image.title =
+      "原始圖片預覽";
+
+    image.onload = () => {
+      URL.revokeObjectURL(originalUrl);
+    };
+
+    image.onerror = () => {
+      console.error("原始圖片無法載入", file);
+      preview.innerHTML =
+        "<div style=\"padding:20px;text-align:center;color:#aaa\">原始圖片無法預覽<br>請重新選擇 JPG / PNG 圖片</div>";
+      URL.revokeObjectURL(originalUrl);
+    };
+
     preview.appendChild(
       image
     );
 
-    /* 背景執行固定尺寸處理；完成後才替換預覽。 */
+    /* 背景執行圖片標準化，但不覆蓋原始圖片。 */
+    pendingImageData =
+      "";
+
     pendingImagePromise =
       compressImage(file);
 
@@ -3328,27 +3350,19 @@ $("#productImage")
       pendingImageData =
         imageData;
 
-      image.src =
-        imageData;
-
     }
     catch(error){
 
       console.error(
+        "圖片標準化失敗：",
         error
       );
 
-      /* 處理失敗仍保留原始圖片。 */
+      pendingImageData =
+        "";
+
       toast(
-        "圖片標準化失敗，已保留原始圖片"
-      );
-
-    }
-    finally{
-
-      setTimeout(
-        () => URL.revokeObjectURL(originalUrl),
-        0
+        "圖片標準化失敗，將使用原始圖片"
       );
 
     }
@@ -3408,9 +3422,31 @@ $("#productForm")
           pendingImageData;
 
         if(!image){
-          image =
-            await compressImage(file);
-          pendingImageData = image;
+          try{
+            image =
+              await compressImage(file);
+            pendingImageData =
+              image;
+          }
+          catch(error){
+            console.warn(
+              "圖片標準化失敗，改用原始圖片：",
+              error
+            );
+
+            image =
+              await new Promise((resolve,reject)=>{
+                const reader =
+                  new FileReader();
+                reader.onload = () =>
+                  resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+
+            pendingImageData =
+              image;
+          }
         }
 
       }
