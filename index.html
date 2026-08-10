@@ -348,7 +348,7 @@ button{
 ========================================================= */
 
 .media{
-  background:transparent;
+  background:#222;
 
   display:flex;
   justify-content:center;
@@ -362,23 +362,25 @@ button{
 
   width:100%;
 
-  height:280px;
-  min-height:280px;
-  max-height:280px;
+  height:210px;
+  min-height:210px;
 }
 
 .media img{
   display:block;
 
-  width:100%;
+  /* 強制所有商品圖片使用一致的顯示尺寸 */
+  width:240px;
+  height:180px;
   max-width:100%;
-  height:100%;
-  max-height:100%;
 
+  /* 保留原圖比例，不裁切、不變形 */
   object-fit:contain;
-  object-position:center;
+  object-position:center center;
 
-  background:transparent;
+  /* 圖片置中 */
+  margin:auto;
+  background:#111;
 }
 
 
@@ -1058,14 +1060,12 @@ dialog::backdrop{
   }
 
   .media{
-    height:280px;
-    min-height:280px;
-    max-height:280px;
+    height:190px;
+    min-height:190px;
   }
 
   .media img{
-    height:100%;
-    max-height:100%;
+    height:160px;
   }
 
 }
@@ -1090,7 +1090,7 @@ dialog::backdrop{
 }
 .variant-row{
   display:grid;
-  grid-template-columns:1fr 100px auto;
+  grid-template-columns:1fr 1fr 100px auto;
   gap:8px;
   align-items:center;
 }
@@ -1131,99 +1131,6 @@ dialog::backdrop{
   .variant-row .variant-remove{
     width:100%;
   }
-}
-
-
-
-/* === 商品圖片：固定尺寸／一致性／不足處保留背景 === */
-.media{
-  width:100% !important;
-  height:280px !important;
-  min-height:280px !important;
-  max-height:280px !important;
-  padding:0 !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  overflow:hidden !important;
-  background:#111 !important;
-}
-
-.media img{
-  display:block !important;
-  width:100% !important;
-  height:100% !important;
-  max-width:none !important;
-  max-height:none !important;
-  object-fit:contain !important;
-  object-position:center center !important;
-  background:#111 !important;
-}
-
-/* 編輯視窗預覽也固定一致 */
-.preview{
-  width:100% !important;
-  height:280px !important;
-  aspect-ratio:auto !important;
-  overflow:hidden !important;
-  background:#111 !important;
-}
-
-.preview img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:contain !important;
-  object-position:center center !important;
-  background:#111 !important;
-}
-
-
-
-/* === 商品圖片：頂端高度完全一致 === */
-.media{
-  width:100% !important;
-  height:280px !important;
-  min-height:280px !important;
-  max-height:280px !important;
-  padding:0 !important;
-  position:relative !important;
-  display:block !important;
-  overflow:hidden !important;
-  background:#111 !important;
-}
-
-.media img{
-  position:absolute !important;
-  inset:0 !important;
-  width:100% !important;
-  height:100% !important;
-  max-width:none !important;
-  max-height:none !important;
-  object-fit:contain !important;
-  object-position:center top !important;
-  display:block !important;
-  background:#111 !important;
-}
-
-/* 編輯預覽同步從相同頂端開始 */
-.preview{
-  width:100% !important;
-  height:280px !important;
-  aspect-ratio:auto !important;
-  position:relative !important;
-  overflow:hidden !important;
-  background:#111 !important;
-}
-
-.preview img{
-  position:absolute !important;
-  inset:0 !important;
-  width:100% !important;
-  height:100% !important;
-  object-fit:contain !important;
-  object-position:center top !important;
-  display:block !important;
-  background:#111 !important;
 }
 
 </style>
@@ -1427,8 +1334,8 @@ dialog::backdrop{
     </label>
 
     <select id="productSort">
-      <option value="priceDesc" selected>金額：高到低</option>
       <option value="priceAsc">金額：低到高</option>
+      <option value="priceDesc">金額：高到低</option>
     </select>
 
   </div>
@@ -1725,11 +1632,11 @@ dialog::backdrop{
       </label>
 
 
-      <!-- 顏色 / 庫存 -->
+      <!-- 款式 / 顏色 / 庫存 -->
 
       <div>
         <label>
-          顏色／庫存
+          款式／顏色／庫存
         </label>
 
         <div id="variantList" class="variant-list"></div>
@@ -1740,7 +1647,7 @@ dialog::backdrop{
           type="button"
           style="margin-top:8px"
         >
-          ＋ 新增顏色
+          ＋ 新增款式／顏色
         </button>
 
         <div class="variant-total" style="margin-top:8px">
@@ -1749,7 +1656,7 @@ dialog::backdrop{
         </div>
 
         <div class="variant-summary">
-          同一商品可以建立多個顏色，總庫存會自動加總。
+          同一商品可以建立多個款式與顏色，總庫存會自動加總。
         </div>
       </div>
 
@@ -2222,7 +2129,7 @@ function renderProducts(){
 
         const sortMode =
           $("#productSort")?.value ||
-          "priceDesc";
+          "priceAsc";
 
         return sortMode === "priceDesc"
           ? priceB - priceA
@@ -3049,6 +2956,12 @@ function createVariantRow(variant = {}){
   const row = document.createElement("div");
   row.className = "variant-row";
 
+  const styleInput = document.createElement("input");
+  styleInput.className = "variant-style";
+  styleInput.maxLength = 50;
+  styleInput.placeholder = "款式，例如：標準版";
+  styleInput.value = variant.style || "";
+
   const colorInput = document.createElement("input");
   colorInput.className = "variant-color";
   colorInput.maxLength = 30;
@@ -3078,6 +2991,7 @@ function createVariantRow(variant = {}){
   });
 
   row.append(
+    styleInput,
     colorInput,
     stockInput,
     removeButton
@@ -3113,13 +3027,13 @@ function getVariantsFromForm(){
 
   return $$("#variantList .variant-row")
     .map(row => ({
+      style: row.querySelector(".variant-style").value.trim(),
       color: row.querySelector(".variant-color").value.trim(),
       stock: Math.max(0, parseInt(
         row.querySelector(".variant-stock").value,
         10
       ) || 0)
-    }))
-    .filter(variant => variant.color || variant.stock > 0);
+    }));
 }
 
 function setVariantsInForm(variants){
@@ -3129,11 +3043,8 @@ function setVariantsInForm(variants){
 
   const source =
     Array.isArray(variants) && variants.length
-      ? variants.map(variant => ({
-          color: variant?.color || "",
-          stock: Number(variant?.stock ?? 0) || 0
-        }))
-      : [{ color: "", stock: 0 }];
+      ? variants
+      : [{ style: "", color: "", stock: 0 }];
 
   source.forEach(variant => {
     list.appendChild(createVariantRow(variant));
@@ -3190,6 +3101,7 @@ function openProductDialog(
     product?.variants?.length
       ? product.variants
       : [{
+          style: "",
           color: "",
           stock: Number(product?.stock ?? 0)
         }]
