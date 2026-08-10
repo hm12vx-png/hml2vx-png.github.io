@@ -978,6 +978,16 @@ dialog::backdrop{
   object-fit:contain;
 }
 
+.image-error{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  color:#777;
+  font-size:14px;
+  background:#111;
+}
+
 
 /* =========================================================
    Toast
@@ -2099,60 +2109,61 @@ function cropCanvas(canvas, bounds, padding = 0.015){
 
 function normalizeImageDataURL(src){
   return loadImageFromDataURL(src).then(img=>{
-    const maxSource = 1600;
-    const sourceScale = Math.min(
-      1,
-      maxSource / Math.max(img.naturalWidth, img.naturalHeight)
-    );
-
-    const source = document.createElement('canvas');
-    source.width = Math.max(1, Math.round(img.naturalWidth * sourceScale));
-    source.height = Math.max(1, Math.round(img.naturalHeight * sourceScale));
-    const sourceCtx = source.getContext('2d', {willReadFrequently:true});
-    sourceCtx.clearRect(0,0,source.width,source.height);
-    sourceCtx.drawImage(img,0,0,source.width,source.height);
-
-    /* 第一層：去除最外圍的白色／透明留白 */
-    removeEdgeBackground(source, 55);
-
-    let bounds = getAlphaBounds(source);
-    let subject = cropCanvas(source, bounds, 0.02);
-
-    /* 第二層：若商品外還包著深色方形背景，再自動去掉 */
-    removeEdgeBackground(subject, 52);
-    bounds = getAlphaBounds(subject);
-    subject = cropCanvas(subject, bounds, 0.02);
-
+    /*
+      安全圖片標準化：
+      不再做兩次自動去背，避免某些商品被誤判成背景後整張變透明。
+      保留原始圖片內容，只縮放到 600 × 450 的固定畫布。
+    */
     const output = document.createElement('canvas');
     output.width = NORMAL_IMAGE_WIDTH;
     output.height = NORMAL_IMAGE_HEIGHT;
+
     const ctx = output.getContext('2d');
-    ctx.clearRect(0,0,output.width,output.height);
+    ctx.clearRect(0, 0, output.width, output.height);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    const maxW = NORMAL_OBJECT_WIDTH;
-    const maxH = NORMAL_OBJECT_HEIGHT;
-    const scaleToFit = Math.min(
-      maxW / subject.width,
-      maxH / subject.height
+    const scale = Math.min(
+      output.width / img.naturalWidth,
+      output.height / img.naturalHeight
     );
 
-    const drawWidth = Math.max(1, Math.round(subject.width * scaleToFit));
-    const drawHeight = Math.max(1, Math.round(subject.height * scaleToFit));
+    const drawWidth = Math.max(1, Math.round(img.naturalWidth * scale));
+    const drawHeight = Math.max(1, Math.round(img.naturalHeight * scale));
     const dx = Math.round((output.width - drawWidth) / 2);
     const dy = Math.round((output.height - drawHeight) / 2);
 
-    ctx.drawImage(subject, 0, 0, subject.width, subject.height,
-      dx, dy, drawWidth, drawHeight);
+    ctx.drawImage(
+      img,
+      0, 0, img.naturalWidth, img.naturalHeight,
+      dx, dy, drawWidth, drawHeight
+    );
 
-    /* WebP 保留透明背景，同時大幅降低檔案體積；不支援時才退回 PNG */
+    /*
+      檢查輸出是否真的有可見內容。
+      若整張變成透明，直接回傳原始圖片，絕不儲存空白圖片。
+    */
+    const pixels = ctx.getImageData(0, 0, output.width, output.height).data;
+    let visiblePixels = 0;
+    for(let i = 3; i < pixels.length; i += 4){
+      if(pixels[i] > 18){
+        visiblePixels++;
+        if(visiblePixels >= 20) break;
+      }
+    }
+
+    if(visiblePixels < 20){
+      return src;
+    }
+
+    /* 優先 WebP；失敗則 PNG。 */
     try{
       const webp = output.toDataURL('image/webp', 0.82);
       if(webp.startsWith('data:image/webp')) return webp;
     }catch(error){
       console.warn('WebP 產生失敗，改用 PNG', error);
     }
+
     return output.toDataURL('image/png');
   });
 }
@@ -2341,8 +2352,17 @@ function renderProducts(){
         img.fetchPriority =
           "low";
 
-        /* 強制固定顯示尺寸；不再於開啟網頁時處理圖片。 */
+        /* 強制固定顯示尺寸；直接使用資料庫圖片。 */
         img.src = product.image;
+
+        img.onerror = () => {
+          console.error('商品圖片載入失敗：', product.name);
+          img.remove();
+          const errorBox = document.createElement('div');
+          errorBox.className = 'image-error';
+          errorBox.textContent = '圖片無法載入';
+          media.appendChild(errorBox);
+        };
 
         media.appendChild(img);
 
