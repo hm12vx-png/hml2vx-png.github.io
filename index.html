@@ -358,23 +358,24 @@ button{
 
   overflow:hidden;
 
-  padding:0;
+  padding:14px;
 
   width:100%;
 
-  height:210px;
-  min-height:210px;
+  height:280px;
+  min-height:280px;
+  max-height:280px;
 }
 
 .media img{
   display:block;
 
   width:100%;
-  max-width:none;
+  max-width:100%;
+  height:100%;
+  max-height:100%;
 
-  height:210px;
-
-  object-fit:cover;
+  object-fit:contain;
   object-position:center;
 
   background:transparent;
@@ -950,7 +951,7 @@ dialog::backdrop{
 
   overflow:hidden;
 
-  background:transparent;
+  background:#111;
 }
 
 .preview img{
@@ -1057,12 +1058,14 @@ dialog::backdrop{
   }
 
   .media{
-    height:190px;
-    min-height:190px;
+    height:280px;
+    min-height:280px;
+    max-height:280px;
   }
 
   .media img{
-    height:160px;
+    height:100%;
+    max-height:100%;
   }
 
 }
@@ -1079,7 +1082,7 @@ dialog::backdrop{
 }
 
 /* =========================================================
-   顏色 / 庫存變體
+   款式 / 顏色 / 庫存變體
 ========================================================= */
 .variant-list{
   display:grid;
@@ -1087,7 +1090,7 @@ dialog::backdrop{
 }
 .variant-row{
   display:grid;
-  grid-template-columns:1fr 1fr 100px auto;
+  grid-template-columns:1fr 100px auto;
   gap:8px;
   align-items:center;
 }
@@ -1131,44 +1134,47 @@ dialog::backdrop{
 }
 
 
-/* === 商品圖片：固定尺寸、完整呈現、不留背景 === */
-.product-image,
-.product-card .product-image,
-.product-card img,
-.product-item img {
-  width: 100% !important;
-  height: 280px !important;
-  min-height: 280px !important;
-  max-height: 280px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  overflow: hidden !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
+
+/* === 商品圖片：固定尺寸／一致性／不足處保留背景 === */
+.media{
+  width:100% !important;
+  height:280px !important;
+  min-height:280px !important;
+  max-height:280px !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:hidden !important;
+  background:#111 !important;
 }
 
-.product-card .product-image img,
-.product-card img,
-.product-item img {
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center !important;
-  display: block !important;
-  background: transparent !important;
+.media img{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  max-height:none !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:#111 !important;
 }
 
-/* 防止圖片本身被圓角/背景效果破壞完整呈現 */
-.product-card .product-image img,
-.product-card img {
-  border-radius: 0 !important;
+/* 編輯視窗預覽也固定一致 */
+.preview{
+  width:100% !important;
+  height:280px !important;
+  aspect-ratio:auto !important;
+  overflow:hidden !important;
+  background:#111 !important;
+}
+
+.preview img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:#111 !important;
 }
 
 </style>
@@ -1372,7 +1378,7 @@ dialog::backdrop{
     </label>
 
     <select id="productSort">
-      <option value="priceDesc">金額：高到低</option>
+      <option value="priceDesc" selected>金額：高到低</option>
       <option value="priceAsc">金額：低到高</option>
     </select>
 
@@ -1694,7 +1700,7 @@ dialog::backdrop{
         </div>
 
         <div class="variant-summary">
-          同一商品可以建立多個顏色與庫存，總庫存會自動加總。
+          同一商品可以建立多個顏色，總庫存會自動加總。
         </div>
       </div>
 
@@ -2042,7 +2048,7 @@ function compressImage(file){
 
           let output =
             canvas.toDataURL(
-              "image/webp",
+              "image/jpeg",
               quality
             );
 
@@ -2057,7 +2063,7 @@ function compressImage(file){
 
             output =
               canvas.toDataURL(
-                "image/webp",
+                "image/jpeg",
                 quality
               );
 
@@ -2341,7 +2347,7 @@ function renderProducts(){
 
 
       /* =================================================
-         顏色 / 總庫存
+         款式 / 顏色 / 總庫存
       ================================================= */
 
       const stock =
@@ -2385,7 +2391,7 @@ function renderProducts(){
 
       }
 
-      if(variants.some(variant => variant.color)){
+      if(variants.some(variant => variant.style || variant.color)){
 
         const summary =
           document.createElement("div");
@@ -2394,9 +2400,10 @@ function renderProducts(){
 
         summary.textContent =
           variants
-            .filter(variant => variant.color)
+            .filter(variant => variant.style || variant.color)
             .map(variant => {
               const parts = [];
+              if(variant.style) parts.push(`款式：${variant.style}`);
               if(variant.color) parts.push(`顏色：${variant.color}`);
               parts.push(`庫存：${Math.max(0, Number(variant.stock) || 0)}`);
               return parts.join("／");
@@ -3017,7 +3024,7 @@ function createVariantRow(variant = {}){
     ensureOneVariantRow();
   };
 
-  [colorInput, stockInput].forEach(input => {
+  [styleInput, colorInput, stockInput].forEach(input => {
     input.addEventListener("input", updateVariantTotal);
   });
 
@@ -3062,7 +3069,8 @@ function getVariantsFromForm(){
         row.querySelector(".variant-stock").value,
         10
       ) || 0)
-    }));
+    }))
+    .filter(variant => variant.color || variant.stock > 0);
 }
 
 function setVariantsInForm(variants){
@@ -3072,7 +3080,10 @@ function setVariantsInForm(variants){
 
   const source =
     Array.isArray(variants) && variants.length
-      ? variants
+      ? variants.map(variant => ({
+          color: variant?.color || "",
+          stock: Number(variant?.stock ?? 0) || 0
+        }))
       : [{ color: "", stock: 0 }];
 
   source.forEach(variant => {
