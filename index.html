@@ -2438,11 +2438,27 @@ function renderProducts(){
         img.fetchPriority =
           "low";
 
-        /* 圖片已在上傳／儲存時完成標準化，列表載入只直接讀取。 */
-        img.src = product.image;
-        img.dataset.normalized = '1';
+        img.dataset.original =
+          product.image;
 
-        media.appendChild(img);
+        /* 已標準化的 data:image 直接顯示；舊圖片先保持透明，
+           等進入視窗附近才背景自動去背／裁切／縮放。 */
+        if(String(product.image).startsWith('data:image/')){
+          img.src = product.image;
+          img.dataset.normalized = '1';
+        }else{
+          img.className = 'image-pending';
+          media.classList.add('image-loading');
+          img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+        }
+
+        media.appendChild(
+          img
+        );
+
+        if(!img.dataset.normalized && productImageObserver){
+          productImageObserver.observe(img);
+        }
 
       }
       else{
