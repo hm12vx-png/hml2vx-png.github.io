@@ -348,7 +348,7 @@ button{
 ========================================================= */
 
 .media{
-  background:#222;
+  background:transparent;
 
   display:flex;
   justify-content:center;
@@ -358,7 +358,7 @@ button{
 
   overflow:hidden;
 
-  padding:14px;
+  padding:0;
 
   width:100%;
 
@@ -370,11 +370,12 @@ button{
   display:block;
 
   width:100%;
-  max-width:240px;
+  max-width:none;
 
-  height:180px;
+  height:210px;
 
-  object-fit:contain;
+  object-fit:cover;
+  object-position:center;
 
   background:transparent;
 }
@@ -1330,8 +1331,8 @@ dialog::backdrop{
     </label>
 
     <select id="productSort">
-      <option value="priceAsc">金額：低到高</option>
       <option value="priceDesc">金額：高到低</option>
+      <option value="priceAsc">金額：低到高</option>
     </select>
 
   </div>
@@ -2125,7 +2126,7 @@ function renderProducts(){
 
         const sortMode =
           $("#productSort")?.value ||
-          "priceAsc";
+          "priceDesc";
 
         return sortMode === "priceDesc"
           ? priceB - priceA
