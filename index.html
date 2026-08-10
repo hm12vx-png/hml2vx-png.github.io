@@ -1851,6 +1851,12 @@ let currentUser =
 let editingImage =
   "";
 
+let pendingImageData =
+  "";
+
+let pendingImagePromise =
+  null;
+
 
 /* =========================================================
    Toast
@@ -3220,6 +3226,12 @@ function openProductDialog(
     product?.image ||
     "";
 
+  pendingImageData =
+    "";
+
+  pendingImagePromise =
+    null;
+
 
   const preview =
     $("#imagePreview");
@@ -3275,43 +3287,49 @@ $("#productImage")
       event.target
         .files?.[0];
 
-
     if(!file){
-
       return;
-
     }
 
+    const preview =
+      $("#imagePreview");
+
+    /* 先立即顯示原始圖片，不等待圖片處理。 */
+    const originalUrl =
+      URL.createObjectURL(file);
+
+    preview.innerHTML =
+      "";
+
+    const image =
+      document.createElement(
+        "img"
+      );
+
+    image.src =
+      originalUrl;
+
+    image.alt =
+      "商品原始圖片";
+
+    preview.appendChild(
+      image
+    );
+
+    /* 背景執行固定尺寸處理；完成後才替換預覽。 */
+    pendingImagePromise =
+      compressImage(file);
 
     try{
 
       const imageData =
-        await compressImage(
-          file
-        );
+        await pendingImagePromise;
 
-
-      const preview =
-        $("#imagePreview");
-
-
-      preview.innerHTML =
-        "";
-
-
-      const image =
-        document.createElement(
-          "img"
-        );
-
+      pendingImageData =
+        imageData;
 
       image.src =
         imageData;
-
-
-      preview.appendChild(
-        image
-      );
 
     }
     catch(error){
@@ -3320,9 +3338,17 @@ $("#productImage")
         error
       );
 
-
+      /* 處理失敗仍保留原始圖片。 */
       toast(
-        "圖片處理失敗"
+        "圖片標準化失敗，已保留原始圖片"
+      );
+
+    }
+    finally{
+
+      setTimeout(
+        () => URL.revokeObjectURL(originalUrl),
+        0
       );
 
     }
@@ -3374,10 +3400,18 @@ $("#productForm")
 
       if(file){
 
+        if(pendingImagePromise){
+          await pendingImagePromise;
+        }
+
         image =
-          await compressImage(
-            file
-          );
+          pendingImageData;
+
+        if(!image){
+          image =
+            await compressImage(file);
+          pendingImageData = image;
+        }
 
       }
 
