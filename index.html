@@ -88,6 +88,13 @@ button{
   font-size:20px;
 }
 
+.brand-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
 .brand small{
   color:#aaa;
 }
@@ -269,6 +276,27 @@ button{
   margin:0;
   font-size:24px;
 }
+
+.sort-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.sort-box label{
+  color:#888;
+  font-size:13px;
+}
+
+.sort-box select{
+  background:#101014;
+  color:#fff;
+  border:1px solid #3b3b42;
+  border-radius:9px;
+  padding:8px 10px;
+  outline:none;
+}
+
 
 .count{
   color:#888;
@@ -547,6 +575,11 @@ button{
 .discord-admin-link:hover{
   transform:translateY(-1px);
   filter:brightness(1.08);
+}
+
+.top-contact-link{
+  padding:6px 10px;
+  font-size:12px;
 }
 
 @media(max-width:700px){
@@ -1110,9 +1143,20 @@ dialog::backdrop{
         O² M★STAR交易區
       </h1>
 
-      <small>
-        販售・收購・交流
-      </small>
+      <div class="brand-meta">
+        <small>
+          販售・收購・交流
+        </small>
+
+        <a
+          class="discord-admin-link top-contact-link"
+          href="https://discord.com/users/621734178228273155"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          聯絡管理員
+        </a>
+      </div>
 
     </div>
 
@@ -1268,6 +1312,19 @@ dialog::backdrop{
 
   </div>
 
+  <div class="sort-box">
+
+    <label for="productSort">
+      金額排序
+    </label>
+
+    <select id="productSort">
+      <option value="priceAsc">金額：低到高</option>
+      <option value="priceDesc">金額：高到低</option>
+    </select>
+
+  </div>
+
 </section>
 
 
@@ -1299,14 +1356,6 @@ dialog::backdrop{
       留言板
     </h3>
 
-    <a
-      class="discord-admin-link"
-      href="https://discord.com/users/621734178228273155"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      聯絡管理員 Discord
-    </a>
 
   </div>
 
@@ -2004,6 +2053,22 @@ function compressImage(file){
    顯示商品
 ========================================================= */
 
+function getProductPrice(product){
+
+  const value =
+    String(product?.price ?? "")
+      .replace(/[^0-9.]/g, "");
+
+  const price =
+    Number(value);
+
+  return Number.isFinite(price)
+    ? price
+    : 0;
+
+}
+
+
 function renderProducts(){
 
   const keyword =
@@ -2035,6 +2100,25 @@ function renderProducts(){
           categoryMatch &&
           nameMatch
         );
+
+      }
+    )
+    .sort(
+      (a, b) => {
+
+        const priceA =
+          getProductPrice(a);
+
+        const priceB =
+          getProductPrice(b);
+
+        const sortMode =
+          $("#productSort")?.value ||
+          "priceAsc";
+
+        return sortMode === "priceDesc"
+          ? priceB - priceA
+          : priceA - priceB;
 
       }
     );
@@ -3623,6 +3707,21 @@ $$("[data-close]")
         }
 
       };
+
+  }
+);
+
+
+/* =========================================================
+   商品金額排序
+========================================================= */
+
+$("#productSort")
+.addEventListener(
+  "change",
+  () => {
+
+    renderProducts();
 
   }
 );
