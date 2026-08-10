@@ -1037,6 +1037,54 @@ dialog::backdrop{
   }
 
 }
+
+/* =========================================================
+   款式 / 顏色 / 庫存變體
+========================================================= */
+.variant-list{
+  display:grid;
+  gap:8px;
+}
+.variant-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 100px auto;
+  gap:8px;
+  align-items:center;
+}
+.variant-row input{
+  min-width:0;
+}
+.variant-total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 12px;
+  background:#101014;
+  border:1px solid #3b3b42;
+  border-radius:10px;
+  font-weight:800;
+}
+.variant-total strong{
+  color:var(--success);
+}
+.variant-summary{
+  margin-top:8px;
+  color:#aaa;
+  font-size:12px;
+  line-height:1.5;
+}
+@media(max-width:600px){
+  .variant-row{
+    grid-template-columns:1fr 1fr;
+  }
+  .variant-row .variant-stock{
+    width:100%;
+  }
+  .variant-row .variant-remove{
+    width:100%;
+  }
+}
+
 </style>
 </head>
 
@@ -1520,23 +1568,33 @@ dialog::backdrop{
       </label>
 
 
-      <!-- 庫存 -->
+      <!-- 款式 / 顏色 / 庫存 -->
 
-      <label>
+      <div>
+        <label>
+          款式／顏色／庫存
+        </label>
 
-        庫存數量
+        <div id="variantList" class="variant-list"></div>
 
-        <input
-          id="productStock"
-          type="number"
-          min="0"
-          step="1"
-          required
-          value="1"
-          placeholder="例如：10"
+        <button
+          id="addVariantBtn"
+          class="btn small"
+          type="button"
+          style="margin-top:8px"
         >
+          ＋ 新增款式／顏色
+        </button>
 
-      </label>
+        <div class="variant-total" style="margin-top:8px">
+          <span>總庫存數量</span>
+          <strong id="variantTotal">0</strong>
+        </div>
+
+        <div class="variant-summary">
+          同一商品可以建立多個款式與顏色，總庫存會自動加總。
+        </div>
+      </div>
 
 
       <!-- 圖片 -->
@@ -2146,7 +2204,7 @@ function renderProducts(){
 
 
       /* =================================================
-         庫存
+         款式 / 顏色 / 總庫存
       ================================================= */
 
       const stock =
@@ -2154,25 +2212,30 @@ function renderProducts(){
           "div"
         );
 
-
       stock.className =
         "stock";
 
+      const variants =
+        Array.isArray(product.variants) && product.variants.length
+          ? product.variants
+          : [{
+              style: "",
+              color: "",
+              stock: Number(product.stock ?? 0)
+            }];
 
-      const stockNumber =
-        Number(
-          product.stock ?? 0
+      const totalStock =
+        variants.reduce(
+          (sum, variant) =>
+            sum + Math.max(0, Number(variant.stock) || 0),
+          0
         );
 
-
-      if(
-        stockNumber <= 0
-      ){
+      if(totalStock <= 0){
 
         stock.classList.add(
           "soldout"
         );
-
 
         stock.textContent =
           "售罄";
@@ -2181,8 +2244,30 @@ function renderProducts(){
       else{
 
         stock.textContent =
-          `庫存：${stockNumber}`;
+          `總庫存：${totalStock}`;
 
+      }
+
+      if(variants.some(variant => variant.style || variant.color)){
+
+        const summary =
+          document.createElement("div");
+
+        summary.className = "variant-summary";
+
+        summary.textContent =
+          variants
+            .filter(variant => variant.style || variant.color)
+            .map(variant => {
+              const parts = [];
+              if(variant.style) parts.push(`款式：${variant.style}`);
+              if(variant.color) parts.push(`顏色：${variant.color}`);
+              parts.push(`庫存：${Math.max(0, Number(variant.stock) || 0)}`);
+              return parts.join("／");
+            })
+            .join("　｜　");
+
+        body.appendChild(summary);
       }
 
 
@@ -2767,6 +2852,113 @@ function renderMessages(){
    開啟商品新增 / 編輯視窗
 ========================================================= */
 
+function createVariantRow(variant = {}){
+
+  const row = document.createElement("div");
+  row.className = "variant-row";
+
+  const styleInput = document.createElement("input");
+  styleInput.className = "variant-style";
+  styleInput.maxLength = 50;
+  styleInput.placeholder = "款式，例如：標準版";
+  styleInput.value = variant.style || "";
+
+  const colorInput = document.createElement("input");
+  colorInput.className = "variant-color";
+  colorInput.maxLength = 30;
+  colorInput.placeholder = "顏色，例如：黑色";
+  colorInput.value = variant.color || "";
+
+  const stockInput = document.createElement("input");
+  stockInput.className = "variant-stock";
+  stockInput.type = "number";
+  stockInput.min = "0";
+  stockInput.step = "1";
+  stockInput.placeholder = "庫存";
+  stockInput.value = Number(variant.stock ?? 0);
+
+  const removeButton = document.createElement("button");
+  removeButton.className = "btn small danger variant-remove";
+  removeButton.type = "button";
+  removeButton.textContent = "刪除";
+  removeButton.onclick = () => {
+    row.remove();
+    updateVariantTotal();
+    ensureOneVariantRow();
+  };
+
+  [styleInput, colorInput, stockInput].forEach(input => {
+    input.addEventListener("input", updateVariantTotal);
+  });
+
+  row.append(
+    styleInput,
+    colorInput,
+    stockInput,
+    removeButton
+  );
+
+  return row;
+}
+
+function updateVariantTotal(){
+
+  const total = $$(".variant-stock")
+    .reduce(
+      (sum, input) =>
+        sum + Math.max(0, parseInt(input.value, 10) || 0),
+      0
+    );
+
+  $("#variantTotal").textContent = total;
+}
+
+function ensureOneVariantRow(){
+
+  const list = $("#variantList");
+
+  if(!list.children.length){
+    list.appendChild(createVariantRow());
+  }
+
+  updateVariantTotal();
+}
+
+function getVariantsFromForm(){
+
+  return $$("#variantList .variant-row")
+    .map(row => ({
+      style: row.querySelector(".variant-style").value.trim(),
+      color: row.querySelector(".variant-color").value.trim(),
+      stock: Math.max(0, parseInt(
+        row.querySelector(".variant-stock").value,
+        10
+      ) || 0)
+    }));
+}
+
+function setVariantsInForm(variants){
+
+  const list = $("#variantList");
+  list.innerHTML = "";
+
+  const source =
+    Array.isArray(variants) && variants.length
+      ? variants
+      : [{ style: "", color: "", stock: 0 }];
+
+  source.forEach(variant => {
+    list.appendChild(createVariantRow(variant));
+  });
+
+  updateVariantTotal();
+}
+
+$("#addVariantBtn").addEventListener("click", () => {
+  $("#variantList").appendChild(createVariantRow());
+  updateVariantTotal();
+});
+
 function openProductDialog(
   product = null
 ){
@@ -2806,10 +2998,15 @@ function openProductDialog(
       "";
 
 
-  $("#productStock")
-    .value =
-      product?.stock ??
-      0;
+  setVariantsInForm(
+    product?.variants?.length
+      ? product.variants
+      : [{
+          style: "",
+          color: "",
+          stock: Number(product?.stock ?? 0)
+        }]
+  );
 
 
   editingImage =
@@ -2978,22 +3175,15 @@ $("#productForm")
       }
 
 
-      let stock =
-        parseInt(
-          $("#productStock")
-            .value,
-          10
+      const variants =
+        getVariantsFromForm();
+
+      const stock =
+        variants.reduce(
+          (sum, variant) =>
+            sum + variant.stock,
+          0
         );
-
-
-      if(
-        Number.isNaN(stock) ||
-        stock < 0
-      ){
-
-        stock = 0;
-
-      }
 
 
       const payload = {
@@ -3014,6 +3204,9 @@ $("#productForm")
 
         stock:
           stock,
+
+        variants:
+          variants,
 
         image:
           image,
