@@ -1298,30 +1298,37 @@ dialog::backdrop{
 
 .variant-summary-row{
   display:grid;
-  grid-template-columns:50px minmax(0,1fr) 50px 32px;
-  align-items:center;
+  grid-template-columns:auto minmax(0,1fr) auto auto;
+  align-items:start;
   width:100%;
   min-height:20px;
   box-sizing:border-box;
+  text-align:left;
 }
 
 .variant-summary-label{
   white-space:nowrap;
+  text-align:left;
 }
 
 .variant-summary-color{
   min-width:0;
+  overflow:visible;
+  white-space:normal;
   overflow-wrap:anywhere;
   word-break:break-word;
+  text-align:left;
+  padding-left:4px;
 }
 
 .variant-summary-stock-label{
   white-space:nowrap;
-  padding-left:4px;
+  padding-left:10px;
+  text-align:left;
 }
 
 .variant-summary-stock{
-  text-align:right;
+  text-align:left;
   white-space:nowrap;
   padding-left:4px;
 }
