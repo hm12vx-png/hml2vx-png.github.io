@@ -413,6 +413,16 @@ button{
   min-width:0;
 }
 
+/* 顏色／庫存完整顯示：不裁切、不省略 */
+.variant-summary{
+  width:100%;
+  box-sizing:border-box;
+  white-space:pre-line;
+  overflow:visible;
+  text-overflow:clip;
+  flex:none;
+}
+
 
 /* =========================================================
    商品分類
@@ -1196,15 +1206,18 @@ dialog::backdrop{
   color:var(--success);
 }
 .variant-summary{
-  min-height:40px;
-  max-height:40px;
-  overflow:hidden;
-  line-height:20px;
-  word-break:break-word;
+  width:100%;
+  min-height:0;
+  max-height:none;
+  height:auto;
+  overflow:visible;
   margin-top:8px;
   color:#aaa;
   font-size:12px;
-  line-height:1.5;
+  line-height:1.6;
+  white-space:pre-line;
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
 @media(max-width:600px){
   .variant-row{
@@ -2577,9 +2590,9 @@ function renderProducts(){
               const parts = [];
               if(variant.color) parts.push(`顏色：${variant.color}`);
               parts.push(`庫存：${Math.max(0, Number(variant.stock) || 0)}`);
-              return parts.join("／");
+              return parts.join(" ／ ");
             })
-            .join("　｜　");
+            .join("\n");
 
         body.appendChild(summary);
       }
