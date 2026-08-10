@@ -379,6 +379,8 @@ button{
 
 .media img{
   /* 所有商品使用完全一致的 4:3 顯示畫布 */
+  position:relative;
+  z-index:1;
   width:240px !important;
   height:180px !important;
   min-width:240px;
@@ -1932,16 +1934,16 @@ function formatTime(timestamp){
 
 /* =========================================================
    商品圖片標準化
-   - 儲存圖片固定 240 × 180（4:3），與商品卡片顯示尺寸完全一致
+   - 顯示畫布固定 900 × 675（4:3）
    - 自動偵測圖片四周背景，裁掉多餘留白
    - 商品主體統一縮放到相近視覺尺寸
-   - 舊商品不在前台重新標準化；圖片只在上傳／儲存時處理一次
+   - 舊商品也會在前台顯示時自動標準化
 ========================================================= */
 
-const NORMAL_IMAGE_WIDTH = 240;
-const NORMAL_IMAGE_HEIGHT = 180;
-const NORMAL_OBJECT_WIDTH = 192;
-const NORMAL_OBJECT_HEIGHT = 144;
+const NORMAL_IMAGE_WIDTH = 600;
+const NORMAL_IMAGE_HEIGHT = 450;
+const NORMAL_OBJECT_WIDTH = 480;
+const NORMAL_OBJECT_HEIGHT = 360;
 
 const PRODUCT_PERFORMANCE = {
   lazyImages: true,
@@ -2138,7 +2140,7 @@ function normalizeImageDataURL(src){
     ctx.drawImage(subject, 0, 0, subject.width, subject.height,
       dx, dy, drawWidth, drawHeight);
 
-    /* WebP 固定輸出 240×180，與前台顯示尺寸一致；不支援時才退回 PNG */
+    /* WebP 保留透明背景，同時大幅降低檔案體積；不支援時才退回 PNG */
     try{
       const webp = output.toDataURL('image/webp', 0.82);
       if(webp.startsWith('data:image/webp')) return webp;
@@ -2170,7 +2172,7 @@ function compressImage(file){
    - 不在開啟網頁時重新去背
    - 不在開啟網頁時重新裁切
    - 不在開啟網頁時重新縮放
-   - 圖片只在「上傳／儲存商品」時標準化一次；網站開啟時絕不再處理
+   - 圖片只在「上傳／儲存商品」時標準化一次
 ========================================================= */
 
 /* =========================================================
