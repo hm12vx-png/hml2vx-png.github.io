@@ -952,30 +952,62 @@ dialog::backdrop{
 
 .preview{
   width:100%;
-
-  aspect-ratio:4/3;
-
+  min-height:170px;
+  max-height:220px;
   border:1px dashed #444;
-
   border-radius:12px;
-
+  padding:10px;
   display:grid;
-
-  place-items:center;
-
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:10px;
+  align-content:start;
   color:#777;
-
-  overflow:hidden;
-
+  overflow:auto;
   background:#111;
 }
 
-.preview img{
+.preview-item{
+  position:relative;
+  aspect-ratio:4/3;
+  min-width:0;
+  border:1px solid #333;
+  border-radius:8px;
+  overflow:hidden;
+  background:#17171b;
+}
+
+.preview-item img{
   width:100%;
-
   height:100%;
-
   object-fit:contain;
+  display:block;
+}
+
+.preview-remove{
+  position:absolute;
+  top:4px;
+  right:4px;
+  width:24px;
+  height:24px;
+  border:0;
+  border-radius:50%;
+  background:rgba(0,0,0,.75);
+  color:#fff;
+  cursor:pointer;
+  font-size:16px;
+  line-height:24px;
+  padding:0;
+}
+
+.preview-index{
+  position:absolute;
+  left:5px;
+  bottom:5px;
+  padding:2px 6px;
+  border-radius:10px;
+  background:rgba(0,0,0,.65);
+  color:#fff;
+  font-size:11px;
 }
 
 .image-error{
@@ -1698,7 +1730,12 @@ dialog::backdrop{
           id="productImage"
           type="file"
           accept="image/*"
+          multiple
         >
+
+        <div class="variant-summary">
+          可一次選擇多張商品圖片，最多 6 張；第一張會作為商品主圖。
+        </div>
 
       </label>
 
@@ -1858,14 +1895,12 @@ let currentCategory =
 let currentUser =
   null;
 
-let editingImage =
-  "";
+let editingImages = [];
+let pendingImageData = [];
+let pendingImagePromises = [];
+let selectedImageItems = [];
 
-let pendingImageData =
-  "";
-
-let pendingImagePromise =
-  null;
+/* 舊資料仍支援 image 單張格式。 */
 
 
 /* =========================================================
@@ -2328,32 +2363,21 @@ function renderProducts(){
         "media";
 
 
-      if(product.image){
+      const productImages = Array.isArray(product.images)
+        ? product.images.filter(Boolean)
+        : (product.image ? [product.image] : []);
 
-        const img =
-          document.createElement(
-            "img"
-          );
+      if(productImages.length){
 
+        const img = document.createElement("img");
 
-        img.alt =
-          product.name ||
-          "商品圖片";
-
-        img.loading =
-          "lazy";
-
-        img.decoding =
-          "async";
-
+        img.alt = product.name || "商品圖片";
+        img.loading = "lazy";
+        img.decoding = "async";
         img.width = 240;
         img.height = 180;
-
-        img.fetchPriority =
-          "low";
-
-        /* 強制固定顯示尺寸；直接使用資料庫圖片。 */
-        img.src = product.image;
+        img.fetchPriority = "low";
+        img.src = productImages[0];
 
         img.onerror = () => {
           console.error('商品圖片載入失敗：', product.name);
@@ -2366,12 +2390,29 @@ function renderProducts(){
 
         media.appendChild(img);
 
+        if(productImages.length > 1){
+          const count = document.createElement("span");
+          count.style.cssText = "position:absolute;right:8px;bottom:8px;z-index:3;padding:4px 8px;border-radius:12px;background:rgba(0,0,0,.72);color:#fff;font-size:12px";
+          count.textContent = `📷 ${productImages.length} 張`;
+          media.appendChild(count);
+        }
+
+      }else{
+        media.textContent = "無商品圖片";
       }
-      else{
 
-        media.textContent =
-          "無商品圖片";
 
+      if(productImages.length > 1){
+        let imageIndex = 0;
+        media.style.cursor = "pointer";
+        media.title = "點擊切換商品圖片";
+        media.addEventListener("click", () => {
+          imageIndex = (imageIndex + 1) % productImages.length;
+          const mainImg = media.querySelector("img");
+          if(mainImg){
+            mainImg.src = productImages[imageIndex];
+          }
+        });
       }
 
 
@@ -3242,51 +3283,19 @@ function openProductDialog(
   );
 
 
-  editingImage =
-    product?.image ||
-    "";
+  editingImages = Array.isArray(product?.images)
+    ? product.images.filter(Boolean)
+    : (product?.image ? [product.image] : []);
 
-  pendingImageData =
-    "";
+  pendingImageData = [];
+  pendingImagePromises = [];
+  selectedImageItems = editingImages.map(src => ({
+    src,
+    existing: true
+  }));
 
-  pendingImagePromise =
-    null;
-
-
-  const preview =
-    $("#imagePreview");
-
-
-  preview.innerHTML =
-    "";
-
-
-  if(
-    editingImage
-  ){
-
-    const image =
-      document.createElement(
-        "img"
-      );
-
-
-    image.src =
-      editingImage;
-
-
-    preview.appendChild(
-      image
-    );
-
-  }
-  else{
-
-    preview.textContent =
-      "尚未選擇圖片";
-
-  }
-
+  $("#productImage").value = "";
+  renderImagePreview();
 
   $("#productDialog")
     .showModal();
@@ -3303,93 +3312,105 @@ $("#productImage")
   "change",
   async event => {
 
-    const file =
-      event.target
-        .files?.[0];
+    const files = Array.from(event.target.files || []);
 
-    if(!file){
+    if(!files.length){
       return;
     }
 
-    const preview =
-      $("#imagePreview");
+    const remaining = 6 - selectedImageItems.length;
 
-    /* =====================================================
-       原始圖片預覽
-       - 選檔後立即顯示真正的原始圖片
-       - 壓縮／標準化在背景執行
-       - 不再用壓縮後圖片覆蓋原始預覽
-    ===================================================== */
-    const originalUrl =
-      URL.createObjectURL(file);
-
-    preview.innerHTML =
-      "";
-
-    const image =
-      document.createElement(
-        "img"
-      );
-
-    image.src =
-      originalUrl;
-
-    image.alt =
-      "商品原始圖片";
-
-    image.title =
-      "原始圖片預覽";
-
-    image.onload = () => {
-      URL.revokeObjectURL(originalUrl);
-    };
-
-    image.onerror = () => {
-      console.error("原始圖片無法載入", file);
-      preview.innerHTML =
-        "<div style=\"padding:20px;text-align:center;color:#aaa\">原始圖片無法預覽<br>請重新選擇 JPG / PNG 圖片</div>";
-      URL.revokeObjectURL(originalUrl);
-    };
-
-    preview.appendChild(
-      image
-    );
-
-    /* 背景執行圖片標準化，但不覆蓋原始圖片。 */
-    pendingImageData =
-      "";
-
-    pendingImagePromise =
-      compressImage(file);
-
-    try{
-
-      const imageData =
-        await pendingImagePromise;
-
-      pendingImageData =
-        imageData;
-
-    }
-    catch(error){
-
-      console.error(
-        "圖片標準化失敗：",
-        error
-      );
-
-      pendingImageData =
-        "";
-
-      toast(
-        "圖片標準化失敗，將使用原始圖片"
-      );
-
+    if(remaining <= 0){
+      toast("最多只能使用 6 張商品圖片");
+      event.target.value = "";
+      return;
     }
 
+    const filesToAdd = files.slice(0, remaining);
+
+    if(files.length > remaining){
+      toast(`最多 6 張圖片，已加入前 ${remaining} 張`);
+    }
+
+    const newItems = filesToAdd.map(file => ({
+      file,
+      src: URL.createObjectURL(file),
+      originalSrc: URL.createObjectURL(file),
+      processing: true,
+      existing: false
+    }));
+
+    selectedImageItems.push(...newItems);
+    renderImagePreview();
+
+    /* 背景處理所有新圖片，不影響原始預覽。 */
+    await Promise.all(newItems.map(async item => {
+      try{
+        const normalized = await compressImage(item.file);
+        item.processed = normalized;
+      }catch(error){
+        console.warn("圖片標準化失敗，儲存時改用原始圖片：", error);
+        item.processed = null;
+      }finally{
+        item.processing = false;
+      }
+    }));
+
+    renderImagePreview();
+    event.target.value = "";
   }
 );
 
+
+function renderImagePreview(){
+  const preview = $("#imagePreview");
+  preview.innerHTML = "";
+
+  if(!selectedImageItems.length){
+    preview.textContent = "尚未選擇圖片";
+    return;
+  }
+
+  selectedImageItems.forEach((item, index) => {
+    const box = document.createElement("div");
+    box.className = "preview-item";
+
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = `商品圖片 ${index + 1}`;
+    img.loading = "lazy";
+
+    img.onerror = () => {
+      box.innerHTML = `<div style="display:grid;place-items:center;width:100%;height:100%;color:#888;font-size:12px;text-align:center">圖片無法預覽</div>`;
+    };
+
+    box.appendChild(img);
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "preview-remove";
+    remove.textContent = "×";
+    remove.title = "移除這張圖片";
+    remove.addEventListener("click", () => {
+      const removed = selectedImageItems.splice(index, 1)[0];
+      if(removed?.originalSrc){
+        URL.revokeObjectURL(removed.originalSrc);
+      }
+      if(removed?.src && removed.src.startsWith("blob:")){
+        URL.revokeObjectURL(removed.src);
+      }
+      renderImagePreview();
+    });
+    box.appendChild(remove);
+
+    const label = document.createElement("span");
+    label.className = "preview-index";
+    label.textContent = item.processing ? `${index + 1} 處理中…` : `${index + 1}${index === 0 ? " 主圖" : ""}`;
+    box.appendChild(label);
+
+    preview.appendChild(box);
+  });
+}
 
 /* =========================================================
    儲存商品
@@ -3421,54 +3442,34 @@ $("#productForm")
         .value;
 
 
-    const file =
-      $("#productImage")
-        .files?.[0];
-
-
     try{
 
-      let image =
-        editingImage;
+      /* 等待所有新圖片處理完成，再建立 images 陣列。 */
+      const images = [];
 
-
-      if(file){
-
-        if(pendingImagePromise){
-          await pendingImagePromise;
-        }
-
-        image =
-          pendingImageData;
-
-        if(!image){
+      for(const item of selectedImageItems){
+        if(item.processing && item.file){
           try{
-            image =
-              await compressImage(file);
-            pendingImageData =
-              image;
+            item.processed = await compressImage(item.file);
+          }catch(error){
+            console.warn("圖片標準化失敗，改用原始圖片：", error);
           }
-          catch(error){
-            console.warn(
-              "圖片標準化失敗，改用原始圖片：",
-              error
-            );
-
-            image =
-              await new Promise((resolve,reject)=>{
-                const reader =
-                  new FileReader();
-                reader.onload = () =>
-                  resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-              });
-
-            pendingImageData =
-              image;
-          }
+          item.processing = false;
         }
 
+        if(item.processed){
+          images.push(item.processed);
+        }else if(item.file){
+          const original = await new Promise((resolve,reject)=>{
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(item.file);
+          });
+          images.push(original);
+        }else if(item.src){
+          images.push(item.src);
+        }
       }
 
 
@@ -3505,8 +3506,11 @@ $("#productForm")
         variants:
           variants,
 
-        image:
-          image,
+        /* 新格式：多張圖片 */
+        images: images,
+
+        /* 舊格式相容：第一張仍放在 image */
+        image: images[0] || "",
 
         updatedAt:
           serverTimestamp()
