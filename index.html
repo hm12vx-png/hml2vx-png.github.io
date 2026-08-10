@@ -1265,8 +1265,23 @@ dialog::backdrop{
   gap:8px;
   align-items:center;
 }
-.variant-row input{
+.variant-row input,
+.variant-row select{
   min-width:0;
+  width:100%;
+}
+
+.variant-row select{
+  background:#101014;
+  color:#fff;
+  border:1px solid #3b3b42;
+  border-radius:10px;
+  padding:11px 12px;
+  outline:none;
+}
+
+.variant-row select:focus{
+  border-color:#666;
 }
 .variant-total{
   display:flex;
@@ -1843,11 +1858,11 @@ dialog::backdrop{
       </label>
 
 
-      <!-- 款式 / 顏色 / 庫存 -->
+      <!-- 顏色 / 庫存 -->
 
       <div>
         <label>
-          顏色／庫存
+          顏色／庫存（下拉選擇）
         </label>
 
         <div id="variantList" class="variant-list"></div>
@@ -3318,19 +3333,69 @@ function createVariantRow(variant = {}){
   const row = document.createElement("div");
   row.className = "variant-row";
 
-  const colorInput = document.createElement("input");
-  colorInput.className = "variant-color";
-  colorInput.maxLength = 30;
-  colorInput.placeholder = "顏色，例如：黑色";
-  colorInput.value = variant.color || "";
+  /* 顏色改為下拉選單；保留舊資料中未列出的顏色 */
+  const colorSelect = document.createElement("select");
+  colorSelect.className = "variant-color";
 
-  const stockInput = document.createElement("input");
-  stockInput.className = "variant-stock";
-  stockInput.type = "number";
-  stockInput.min = "0";
-  stockInput.step = "1";
-  stockInput.placeholder = "庫存";
-  stockInput.value = Number(variant.stock ?? 0);
+  const colorOptions = [
+    "黑色",
+    "白色",
+    "紅色",
+    "橙色",
+    "黃色",
+    "綠色",
+    "藍色",
+    "紫色",
+    "粉色",
+    "棕色",
+    "灰色",
+    "金色",
+    "銀色",
+    "透明",
+    "其他"
+  ];
+
+  const currentColor = String(variant.color || "").trim();
+
+  const colorPlaceholder = document.createElement("option");
+  colorPlaceholder.value = "";
+  colorPlaceholder.textContent = "請選擇顏色";
+  colorSelect.appendChild(colorPlaceholder);
+
+  colorOptions.forEach(color => {
+    const option = document.createElement("option");
+    option.value = color;
+    option.textContent = color;
+    colorSelect.appendChild(option);
+  });
+
+  /* 舊資料若有自訂顏色，仍然保留並放入下拉選單 */
+  if(currentColor && !colorOptions.includes(currentColor)){
+    const customOption = document.createElement("option");
+    customOption.value = currentColor;
+    customOption.textContent = currentColor;
+    colorSelect.appendChild(customOption);
+  }
+
+  colorSelect.value = currentColor;
+
+  /* 庫存改為下拉選單，0～99；超過 99 的舊資料會自動補入 */
+  const stockSelect = document.createElement("select");
+  stockSelect.className = "variant-stock";
+
+  const currentStock = Math.max(
+    0,
+    parseInt(variant.stock, 10) || 0
+  );
+
+  for(let i = 0; i <= Math.max(99, currentStock); i++){
+    const option = document.createElement("option");
+    option.value = String(i);
+    option.textContent = String(i);
+    stockSelect.appendChild(option);
+  }
+
+  stockSelect.value = String(currentStock);
 
   const removeButton = document.createElement("button");
   removeButton.className = "btn small danger variant-remove";
@@ -3342,13 +3407,11 @@ function createVariantRow(variant = {}){
     ensureOneVariantRow();
   };
 
-  [colorInput, stockInput].forEach(input => {
-    input.addEventListener("input", updateVariantTotal);
-  });
+  stockSelect.addEventListener("change", updateVariantTotal);
 
   row.append(
-    colorInput,
-    stockInput,
+    colorSelect,
+    stockSelect,
     removeButton
   );
 
