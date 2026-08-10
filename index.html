@@ -364,25 +364,19 @@ button{
 
   height:210px;
   min-height:210px;
-
-  position:relative;
 }
 
 .media img{
   display:block;
 
   width:100%;
+  max-width:240px;
+
   height:180px;
 
-  max-width:240px;
-  max-height:180px;
-
   object-fit:contain;
-  object-position:center center;
 
-  background:#111;
-
-  flex:0 0 auto;
+  background:transparent;
 }
 
 
@@ -955,7 +949,7 @@ dialog::backdrop{
 
   overflow:hidden;
 
-  background:#111;
+  background:transparent;
 }
 
 .preview img{
@@ -1064,16 +1058,10 @@ dialog::backdrop{
   .media{
     height:190px;
     min-height:190px;
-    padding:12px;
   }
 
   .media img{
-    width:100%;
     height:160px;
-    max-width:220px;
-    max-height:160px;
-    object-fit:contain;
-    object-position:center center;
   }
 
 }
@@ -1090,7 +1078,7 @@ dialog::backdrop{
 }
 
 /* =========================================================
-   顏色／庫存
+   顏色 / 庫存變體
 ========================================================= */
 .variant-list{
   display:grid;
@@ -1098,7 +1086,7 @@ dialog::backdrop{
 }
 .variant-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 100px auto;
+  grid-template-columns:1fr 1fr 100px auto;
   gap:8px;
   align-items:center;
 }
@@ -1127,6 +1115,7 @@ dialog::backdrop{
   margin-top:8px;
   color:#aaa;
   font-size:12px;
+  line-height:1.5;
 }
 @media(max-width:600px){
   .variant-row{
@@ -1341,8 +1330,8 @@ dialog::backdrop{
     </label>
 
     <select id="productSort">
-      <option value="priceDesc">金額：高到低</option>
       <option value="priceAsc">金額：低到高</option>
+      <option value="priceDesc">金額：高到低</option>
     </select>
 
   </div>
@@ -1639,7 +1628,7 @@ dialog::backdrop{
       </label>
 
 
-      <!-- 顏色／庫存 -->
+      <!-- 顏色 / 庫存 -->
 
       <div>
         <label>
@@ -2011,7 +2000,7 @@ function compressImage(file){
 
           let output =
             canvas.toDataURL(
-              "image/jpeg",
+              "image/webp",
               quality
             );
 
@@ -2026,7 +2015,7 @@ function compressImage(file){
 
             output =
               canvas.toDataURL(
-                "image/jpeg",
+                "image/webp",
                 quality
               );
 
@@ -2136,7 +2125,7 @@ function renderProducts(){
 
         const sortMode =
           $("#productSort")?.value ||
-          "priceDesc";
+          "priceAsc";
 
         return sortMode === "priceDesc"
           ? priceB - priceA
@@ -2310,7 +2299,7 @@ function renderProducts(){
 
 
       /* =================================================
-         顏色／庫存
+         顏色 / 總庫存
       ================================================= */
 
       const stock =
@@ -2325,6 +2314,7 @@ function renderProducts(){
         Array.isArray(product.variants) && product.variants.length
           ? product.variants
           : [{
+              style: "",
               color: "",
               stock: Number(product.stock ?? 0)
             }];
@@ -2358,15 +2348,17 @@ function renderProducts(){
         const summary =
           document.createElement("div");
 
-        summary.className =
-          "variant-summary";
+        summary.className = "variant-summary";
 
         summary.textContent =
           variants
             .filter(variant => variant.color)
-            .map(variant =>
-              `顏色：${variant.color}／庫存：${Math.max(0, Number(variant.stock) || 0)}`
-            )
+            .map(variant => {
+              const parts = [];
+              if(variant.color) parts.push(`顏色：${variant.color}`);
+              parts.push(`庫存：${Math.max(0, Number(variant.stock) || 0)}`);
+              return parts.join("／");
+            })
             .join("　｜　");
 
         body.appendChild(summary);
@@ -3024,13 +3016,10 @@ function getVariantsFromForm(){
   return $$("#variantList .variant-row")
     .map(row => ({
       color: row.querySelector(".variant-color").value.trim(),
-      stock: Math.max(
-        0,
-        parseInt(
-          row.querySelector(".variant-stock").value,
-          10
-        ) || 0
-      )
+      stock: Math.max(0, parseInt(
+        row.querySelector(".variant-stock").value,
+        10
+      ) || 0)
     }));
 }
 
