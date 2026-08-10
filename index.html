@@ -94,7 +94,7 @@ button{
 
 
 /* =========================================================
-   按?
+   按鈕
 ========================================================= */
 
 .btn{
@@ -219,160 +219,37 @@ button{
 ========================================================= */
 
 .tabs{
-  position:relative;
-  display:grid;
-  grid-template-columns:repeat(8,minmax(120px,1fr));
-  gap:10px;
-  overflow-x:auto;
+  display:flex;
+  gap:8px;
+
+  overflow:auto;
+
   padding-bottom:18px;
+
   scrollbar-width:thin;
 }
 
 .tab{
-  position:relative;
-  min-width:120px;
-  height:92px;
-  padding:0;
-  overflow:hidden;
-  border:1px solid #38383e;
-  border-radius:14px;
+  white-space:nowrap;
+
   background:#19191d;
   color:#ddd;
-  cursor:pointer;
-  isolation:isolate;
-}
 
-.tab::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image:var(--category-image);
-  background-size:cover;
-  background-position:center;
-  opacity:.52;
-  z-index:-2;
-  transition:transform .2s ease,opacity .2s ease;
-}
+  border:1px solid #38383e;
 
-.tab::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.15));
-  z-index:-1;
-}
+  padding:9px 13px;
 
-.tab span{
-  position:absolute;
-  left:10px;
-  right:10px;
-  bottom:9px;
-  display:block;
-  font-weight:800;
-  font-size:13px;
-  text-shadow:0 1px 5px #000;
+  border-radius:999px;
 }
 
 .tab:hover{
-  border-color:#777;
-}
-
-.tab:hover::before{
-  transform:scale(1.06);
-  opacity:.7;
+  background:#242429;
 }
 
 .tab.active{
-  border-color:#fff;
-  box-shadow:0 0 0 1px #fff inset,0 8px 24px #0008;
-  color:#fff;
-}
-
-/* 戒指／作物男女分類下拉 */
-.category-menu{
-  position:relative;
-  min-width:120px;
-}
-
-.category-menu > .tab{
-  width:100%;
-}
-
-.category-parent{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:5px;
-}
-
-.category-arrow{
-  font-size:11px;
-  opacity:.75;
-  transform:translateY(-1px);
-}
-
-.category-menu.open .category-parent,
-.category-menu.has-active .category-parent{
-  border-color:#fff;
-  box-shadow:0 0 0 1px #fff inset,0 8px 24px #0008;
-  color:#fff;
-}
-
-.category-dropdown{
-  position:absolute;
-  top:calc(100% + 8px);
-  left:50%;
-  transform:translateX(-50%) translateY(-5px);
-  min-width:118px;
-  padding:7px;
-  display:grid;
-  gap:6px;
-  background:#eadbce;
-  border:1px solid #d2bca8;
-  border-radius:15px;
-  box-shadow:0 12px 28px rgba(0,0,0,.28);
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  z-index:100;
-}
-
-.category-menu.open .category-dropdown{
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-  transform:translateX(-50%) translateY(0);
-}
-
-.category-option{
-  border:0;
-  border-radius:10px;
-  background:#f7eee8;
-  color:#5c514a;
-  padding:11px 18px;
-  font-size:15px;
-  font-weight:800;
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-.category-option:hover,
-.category-option.active{
   background:#fff;
-  color:#3f3630;
-}
-
-@media(max-width:700px){
-  .category-menu{
-    min-width:135px;
-  }
-  .category-dropdown{
-    min-width:130px;
-  }
-}
-
-.tab.active::before{
-  opacity:.8;
+  color:#111;
+  font-weight:800;
 }
 
 
@@ -402,7 +279,7 @@ button{
 
 /* =========================================================
    商品網格
-   ?機固定 6 個一排
+   桌機固定 6 個一排
 ========================================================= */
 
 .grid{
@@ -416,7 +293,7 @@ button{
 
 
 /* =========================================================
-   商品?片
+   商品卡片
 ========================================================= */
 
 .card{
@@ -592,7 +469,7 @@ button{
 
 
 /* =========================================================
-   管理員商品按?
+   管理員商品按鈕
 ========================================================= */
 
 .card-actions{
@@ -998,7 +875,7 @@ dialog::backdrop{
 
 
 /* =========================================================
-   Dialog 按?
+   Dialog 按鈕
 ========================================================= */
 
 .dialog-actions{
@@ -1075,33 +952,6 @@ dialog::backdrop{
 /* =========================================================
    RWD
 ========================================================= */
-
-.category-icon{
-  width:42px;
-  height:42px;
-  object-fit:contain;
-  position:absolute;
-  top:10px;
-  left:50%;
-  transform:translateX(-50%);
-  filter:drop-shadow(0 4px 8px #0008);
-}
-
-@media(max-width:1200px){
-  .tabs{
-    grid-template-columns:repeat(4,minmax(120px,1fr));
-  }
-}
-
-@media(max-width:700px){
-  .tabs{
-    grid-template-columns:repeat(2,minmax(135px,1fr));
-  }
-  .tab{
-    min-width:135px;
-    height:86px;
-  }
-}
 
 /* 1200 以下 */
 @media(max-width:1200px){
@@ -1189,7 +1039,7 @@ dialog::backdrop{
 }
 
 /* =========================================================
-   款式 / ?色 / 庫存變體
+   款式 / 顏色 / 庫存變體
 ========================================================= */
 .variant-list{
   display:grid;
@@ -1261,7 +1111,7 @@ dialog::backdrop{
       </h1>
 
       <small>
-        販??收購?交流
+        販售・收購・交流
       </small>
 
     </div>
@@ -1319,12 +1169,6 @@ dialog::backdrop{
     ＋ 新增商品
   </button>
 
-  <select id="adminPriceSort" class="btn hidden" aria-label="price sort">
-    <option value="">?방졏?믣틣</option>
-    <option value="desc">?방졏竊싮쳵?겻퐥</option>
-    <option value="asc">?방졏竊싦퐥?곈쳵</option>
-  </select>
-
 </section>
 
 
@@ -1332,25 +1176,74 @@ dialog::backdrop{
      分類
 ========================================================= -->
 
-<nav id="tabs" class="tabs">
-  <button class="tab active" data-category="新家具" style="--category-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn6qRPC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPuWutuWFt+aWsOWTgTwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=')">
-      <img class="category-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn6qRPC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPuWutuWFt+aWsOWTgTwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=" alt="新家具">
-      <span>新家具</span>
-    </button>
-  <button class="tab" data-category="家具" style="--category-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn5uL77iPPC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPue2k+WFuOWutuWFtzwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=')">
-      <img class="category-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn5uL77iPPC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPue2k+WFuOWutuWFtzwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=" alt="家具">
-      <span>家具</span>
-    </button>
-  <button class="tab" data-category="花盆" style="--category-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn6q0PC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPuiKseebhuakjeagvTwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=')">
-      <img class="category-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn6q0PC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPuiKseebhuakjeagvTwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=" alt="花盆">
-      <span>花盆</span>
-    </button>
+<nav
+  id="tabs"
+  class="tabs"
+>
+
+  <button
+    class="tab active"
+    data-category="新家具"
+  >
+    新家具
+  </button>
 
 
-  <button class="tab" data-category="出?區" style="--category-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn4+377iPPC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPumZkOaZguWHuua4hTwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=')">
-      <img class="category-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjAwIDM2MCI+CiAgICAgIDxkZWZzPgogICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjYyNjJkIi8+CiAgICAgICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMTExMTYiLz4KICAgICAgICA8L2xpbmVhckdyYWRpZW50PgogICAgICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iciIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNjUlIj4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIuMTYiLz4KICAgICAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICAgICAgPC9yYWRpYWxHcmFkaWVudD4KICAgICAgPC9kZWZzPgogICAgICA8cmVjdCB3aWR0aD0iNjAwIiBoZWlnaHQ9IjM2MCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+CiAgICAgIDxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMzYwIiByeD0iMzAiIGZpbGw9InVybCgjcikiLz4KICAgICAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMTQ1IiByPSI4NiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuMDgiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xOCIvPgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjE3OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgJ05vdG8gQ29sb3IgRW1vamknLCAnU2Vnb2UgVUkgRW1vamknIj7wn4+377iPPC90ZXh0PgogICAgICA8dGV4dCB4PSIzMDAiIHk9IjI3NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIuOSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBNaWNyb3NvZnQgSmhlbmdIZWksIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiPumZkOaZguWHuua4hTwvdGV4dD4KICAgICAgPHBhdGggZD0iTTE3MCAzMDRINDMwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L3N2Zz4=" alt="出?區">
-      <span>出?區</span>
-    </button>
+  <button
+    class="tab"
+    data-category="家具"
+  >
+    家具
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="花盆"
+  >
+    花盆
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="戒指限男"
+  >
+    戒指限男
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="戒指限女"
+  >
+    戒指限女
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="作物限男"
+  >
+    作物限男
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="作物限女"
+  >
+    作物限女
+  </button>
+
+
+  <button
+    class="tab"
+    data-category="出清區"
+  >
+    出清區
+  </button>
+
 </nav>
 
 
@@ -1427,12 +1320,12 @@ dialog::backdrop{
     class="board-form"
   >
 
-    <!-- ?稱 -->
+    <!-- 暱稱 -->
 
     <input
       id="messageName"
       maxlength="30"
-      placeholder="?稱"
+      placeholder="暱稱"
       required
     >
 
@@ -1465,7 +1358,7 @@ dialog::backdrop{
 
   <div class="note">
 
-    請?寫?希望顯示在留言區的?稱。
+    請填寫你希望顯示在留言區的暱稱。
 
   </div>
 
@@ -1618,12 +1511,24 @@ dialog::backdrop{
             花盆
           </option>
 
+          <option value="戒指限男">
+            戒指限男
+          </option>
 
+          <option value="戒指限女">
+            戒指限女
+          </option>
 
+          <option value="作物限男">
+            作物限男
+          </option>
 
+          <option value="作物限女">
+            作物限女
+          </option>
 
-          <option value="出?區">
-            出?區
+          <option value="出清區">
+            出清區
           </option>
 
         </select>
@@ -1663,11 +1568,11 @@ dialog::backdrop{
       </label>
 
 
-      <!-- 款式 / ?色 / 庫存 -->
+      <!-- 款式 / 顏色 / 庫存 -->
 
       <div>
         <label>
-          款式／?色／庫存
+          款式／顏色／庫存
         </label>
 
         <div id="variantList" class="variant-list"></div>
@@ -1678,7 +1583,7 @@ dialog::backdrop{
           type="button"
           style="margin-top:8px"
         >
-          ＋ 新增款式／?色
+          ＋ 新增款式／顏色
         </button>
 
         <div class="variant-total" style="margin-top:8px">
@@ -1687,7 +1592,7 @@ dialog::backdrop{
         </div>
 
         <div class="variant-summary">
-          同一商品可以建立多個款式與?色，總庫存會自動加總。
+          同一商品可以建立多個款式與顏色，總庫存會自動加總。
         </div>
       </div>
 
@@ -1713,7 +1618,7 @@ dialog::backdrop{
         id="imagePreview"
         class="preview"
       >
-        ?未選擇圖片
+        尚未選擇圖片
       </div>
 
 
@@ -2099,19 +2004,6 @@ function compressImage(file){
    顯示商品
 ========================================================= */
 
-function normalizeCategory(category){
-  if(category === "戒指限男" || category === "戒指限女") return "戒指";
-  if(category === "作物限男" || category === "作物限女") return "作物";
-  return category;
-}
-
-function parsePriceValue(price){
-  const value = String(price ?? "")
-    .replace(/,/g, "")
-    .match(/-?\d+(?:\.\d+)?/);
-  return value ? Number(value[0]) : 0;
-}
-
 function renderProducts(){
 
   const keyword =
@@ -2126,7 +2018,7 @@ function renderProducts(){
       product => {
 
         const categoryMatch =
-          normalizeCategory(product.category) ===
+          product.category ===
           currentCategory;
 
 
@@ -2147,15 +2039,6 @@ function renderProducts(){
       }
     );
 
-  if(isAdmin()) {
-    const sortMode = $("#adminPriceSort")?.value;
-    if(sortMode === "asc" || sortMode === "desc") {
-      list.sort((a, b) => {
-        const diff = parsePriceValue(a.price) - parsePriceValue(b.price);
-        return sortMode === "asc" ? diff : -diff;
-      });
-    }
-  }
 
   $("#sectionTitle")
     .textContent =
@@ -2189,7 +2072,7 @@ function renderProducts(){
     product => {
 
       /* =================================================
-         商品?片
+         商品卡片
       ================================================= */
 
       const card =
@@ -2321,7 +2204,7 @@ function renderProducts(){
 
 
       /* =================================================
-         款式 / ?色 / 總庫存
+         款式 / 顏色 / 總庫存
       ================================================= */
 
       const stock =
@@ -2355,7 +2238,7 @@ function renderProducts(){
         );
 
         stock.textContent =
-          "??";
+          "售罄";
 
       }
       else{
@@ -2378,7 +2261,7 @@ function renderProducts(){
             .map(variant => {
               const parts = [];
               if(variant.style) parts.push(`款式：${variant.style}`);
-              if(variant.color) parts.push(`?色：${variant.color}`);
+              if(variant.color) parts.push(`顏色：${variant.color}`);
               parts.push(`庫存：${Math.max(0, Number(variant.stock) || 0)}`);
               return parts.join("／");
             })
@@ -2397,7 +2280,7 @@ function renderProducts(){
 
 
       /* =================================================
-         管理員按?
+         管理員按鈕
       ================================================= */
 
       if(
@@ -2458,7 +2341,7 @@ function renderProducts(){
 
             if(
               !confirm(
-                `確定刪除「${product.name}」?？`
+                `確定刪除「${product.name}」嗎？`
               )
             ){
 
@@ -2587,7 +2470,7 @@ function renderMessages(){
         );
 
 
-      /* Discord ?稱 */
+      /* Discord 暱稱 */
 
       const name =
         document.createElement(
@@ -2667,7 +2550,7 @@ function renderMessages(){
 
             if(
               !confirm(
-                "確定刪除這則留言?？"
+                "確定刪除這則留言嗎？"
               )
             ){
 
@@ -2821,7 +2704,7 @@ function renderMessages(){
 
 
       /* =================================================
-         管理員回覆輸入?
+         管理員回覆輸入框
       ================================================= */
 
       if(
@@ -2966,7 +2849,7 @@ function renderMessages(){
 
 
 /* =========================================================
-   開?商品新增 / 編輯視?
+   開啟商品新增 / 編輯視窗
 ========================================================= */
 
 function createVariantRow(variant = {}){
@@ -2983,7 +2866,7 @@ function createVariantRow(variant = {}){
   const colorInput = document.createElement("input");
   colorInput.className = "variant-color";
   colorInput.maxLength = 30;
-  colorInput.placeholder = "?色，例如：黑色";
+  colorInput.placeholder = "顏色，例如：黑色";
   colorInput.value = variant.color || "";
 
   const stockInput = document.createElement("input");
@@ -3161,7 +3044,7 @@ function openProductDialog(
   else{
 
     preview.textContent =
-      "?未選擇圖片";
+      "尚未選擇圖片";
 
   }
 
@@ -3466,7 +3349,7 @@ $("#loginForm")
 
 
       toast(
-        "登入失敗，請檢?帳號密碼"
+        "登入失敗，請檢查帳號密碼"
       );
 
     }
@@ -3476,7 +3359,7 @@ $("#loginForm")
 
 
 /* =========================================================
-   管理員按?
+   管理員按鈕
 ========================================================= */
 
 $("#adminBtn")
@@ -3508,7 +3391,7 @@ $("#adminBtn")
 
 
 /* =========================================================
-   新增商品按?
+   新增商品按鈕
 ========================================================= */
 
 $("#addBtn")
@@ -3546,12 +3429,6 @@ onAuthStateChanged(
         !isAdmin()
       );
 
-    $("#adminPriceSort")
-      .classList
-      .toggle(
-        "hidden",
-        !isAdmin()
-      );
 
     renderProducts();
 
@@ -3565,15 +3442,6 @@ onAuthStateChanged(
    分類切換
 ========================================================= */
 
-function setActiveCategoryUI(category){
-  $$(".tab").forEach(item => {
-    item.classList.toggle(
-      "active",
-      item.dataset.category === category
-    );
-  });
-}
-
 $("#tabs")
 .addEventListener(
   "click",
@@ -3581,8 +3449,9 @@ $("#tabs")
 
     const button =
       event.target.closest(
-        ".tab[data-category]"
+        ".tab"
       );
+
 
     if(!button){
 
@@ -3590,28 +3459,35 @@ $("#tabs")
 
     }
 
+
+    $$(".tab")
+      .forEach(
+        tab => {
+
+          tab.classList
+            .remove(
+              "active"
+            );
+
+        }
+      );
+
+
+    button.classList
+      .add(
+        "active"
+      );
+
+
     currentCategory =
       button.dataset.category;
 
-    setActiveCategoryUI(currentCategory);
 
     renderProducts();
 
   }
 );
 
-/* 點擊分類外部時關閉下拉 */
-document.addEventListener("click", event => {
-  if(!event.target.closest("#tabs")){
-    $$(".category-menu").forEach(menu => {
-      menu.classList.remove("open");
-    });
-  }
-});
-
-
-/* 初始化分類選擇狀態 */
-setActiveCategoryUI(currentCategory);
 
 /* =========================================================
    商品搜尋
@@ -3624,14 +3500,6 @@ $("#searchInput")
 
     renderProducts();
 
-  }
-);
-
-$("#adminPriceSort")
-.addEventListener(
-  "change",
-  () => {
-    renderProducts();
   }
 );
 
@@ -3667,7 +3535,7 @@ $("#messageForm")
     ){
 
       toast(
-        "請完整?寫?稱和留言"
+        "請完整填寫暱稱和留言"
       );
 
       return;
@@ -3761,7 +3629,7 @@ $$("[data-close]")
 
 
 /* =========================================================
-   Firebase 商品?時監聽
+   Firebase 商品即時監聽
 ========================================================= */
 
 onSnapshot(
@@ -3811,7 +3679,7 @@ onSnapshot(
 
 
 /* =========================================================
-   Firebase 留言?時監聽
+   Firebase 留言即時監聽
 ========================================================= */
 
 onSnapshot(
