@@ -239,24 +239,94 @@ button{
 .tab{
   white-space:nowrap;
 
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
   background:#19191d;
   color:#ddd;
 
   border:1px solid #38383e;
 
-  padding:9px 13px;
+  padding:8px 14px 8px 10px;
 
   border-radius:999px;
+
+  font-size:15px;
+  line-height:1;
+  min-height:42px;
+  cursor:pointer;
+
+  transition:background .16s ease, transform .16s ease, border-color .16s ease;
 }
 
 .tab:hover{
   background:#242429;
+  border-color:#555;
+  transform:translateY(-1px);
 }
 
 .tab.active{
   background:#fff;
   color:#111;
   font-weight:800;
+  border-color:#fff;
+}
+
+.tab-icon{
+  width:30px;
+  height:30px;
+  min-width:30px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  line-height:1;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));
+}
+
+.tab-icon.badge{
+  width:31px;
+  min-width:31px;
+  height:31px;
+  font-size:11px;
+  font-weight:900;
+  color:#fff;
+  background:linear-gradient(145deg,#ff4d4d,#c90000);
+  border-radius:11px;
+  transform:rotate(-6deg);
+  text-shadow:0 1px 1px rgba(0,0,0,.35);
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+}
+
+.tab-icon.sale{
+  background:linear-gradient(145deg,#ffd34d,#f09a00);
+  color:#fff;
+  border-radius:50%;
+  transform:rotate(-6deg);
+  font-size:10px;
+  letter-spacing:-.5px;
+  font-weight:900;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+}
+
+.tab.active .tab-icon{
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+
+@media(max-width:700px){
+  .tab{
+    font-size:14px;
+    min-height:40px;
+    padding-right:12px;
+  }
+  .tab-icon{
+    width:28px;
+    min-width:28px;
+    height:28px;
+    font-size:20px;
+  }
 }
 
 
@@ -1491,64 +1561,80 @@ dialog::backdrop{
   <button
     class="tab active"
     data-category="新家具"
+    aria-label="新家具"
   >
-    新家具
+    <span class="tab-icon badge">NEW</span>
+    <span>新家具</span>
   </button>
 
 
   <button
     class="tab"
     data-category="家具"
+    aria-label="家具"
   >
-    家具
+    <span class="tab-icon">🪑</span>
+    <span>家具</span>
   </button>
 
 
   <button
     class="tab"
     data-category="花盆"
+    aria-label="花盆"
   >
-    花盆
+    <span class="tab-icon">🌻</span>
+    <span>花盆</span>
   </button>
 
 
   <button
     class="tab"
     data-category="戒指限男"
+    aria-label="戒指限男"
   >
-    戒指限男
+    <span class="tab-icon">💍</span>
+    <span>戒指限男</span>
   </button>
 
 
   <button
     class="tab"
     data-category="戒指限女"
+    aria-label="戒指限女"
   >
-    戒指限女
+    <span class="tab-icon">💗</span>
+    <span>戒指限女</span>
   </button>
 
 
   <button
     class="tab"
     data-category="作物限男"
+    aria-label="作物限男"
   >
-    作物限男
+    <span class="tab-icon">🌿</span>
+    <span>作物限男</span>
   </button>
 
 
   <button
     class="tab"
     data-category="作物限女"
+    aria-label="作物限女"
   >
-    作物限女
+    <span class="tab-icon">🌷</span>
+    <span>作物限女</span>
   </button>
 
 
   <button
     class="tab"
     data-category="出清區"
+    aria-label="出清區"
   >
-    出清區
+    <span class="tab-icon sale">SALE</span>
+    <span>出清區</span>
   </button>
 
 </nav>
