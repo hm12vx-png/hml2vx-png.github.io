@@ -1356,6 +1356,31 @@ dialog::backdrop{
   }
 }
 
+/* 修正商品卡片的「款式／庫存」下拉選單文字被截斷 */
+.variant-summary-row{
+  gap:4px;
+}
+
+.variant-summary-label{
+  flex:0 0 24px;
+  width:24px;
+  font-size:10px;
+  overflow:hidden;
+  text-overflow:clip;
+}
+
+.variant-summary-select{
+  flex:1 1 0;
+  width:0;
+  min-width:0;
+  padding:4px 14px 4px 6px;
+  font-size:10px;
+  letter-spacing:-.35px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+}
+
 </style>
 </head>
 
