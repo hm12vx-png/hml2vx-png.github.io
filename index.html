@@ -186,6 +186,23 @@ button{cursor:pointer}
   margin:10px 0 18px;
 }
 .section-head h3{margin:0;font-size:24px}
+.section-title-line{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.category-note{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.2;
+  color:#20eaff;
+  text-shadow:0 0 7px rgba(32,234,255,.45);
+}
+.category-note.female{
+  color:#ff3fa8;
+  text-shadow:0 0 7px rgba(255,63,168,.45);
+}
 .sort-box{display:flex;align-items:center;gap:8px}
 .sort-box label{color:#888;font-size:13px}
 .sort-box select{
@@ -351,6 +368,7 @@ dialog::backdrop{background:#000b}
 @media(max-width:1200px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:850px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){
+  .category-note{font-size:11px}
   .topbar{padding:12px 16px}
   .brand h1{font-size:16px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -468,7 +486,7 @@ dialog::backdrop{background:#000b}
 
 <section class="section-head">
   <div>
-    <h3 id="sectionTitle">新家具</h3>
+    <div class="section-title-line"><h3 id="sectionTitle">新家具</h3><span id="categoryNote" class="category-note hidden">購買戒指由買方支付升級費用</span></div>
     <div id="productCount" class="count">0 件商品</div>
   </div>
   <div class="sort-box">
@@ -691,6 +709,12 @@ function renderProducts(){
 
   $("#sectionTitle").textContent=currentCategory;
   $("#productCount").textContent=`${list.length} 件商品`;
+
+  const categoryNote=$("#categoryNote");
+  const isRingCategory=currentCategory==="戒指限男" || currentCategory==="戒指限女";
+  categoryNote.classList.toggle("hidden",!isRingCategory);
+  categoryNote.classList.toggle("female",currentCategory==="戒指限女");
+  categoryNote.textContent="購買戒指由買方支付升級費用";
 
   const grid=$("#productGrid");
   grid.innerHTML="";
