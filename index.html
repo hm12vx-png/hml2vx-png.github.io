@@ -1103,32 +1103,6 @@ dialog::backdrop{
   font-size:11px;
 }
 
-.image-switch-btn{
-  position:absolute;
-  top:7px;
-  left:7px;
-  z-index:4;
-  min-width:42px;
-  height:30px;
-  padding:4px 9px;
-  border:1px solid rgba(255,255,255,.28);
-  border-radius:14px;
-  background:rgba(0,0,0,.68);
-  color:#fff;
-  font-size:12px;
-  line-height:20px;
-  cursor:pointer;
-  backdrop-filter:blur(3px);
-}
-
-.image-switch-btn:hover{
-  background:rgba(0,0,0,.84);
-}
-
-.image-switch-btn:active{
-  transform:scale(.96);
-}
-
 .image-error{
   width:100%;
   height:100%;
@@ -1268,12 +1242,26 @@ dialog::backdrop{
 }
 .variant-row{
   display:grid;
-  grid-template-columns:1fr 100px auto;
+  grid-template-columns:minmax(0,1fr) 90px minmax(120px,150px) auto;
   gap:8px;
   align-items:center;
 }
-.variant-row input{
+.variant-row input,
+.variant-row select{
   min-width:0;
+  width:100%;
+}
+.variant-row select{
+  height:42px;
+  padding:8px 30px 8px 10px;
+  background:#101014;
+  color:#fff;
+  border:1px solid #3b3b42;
+  border-radius:10px;
+  outline:none;
+}
+.variant-row select:focus{
+  border-color:#666;
 }
 .variant-total{
   display:flex;
@@ -1341,7 +1329,7 @@ dialog::backdrop{
 }
 @media(max-width:600px){
   .variant-row{
-    grid-template-columns:1fr 100px auto;
+    grid-template-columns:minmax(0,1fr) 72px minmax(105px,1fr) auto;
   }
   .variant-row .variant-stock{
     width:100%;
@@ -1874,7 +1862,7 @@ dialog::backdrop{
         </div>
 
         <div class="variant-summary">
-          同一商品可以建立多個顏色與庫存，總庫存會自動加總。
+          每個顏色與庫存可指定一張對應商品圖片；前台選擇顏色後會自動切換圖片。
         </div>
       </div>
 
@@ -1893,7 +1881,7 @@ dialog::backdrop{
         >
 
         <div class="variant-summary">
-          可一次選擇多張商品圖片，最多 6 張；第一張會作為商品主圖。
+          可一次選擇多張商品圖片，最多 6 張；每個顏色可在上方指定對應圖片。
         </div>
 
       </label>
@@ -2526,6 +2514,36 @@ function renderProducts(){
         ? product.images.filter(Boolean)
         : (product.image ? [product.image] : []);
 
+      const getVariantImageIndex = (variant, fallbackIndex = 0) => {
+        const explicitIndex = Number(variant?.imageIndex);
+
+        if(
+          Number.isInteger(explicitIndex) &&
+          explicitIndex >= 0 &&
+          explicitIndex < productImages.length
+        ){
+          return explicitIndex;
+        }
+
+        if(
+          fallbackIndex >= 0 &&
+          fallbackIndex < productImages.length
+        ){
+          return fallbackIndex;
+        }
+
+        return 0;
+      };
+
+      const getVariantImage = (variant, fallbackIndex = 0) => {
+        const imageIndex =
+          getVariantImageIndex(variant, fallbackIndex);
+
+        return productImages[imageIndex] ||
+          productImages[0] ||
+          "";
+      };
+
       if(productImages.length){
 
         const img = document.createElement("img");
@@ -2549,36 +2567,8 @@ function renderProducts(){
 
         media.appendChild(img);
 
-        if(productImages.length > 1){
-          /* 多圖片切換按鈕：移到左上角，避免遮住商品主圖 */
-          const switchButton = document.createElement("button");
-          switchButton.type = "button";
-          switchButton.className = "image-switch-btn";
-          switchButton.title = "點擊切換商品圖片";
-          switchButton.setAttribute("aria-label", "點擊切換商品圖片");
-          switchButton.textContent = `📷 ${productImages.length}`;
-          media.appendChild(switchButton);
-        }
-
       }else{
         media.textContent = "無商品圖片";
-      }
-
-
-      if(productImages.length > 1){
-        let imageIndex = 0;
-        const switchButton = media.querySelector(".image-switch-btn");
-
-        if(switchButton){
-          switchButton.addEventListener("click", event => {
-            event.stopPropagation();
-            imageIndex = (imageIndex + 1) % productImages.length;
-            const mainImg = media.querySelector("img");
-            if(mainImg){
-              mainImg.src = productImages[imageIndex];
-            }
-          });
-        }
       }
 
 
@@ -2729,15 +2719,38 @@ function renderProducts(){
         const stockValue = document.createElement("span");
         stockValue.className = "variant-summary-stock";
 
-        const updateSelectedStock = () => {
-          const selected = colorVariants[Number(colorSelect.value)] || colorVariants[0];
+        const updateSelectedVariant = () => {
+          const selectedIndex =
+            Number(colorSelect.value) || 0;
+
+          const selected =
+            colorVariants[selectedIndex] ||
+            colorVariants[0];
+
           stockValue.textContent = String(
             Math.max(0, Number(selected?.stock) || 0)
           );
+
+          const mainImg =
+            media.querySelector("img");
+
+          const selectedImage =
+            getVariantImage(
+              selected,
+              selectedIndex
+            );
+
+          if(mainImg && selectedImage){
+            mainImg.src = selectedImage;
+          }
         };
 
-        colorSelect.addEventListener("change", updateSelectedStock);
-        updateSelectedStock();
+        colorSelect.addEventListener(
+          "change",
+          updateSelectedVariant
+        );
+
+        updateSelectedVariant();
 
         row.append(
           colorLabel,
@@ -3335,104 +3348,363 @@ function renderMessages(){
    開啟商品新增 / 編輯視窗
 ========================================================= */
 
+function getSelectedImageCount(){
+  return selectedImageItems.length;
+}
+
+function refreshVariantImageOptions(){
+
+  $$("#variantList .variant-row")
+    .forEach(row => {
+
+      const select =
+        row.querySelector(".variant-image");
+
+      if(!select) return;
+
+      const previousValue =
+        select.value;
+
+      const imageCount =
+        getSelectedImageCount();
+
+      select.innerHTML = "";
+
+      if(!imageCount){
+
+        const option =
+          document.createElement("option");
+
+        option.value = "";
+        option.textContent = "先上傳圖片";
+        option.disabled = true;
+        option.selected = true;
+
+        select.appendChild(option);
+
+        return;
+      }
+
+      for(
+        let index = 0;
+        index < imageCount;
+        index++
+      ){
+
+        const option =
+          document.createElement("option");
+
+        option.value =
+          String(index);
+
+        option.textContent =
+          `圖片 ${index + 1}${index === 0 ? "（主圖）" : ""}`;
+
+        if(
+          String(index) ===
+          previousValue
+        ){
+          option.selected = true;
+        }
+
+        select.appendChild(option);
+      }
+
+      if(!select.value){
+
+        const fallback =
+          Math.min(
+            Number(
+              row.dataset.defaultImageIndex || 0
+            ),
+            imageCount - 1
+          );
+
+        select.value =
+          String(
+            Math.max(0, fallback)
+          );
+      }
+
+    });
+}
+
 function createVariantRow(variant = {}){
 
-  const row = document.createElement("div");
-  row.className = "variant-row";
+  const row =
+    document.createElement("div");
 
-  const colorInput = document.createElement("input");
-  colorInput.className = "variant-color";
-  colorInput.maxLength = 30;
-  colorInput.placeholder = "顏色，例如：黑色";
-  colorInput.value = variant.color || "";
+  row.className =
+    "variant-row";
 
-  const stockInput = document.createElement("input");
-  stockInput.className = "variant-stock";
-  stockInput.type = "number";
-  stockInput.min = "0";
-  stockInput.step = "1";
-  stockInput.placeholder = "庫存";
-  stockInput.value = Number(variant.stock ?? 0);
+  const colorInput =
+    document.createElement("input");
 
-  const removeButton = document.createElement("button");
-  removeButton.className = "btn small danger variant-remove";
-  removeButton.type = "button";
-  removeButton.textContent = "刪除";
-  removeButton.onclick = () => {
-    row.remove();
-    updateVariantTotal();
-    ensureOneVariantRow();
-  };
+  colorInput.className =
+    "variant-color";
 
-  [colorInput, stockInput].forEach(input => {
-    input.addEventListener("input", updateVariantTotal);
-  });
+  colorInput.maxLength =
+    30;
+
+  colorInput.placeholder =
+    "顏色，例如：黑色";
+
+  colorInput.value =
+    variant.color || "";
+
+  const stockInput =
+    document.createElement("input");
+
+  stockInput.className =
+    "variant-stock";
+
+  stockInput.type =
+    "number";
+
+  stockInput.min =
+    "0";
+
+  stockInput.step =
+    "1";
+
+  stockInput.placeholder =
+    "庫存";
+
+  stockInput.value =
+    Number(variant.stock ?? 0);
+
+  const imageSelect =
+    document.createElement("select");
+
+  imageSelect.className =
+    "variant-image";
+
+  imageSelect.title =
+    "指定這個顏色對應的商品圖片";
+
+  imageSelect.setAttribute(
+    "aria-label",
+    "指定顏色對應圖片"
+  );
+
+  const imageIndex =
+    Number.isInteger(
+      Number(variant.imageIndex)
+    )
+      ? Number(variant.imageIndex)
+      : 0;
+
+  row.dataset.defaultImageIndex =
+    String(imageIndex);
+
+  const removeButton =
+    document.createElement("button");
+
+  removeButton.className =
+    "btn small danger variant-remove";
+
+  removeButton.type =
+    "button";
+
+  removeButton.textContent =
+    "刪除";
+
+  removeButton.onclick =
+    () => {
+
+      row.remove();
+
+      updateVariantTotal();
+
+      ensureOneVariantRow();
+
+    };
+
+  [colorInput, stockInput]
+    .forEach(input => {
+
+      input.addEventListener(
+        "input",
+        updateVariantTotal
+      );
+
+    });
 
   row.append(
     colorInput,
     stockInput,
+    imageSelect,
     removeButton
   );
+
+  refreshVariantImageOptions();
 
   return row;
 }
 
 function updateVariantTotal(){
 
-  const total = $$(".variant-stock")
-    .reduce(
-      (sum, input) =>
-        sum + Math.max(0, parseInt(input.value, 10) || 0),
-      0
-    );
+  const total =
+    $$(".variant-stock")
+      .reduce(
+        (sum, input) =>
+          sum +
+          Math.max(
+            0,
+            parseInt(
+              input.value,
+              10
+            ) || 0
+          ),
+        0
+      );
 
-  $("#variantTotal").textContent = total;
+  $("#variantTotal")
+    .textContent =
+      total;
 }
 
 function ensureOneVariantRow(){
 
-  const list = $("#variantList");
+  const list =
+    $("#variantList");
 
   if(!list.children.length){
-    list.appendChild(createVariantRow());
+
+    list.appendChild(
+      createVariantRow()
+    );
+
   }
 
   updateVariantTotal();
+  refreshVariantImageOptions();
 }
 
 function getVariantsFromForm(){
 
   return $$("#variantList .variant-row")
-    .map(row => ({
-      color: row.querySelector(".variant-color").value.trim(),
-      stock: Math.max(0, parseInt(
-        row.querySelector(".variant-stock").value,
-        10
-      ) || 0)
-    }));
+    .map(row => {
+
+      const imageSelect =
+        row.querySelector(
+          ".variant-image"
+        );
+
+      const parsedImageIndex =
+        imageSelect?.value === ""
+          ? null
+          : Number(
+              imageSelect?.value
+            );
+
+      return {
+
+        color:
+          row.querySelector(
+            ".variant-color"
+          ).value.trim(),
+
+        stock:
+          Math.max(
+            0,
+            parseInt(
+              row.querySelector(
+                ".variant-stock"
+              ).value,
+              10
+            ) || 0
+          ),
+
+        imageIndex:
+          Number.isInteger(
+            parsedImageIndex
+          ) &&
+          parsedImageIndex >= 0
+            ? parsedImageIndex
+            : 0
+
+      };
+
+    });
+
 }
 
 function setVariantsInForm(variants){
 
-  const list = $("#variantList");
-  list.innerHTML = "";
+  const list =
+    $("#variantList");
+
+  list.innerHTML =
+    "";
 
   const source =
-    Array.isArray(variants) && variants.length
+    Array.isArray(variants) &&
+    variants.length
       ? variants
-      : [{ color: "", stock: 0 }];
+      : [{
+          color:"",
+          stock:0,
+          imageIndex:0
+        }];
 
-  source.forEach(variant => {
-    list.appendChild(createVariantRow(variant));
-  });
+  source.forEach(
+    (variant, index) => {
+
+      const normalizedVariant = {
+
+        ...variant,
+
+        imageIndex:
+          Number.isInteger(
+            Number(
+              variant?.imageIndex
+            )
+          )
+            ? Number(
+                variant.imageIndex
+              )
+            : index
+
+      };
+
+      list.appendChild(
+        createVariantRow(
+          normalizedVariant
+        )
+      );
+
+    }
+  );
 
   updateVariantTotal();
+  refreshVariantImageOptions();
 }
 
-$("#addVariantBtn").addEventListener("click", () => {
-  $("#variantList").appendChild(createVariantRow());
-  updateVariantTotal();
-});
+$("#addVariantBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      const newRow =
+        createVariantRow({
+
+          imageIndex:
+            $$("#variantList .variant-row")
+              .length
+
+        });
+
+      $("#variantList")
+        .appendChild(
+          newRow
+        );
+
+      updateVariantTotal();
+      refreshVariantImageOptions();
+
+    }
+  );
 
 function openProductDialog(
   product = null
@@ -3496,6 +3768,7 @@ function openProductDialog(
 
   $("#productImage").value = "";
   renderImagePreview();
+  refreshVariantImageOptions();
 
   $("#productDialog")
     .showModal();
@@ -3557,6 +3830,7 @@ $("#productImage")
     }));
 
     renderImagePreview();
+    refreshVariantImageOptions();
     event.target.value = "";
   }
 );
@@ -3600,6 +3874,7 @@ function renderImagePreview(){
         URL.revokeObjectURL(removed.src);
       }
       renderImagePreview();
+      refreshVariantImageOptions();
     });
     box.appendChild(remove);
 
