@@ -487,15 +487,17 @@ button{
 }
 
 .variant-summary-select{
+  flex:1 1 auto;
   width:100%;
   min-width:0;
-  height:32px;
-  padding:4px 28px 4px 9px;
-  border:1px solid #444;
-  border-radius:8px;
-  background:#17171c;
-  color:#fff;
+  height:38px;
+  padding:5px 30px 5px 10px;
+  border:1px solid #777;
+  border-radius:9px;
+  background:#fffaf5;
+  color:#111;
   font:inherit;
+  font-size:13px;
   cursor:pointer;
   box-sizing:border-box;
 }
@@ -1303,18 +1305,21 @@ dialog::backdrop{
 }
 
 .variant-summary-row{
-  display:grid;
-  grid-template-columns:auto minmax(0,1fr) auto auto;
-  align-items:start;
+  display:flex;
+  align-items:center;
+  gap:8px;
   width:100%;
-  min-height:20px;
+  min-height:38px;
   box-sizing:border-box;
   text-align:left;
 }
 
 .variant-summary-label{
+  flex:0 0 auto;
   white-space:nowrap;
   text-align:left;
+  font-size:12px;
+  color:#cfcfd4;
 }
 
 .variant-summary-color{
@@ -2710,7 +2715,7 @@ function renderProducts(){
 
         const colorLabel = document.createElement("span");
         colorLabel.className = "variant-summary-label";
-        colorLabel.textContent = "顏色：";
+        colorLabel.textContent = "款式";
 
         const colorSelect = document.createElement("select");
         colorSelect.className = "variant-summary-select";
@@ -2726,8 +2731,8 @@ function renderProducts(){
           option.value = String(index);
           option.textContent =
             variantStock > 0
-              ? `${variant.color}（庫存：${variantStock}）`
-              : `${variant.color}（售罄）`;
+              ? `${variant.color}｜庫存 ${variantStock}`
+              : `${variant.color}｜售罄`;
 
           colorSelect.appendChild(option);
         });
