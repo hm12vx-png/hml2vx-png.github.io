@@ -446,7 +446,7 @@ button{
   grid-column:1;
 }
 
-/* 顏色／庫存完整顯示：不裁切、不省略 */
+/* 顏色＋庫存合併在同一個下拉選單 */
 .variant-summary{
   width:100%;
   height:40px;
@@ -460,7 +460,7 @@ button{
 
 .variant-summary-row{
   display:grid;
-  grid-template-columns:50px minmax(0,1fr) auto 36px;
+  grid-template-columns:50px minmax(0,1fr);
   gap:6px;
   align-items:center;
 
@@ -470,8 +470,7 @@ button{
   box-sizing:border-box;
 }
 
-.variant-summary-label,
-.variant-summary-stock-label{
+.variant-summary-label{
   white-space:nowrap;
 }
 
@@ -2703,21 +2702,23 @@ function renderProducts(){
 
         const colorSelect = document.createElement("select");
         colorSelect.className = "variant-summary-select";
-        colorSelect.setAttribute("aria-label", "選擇商品顏色");
+        colorSelect.setAttribute("aria-label", "選擇商品顏色與庫存");
 
         colorVariants.forEach((variant, index) => {
           const option = document.createElement("option");
+          const variantStock = Math.max(
+            0,
+            Number(variant?.stock) || 0
+          );
+
           option.value = String(index);
-          option.textContent = variant.color;
+          option.textContent =
+            variantStock > 0
+              ? `${variant.color}（庫存：${variantStock}）`
+              : `${variant.color}（售罄）`;
+
           colorSelect.appendChild(option);
         });
-
-        const stockLabel = document.createElement("span");
-        stockLabel.className = "variant-summary-stock-label";
-        stockLabel.textContent = "庫存：";
-
-        const stockValue = document.createElement("span");
-        stockValue.className = "variant-summary-stock";
 
         const updateSelectedVariant = () => {
           const selectedIndex =
@@ -2726,10 +2727,6 @@ function renderProducts(){
           const selected =
             colorVariants[selectedIndex] ||
             colorVariants[0];
-
-          stockValue.textContent = String(
-            Math.max(0, Number(selected?.stock) || 0)
-          );
 
           const mainImg =
             media.querySelector("img");
@@ -2754,9 +2751,7 @@ function renderProducts(){
 
         row.append(
           colorLabel,
-          colorSelect,
-          stockLabel,
-          stockValue
+          colorSelect
         );
 
         summary.appendChild(row);
