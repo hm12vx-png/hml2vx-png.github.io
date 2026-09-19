@@ -403,6 +403,7 @@ dialog::backdrop{background:#000b}
 <section class="toolbar">
   <input id="searchInput" class="search" placeholder="搜尋商品名稱…">
   <button id="addBtn" class="btn primary hidden">＋ 新增商品</button>
+    <button id="migrateImagesBtn" class="btn hidden">☁ 舊圖片搬到 Storage</button>
 </section>
 
 <!-- 風格 3：霓虹分類列 -->
@@ -566,7 +567,7 @@ dialog::backdrop{background:#000b}
 
       <label>商品圖片
         <input id="productImage" type="file" accept="image/*" multiple>
-        <div class="variant-summary-note">可一次選擇多張商品圖片，最多 6 張。</div>
+        <div class="variant-summary-note">可一次選擇多張商品圖片，最多 6 張。新圖片會直接壓縮後上傳 Firebase Storage，Firestore 只保存圖片網址。</div>
       </label>
 
       <div id="imagePreview" class="preview">尚未選擇圖片</div>
@@ -684,9 +685,147 @@ async function uploadProductImage(file, productId, index){
   const blob=await compressImage(file);
   const path=`products/${productId}/${Date.now()}_${index}.webp`;
   const fileRef=storageRef(storage,path);
-  await uploadBytes(fileRef,blob,{contentType:"image/webp"});
+  await uploadBytes(fileRef,blob,{contentType:"image/webp",cacheControl:"public,max-age=31536000,immutable"});
   return await getDownloadURL(fileRef);
 }
+
+
+/* =========================================================
+   舊圖片 → Firebase Storage 遷移
+   - 已經是 Firebase Storage URL：直接略過
+   - 舊網址 / GitHub 相對路徑 / 可讀取的圖片：下載、壓縮、上傳 Storage
+   - 完成後 Firestore 的 images / image 改成 Storage URL
+   ========================================================= */
+function isFirebaseStorageUrl(url){
+  const s=String(url||"");
+  return s.includes("firebasestorage.googleapis.com") ||
+         s.includes("storage.googleapis.com/ostar-shop") ||
+         s.includes("ostar-shop.firebasestorage.app");
+}
+
+async function sourceToFile(url, productId, index){
+  const response=await fetch(url,{cache:"no-cache"});
+  if(!response.ok) throw new Error(`圖片下載失敗 HTTP ${response.status}`);
+  const blob=await response.blob();
+  if(!blob.type.startsWith("image/")) throw new Error("來源不是圖片");
+  return new File([blob],`${productId}_${index}.jpg`,{type:blob.type});
+}
+
+async function migrateOneProductImages(product){
+  const oldImages=Array.isArray(product.images)
+    ? product.images.filter(Boolean)
+    : (product.image?[product.image]:[]);
+
+  if(!oldImages.length) return {changed:false,count:0,skipped:0};
+
+  const newImages=[];
+  let changed=false, skipped=0;
+
+  for(let i=0;i<oldImages.length;i++){
+    const src=String(oldImages[i]||"").trim();
+    if(!src) continue;
+
+    if(isFirebaseStorageUrl(src)){
+      newImages.push(src);
+      skipped++;
+      continue;
+    }
+
+    // 同一張舊圖片可能已經在 Storage，但網址格式不同；仍以目前資料為準。
+    const file=await sourceToFile(src,product.id,i);
+    const blob=await compressImage(file);
+    const path=`products/${product.id}/legacy_${Date.now()}_${i}.webp`;
+    const fileRef=storageRef(storage,path);
+    await uploadBytes(fileRef,blob,{contentType:"image/webp",cacheControl:"public,max-age=31536000,immutable"});
+    const storageUrl=await getDownloadURL(fileRef);
+    newImages.push(storageUrl);
+    changed=true;
+  }
+
+  if(changed){
+    await updateDoc(doc(db,"products",product.id),{
+      images:newImages,
+      image:newImages[0]||"",
+      updatedAt:serverTimestamp()
+    });
+  }
+
+  return {changed,count:newImages.length,skipped};
+}
+
+async function migrateAllLegacyImages(){
+  if(!isAdmin()){
+    toast("只有管理員可以搬移舊圖片");
+    return;
+  }
+
+  const btn=$("#migrateImagesBtn");
+  btn.disabled=true;
+  const originalText=btn.textContent;
+  btn.textContent="搬移中…";
+
+  try{
+    const snapshot=await new Promise((resolve,reject)=>{
+      const unsub=onSnapshot(
+        collection(db,"products"),
+        snap=>{unsub();resolve(snap);},
+        err=>{unsub();reject(err);}
+      );
+    });
+
+    const allProducts=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    let migrated=0, skipped=0, failed=0;
+    const failedNames=[];
+
+    for(let i=0;i<allProducts.length;i++){
+      const product=allProducts[i];
+      const images=Array.isArray(product.images)
+        ? product.images.filter(Boolean)
+        : (product.image?[product.image]:[]);
+
+      const legacy=images.some(url=>!isFirebaseStorageUrl(url));
+      if(!legacy) {
+        skipped++;
+        continue;
+      }
+
+      btn.textContent=`搬移 ${i+1}/${allProducts.length}…`;
+
+      try{
+        const result=await migrateOneProductImages(product);
+        if(result.changed) migrated++;
+        else skipped++;
+      }catch(error){
+        failed++;
+        failedNames.push(product.name||product.id);
+        console.error("舊圖片搬移失敗",product,error);
+      }
+    }
+
+    let msg=`完成：${migrated} 個商品已搬到 Firebase Storage`;
+    if(skipped) msg+=`，${skipped} 個已是 Storage 或無需搬移`;
+    if(failed) msg+=`，${failed} 個失敗`;
+    toast(msg);
+
+    if(failedNames.length){
+      console.warn("以下商品搬移失敗：",failedNames);
+      setTimeout(()=>alert(
+        "以下商品的舊圖片無法自動搬移：\n\n"+
+        failedNames.join("\n")+
+        "\n\n常見原因：舊圖片網站禁止跨來源下載（CORS），請先讓圖片來源允許瀏覽器讀取。"
+      ),300);
+    }
+  }catch(error){
+    console.error(error);
+    toast("舊圖片批次搬移失敗");
+  }finally{
+    btn.disabled=false;
+    btn.textContent=originalText;
+  }
+}
+
+/* 管理員登入後可手動執行一次；之後前台直接使用 Storage URL */
+$("#migrateImagesBtn").onclick=migrateAllLegacyImages;
 
 /* 價格格式：後台輸入金額後自動加上 NT$；保留原有文字價格相容性 */
 function formatNTPrice(value){
@@ -1399,6 +1538,7 @@ onAuthStateChanged(auth,user=>{
   currentUser=user;
   $("#adminBtn").textContent=isAdmin()?"登出管理員":"管理員登入";
   $("#addBtn").classList.toggle("hidden",!isAdmin());
+  $("#migrateImagesBtn").classList.toggle("hidden",!isAdmin());
   renderProducts();
   renderMessages();
 });
