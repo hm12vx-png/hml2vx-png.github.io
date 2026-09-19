@@ -398,25 +398,16 @@ dialog::backdrop{background:#000b}
 
 <main class="wrap">
 
-<section class="hero">
-  <div class="hero-banner">
-    <img src="ostar-logo.PNG" alt="O² M★STAR交易區">
-  </div>
-</section>
-
 <section class="toolbar">
   <input id="searchInput" class="search" placeholder="搜尋商品名稱…">
   <button id="addBtn" class="btn primary hidden">＋ 新增商品</button>
+  <button id="migrateImagesBtn" class="btn hidden">☁ 舊圖片搬到 Firebase Storage</button>
 </section>
 
 <!-- 風格 3：霓虹分類列 -->
 <nav id="tabs" class="tabs">
 
-  <button class="tab neon-red active" data-category="新家具" aria-label="新家具">
-    <span class="tab-icon badge">NEW</span><span>新家具</span>
-  </button>
-
-  <button class="tab neon-orange" data-category="家具" aria-label="家具">
+  <button class="tab neon-orange active" data-category="家具" aria-label="家具">
     <span class="tab-icon" aria-hidden="true">
       <svg viewBox="0 0 48 48" fill="none">
         <path d="M9 25v-6c0-5 4-9 9-9h12c5 0 9 4 9 9v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
@@ -476,10 +467,6 @@ dialog::backdrop{background:#000b}
         <path d="M24 21c0-6 3-10 8-12 1 6-1 10-8 12Z" fill="currentColor"/>
       </svg>
     </span><span>作物限女</span>
-  </button>
-
-  <button class="tab neon-yellow" data-category="出清區" aria-label="出清區">
-    <span class="tab-icon sale">SALE</span><span>出清區</span>
   </button>
 
 </nav>
@@ -547,14 +534,12 @@ dialog::backdrop{background:#000b}
 
       <label>分類
         <select id="productCategory" required>
-          <option value="新家具">新家具</option>
           <option value="家具">家具</option>
           <option value="花盆">花盆</option>
           <option value="戒指限男">戒指限男</option>
           <option value="戒指限女">戒指限女</option>
           <option value="作物限男">作物限男</option>
           <option value="作物限女">作物限女</option>
-          <option value="出清區">出清區</option>
         </select>
       </label>
 
@@ -563,7 +548,7 @@ dialog::backdrop{background:#000b}
       </label>
 
       <label>價格
-        <input id="productPrice" maxlength="40" required placeholder="例如：100T、80糖">
+        <input id="productPrice" maxlength="40" inputmode="numeric" autocomplete="off" required placeholder="輸入數字，例如 100">
       </label>
 
       <div>
@@ -604,6 +589,9 @@ import {
   getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
   onSnapshot, query, orderBy, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBWH6HxuAXNbTpRQKGhNU10P5oLWcE36yQ",
@@ -618,13 +606,14 @@ const ADMIN_UID="IhFebcTe8tTN0jtpyjKgGvN6NmY2";
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
+const storage=getStorage(app);
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 
 let products=[];
 let messages=[];
-let currentCategory="新家具";
+let currentCategory="家具";
 let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
@@ -1005,13 +994,28 @@ function setVariantsInForm(variants){
   refreshVariantImageOptions();
 }
 
+function formatPriceInput(value){
+  const digits=String(value??"").replace(/\D/g,"");
+  return digits?`NT$${digits}`:"";
+}
+
+$("#productPrice").addEventListener("input",event=>{
+  const input=event.target;
+  const digits=input.value.replace(/\D/g,"");
+  const formatted=digits?`NT$${digits}`:"";
+  if(input.value!==formatted){
+    input.value=formatted;
+    try{input.setSelectionRange(input.value.length,input.value.length)}catch{}
+  }
+});
+
 function openProductDialog(product=null){
   $("#productForm").reset();
   $("#productId").value=product?.id||"";
   $("#productDialogTitle").textContent=product?"編輯商品":"新增商品";
   $("#productCategory").value=product?.category||currentCategory;
   $("#productName").value=product?.name||"";
-  $("#productPrice").value=product?.price||"";
+  $("#productPrice").value=formatPriceInput(product?.price||"");
 
   setVariantsInForm(
     product?.variants?.length
@@ -1069,6 +1073,92 @@ $("#productImage").addEventListener("change",async event=>{
   event.target.value="";
 });
 
+/* Firebase Storage：圖片只負責放檔案，商品讀取仍完全沿用原版 Firestore onSnapshot */
+function isFirebaseStorageUrl(url){
+  const s=String(url||"");
+  return s.includes("firebasestorage.googleapis.com") ||
+         s.includes("storage.googleapis.com/ostar-shop") ||
+         s.includes("ostar-shop.firebasestorage.app");
+}
+
+async function uploadProcessedImage(processed, productId, index){
+  const response=await fetch(processed);
+  const blob=await response.blob();
+  const path=`products/${productId}/image_${Date.now()}_${index}.webp`;
+  const fileRef=storageRef(storage,path);
+  await uploadBytes(fileRef,blob,{
+    contentType:"image/webp",
+    cacheControl:"public,max-age=31536000,immutable"
+  });
+  return await getDownloadURL(fileRef);
+}
+
+async function migrateLegacyProduct(product){
+  const oldImages=Array.isArray(product.images)
+    ? product.images.filter(Boolean)
+    : (product.image?[product.image]:[]);
+  if(!oldImages.length) return false;
+
+  let changed=false;
+  const newImages=[];
+  for(let i=0;i<oldImages.length;i++){
+    const src=String(oldImages[i]||"");
+    if(!src) continue;
+    if(isFirebaseStorageUrl(src)){
+      newImages.push(src);
+      continue;
+    }
+    // 原版舊圖片通常是 data:image/...；這種不需要跨網域，直接轉 Blob 後上傳。
+    const response=await fetch(src);
+    const blob=await response.blob();
+    const path=`products/${product.id}/migrated_${Date.now()}_${i}.webp`;
+    const fileRef=storageRef(storage,path);
+    await uploadBytes(fileRef,blob,{
+      contentType:blob.type||"image/webp",
+      cacheControl:"public,max-age=31536000,immutable"
+    });
+    newImages.push(await getDownloadURL(fileRef));
+    changed=true;
+  }
+  if(changed){
+    await updateDoc(doc(db,"products",product.id),{
+      images:newImages,
+      image:newImages[0]||"",
+      updatedAt:serverTimestamp()
+    });
+  }
+  return changed;
+}
+
+async function migrateAllLegacyImages(){
+  if(!isAdmin()) return toast("只有管理員可以搬移舊圖片");
+  const btn=$("#migrateImagesBtn");
+  btn.disabled=true;
+  const oldText=btn.textContent;
+  try{
+    // 這裡只讀一次 products，不改原本商品即時監聽。
+    const snapshot=await new Promise((resolve,reject)=>{
+      const unsub=onSnapshot(collection(db,"products"),snap=>{unsub();resolve(snap)},err=>{unsub();reject(err)});
+    });
+    const all=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    let changed=0, failed=0;
+    for(let i=0;i<all.length;i++){
+      btn.textContent=`搬移圖片 ${i+1}/${all.length}…`;
+      try{ if(await migrateLegacyProduct(all[i])) changed++; }
+      catch(e){ failed++; console.error("圖片搬移失敗",all[i].name,e); }
+    }
+    toast(`完成：${changed} 個商品已轉為 Storage${failed?`，${failed} 個失敗`:""}`);
+  }catch(e){
+    console.error(e);
+    toast("舊圖片搬移失敗");
+  }finally{
+    btn.disabled=false;
+    btn.textContent=oldText;
+  }
+}
+
+$("#migrateImagesBtn").onclick=migrateAllLegacyImages;
+
 /* 儲存商品 */
 $("#productForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -1079,23 +1169,30 @@ $("#productForm").addEventListener("submit",async event=>{
   }
 
   try{
+    const variants=getVariantsFromForm();
+    const productIdForUpload=$("#productId").value || doc(collection(db,"products")).id;
     const images=[];
 
-    for(const item of selectedImageItems){
-      if(item.processed) images.push(item.processed);
-      else if(item.src && !item.src.startsWith("blob:")) images.push(item.src);
-      else if(item.file){
-        images.push(await compressImage(item.file));
+    for(let i=0;i<selectedImageItems.length;i++){
+      const item=selectedImageItems[i];
+      // 舊有 Storage / data URL 圖片直接保留；新上傳圖片才送 Storage。
+      if(item.existing && item.src && !item.src.startsWith("blob:")){
+        images.push(item.src);
+      }else if(item.processed){
+        images.push(await uploadProcessedImage(item.processed,productIdForUpload,i));
+      }else if(item.file){
+        const processed=await compressImage(item.file);
+        images.push(await uploadProcessedImage(processed,productIdForUpload,i));
       }
     }
 
-    const variants=getVariantsFromForm();
+
     const stock=variants.reduce((sum,v)=>sum+v.stock,0);
 
     const payload={
       category:$("#productCategory").value,
       name:$("#productName").value.trim(),
-      price:$("#productPrice").value.trim(),
+      price:formatPriceInput($("#productPrice").value.trim()),
       stock,
       variants,
       images,
@@ -1361,6 +1458,7 @@ onAuthStateChanged(auth,user=>{
   currentUser=user;
   $("#adminBtn").textContent=isAdmin()?"登出管理員":"管理員登入";
   $("#addBtn").classList.toggle("hidden",!isAdmin());
+  $("#migrateImagesBtn").classList.toggle("hidden",!isAdmin());
   renderProducts();
   renderMessages();
 });
@@ -1370,4 +1468,3 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
