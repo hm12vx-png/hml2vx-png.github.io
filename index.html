@@ -214,7 +214,7 @@ button{cursor:pointer}
 /* 商品 */
 .grid{
   display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
+  grid-template-columns:repeat(8,minmax(0,1fr));
   gap:14px;
 }
 .card{
@@ -230,11 +230,9 @@ button{cursor:pointer}
   content:"";position:absolute;inset:0;background:#17171b;z-index:0;
 }
 .media img{
-  position:relative;z-index:1;
-  width:180px!important;height:180px!important;
-  min-width:180px;min-height:180px;
-  max-width:180px;max-height:180px;
-  aspect-ratio:1/1;display:block;object-fit:contain;
+  position:relative;z-index:1;width:240px!important;height:180px!important;
+  min-width:240px;min-height:180px;max-width:240px;max-height:180px;
+  aspect-ratio:4/3;display:block;object-fit:contain;
 }
 .body{
   padding:12px;display:grid;
@@ -332,7 +330,7 @@ dialog::backdrop{background:#000b}
   grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;
   align-content:start;color:#777;overflow:auto;background:#111;
 }
-.preview-item{position:relative;aspect-ratio:1/1;border:1px solid #333;border-radius:8px;overflow:hidden;background:#17171b}
+.preview-item{position:relative;aspect-ratio:4/3;border:1px solid #333;border-radius:8px;overflow:hidden;background:#17171b}
 .preview-item img{width:100%;height:100%;object-fit:contain;display:block}
 .preview-remove{
   position:absolute;top:4px;right:4px;width:24px;height:24px;border:0;
@@ -413,7 +411,12 @@ dialog::backdrop{background:#000b}
 
 <!-- 風格 3：霓虹分類列 -->
 <nav id="tabs" class="tabs">
-<button class="tab neon-orange" data-category="家具" aria-label="家具">
+
+  <button class="tab neon-red active" data-category="新家具" aria-label="新家具">
+    <span class="tab-icon badge">NEW</span><span>新家具</span>
+  </button>
+
+  <button class="tab neon-orange" data-category="家具" aria-label="家具">
     <span class="tab-icon" aria-hidden="true">
       <svg viewBox="0 0 48 48" fill="none">
         <path d="M9 25v-6c0-5 4-9 9-9h12c5 0 9 4 9 9v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
@@ -474,11 +477,16 @@ dialog::backdrop{background:#000b}
       </svg>
     </span><span>作物限女</span>
   </button>
+
+  <button class="tab neon-yellow" data-category="出清區" aria-label="出清區">
+    <span class="tab-icon sale">SALE</span><span>出清區</span>
+  </button>
+
 </nav>
 
 <section class="section-head">
   <div>
-    <div class="section-title-line"><h3 id="sectionTitle">家具</h3><span id="categoryNote" class="category-note hidden">購買戒指由買方支付升級費用</span></div>
+    <div class="section-title-line"><h3 id="sectionTitle">新家具</h3><span id="categoryNote" class="category-note hidden">購買戒指由買方支付升級費用</span></div>
     <div id="productCount" class="count">0 件商品</div>
   </div>
   <div class="sort-box">
@@ -539,12 +547,14 @@ dialog::backdrop{background:#000b}
 
       <label>分類
         <select id="productCategory" required>
+          <option value="新家具">新家具</option>
           <option value="家具">家具</option>
           <option value="花盆">花盆</option>
           <option value="戒指限男">戒指限男</option>
           <option value="戒指限女">戒指限女</option>
           <option value="作物限男">作物限男</option>
           <option value="作物限女">作物限女</option>
+          <option value="出清區">出清區</option>
         </select>
       </label>
 
@@ -614,7 +624,7 @@ const $$=s=>[...document.querySelectorAll(s)];
 
 let products=[];
 let messages=[];
-let currentCategory="家具";
+let currentCategory="新家具";
 let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
@@ -732,7 +742,7 @@ function renderProducts(){
       img.alt=product.name||"商品圖片";
       img.loading="lazy";
       img.decoding="async";
-      img.width=180; img.height=180;
+      img.width=240; img.height=180;
       img.src=productImages[0];
       img.onerror=()=>{
         img.remove();
@@ -1360,4 +1370,3 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
