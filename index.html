@@ -1339,3 +1339,34 @@ onSnapshot(
   },
   error=>{
     console.error(error);
+    $("#productGrid").innerHTML='<div class="empty">商品讀取失敗</div>';
+  }
+);
+
+/* Firebase 留言即時監聽 */
+onSnapshot(
+  query(collection(db,"messages"),orderBy("createdAt","desc")),
+  snapshot=>{
+    messages=snapshot.docs.map(document=>({id:document.id,...document.data()}));
+    renderMessages();
+  },
+  error=>{
+    console.error(error);
+    $("#messages").innerHTML='<div class="message">留言讀取失敗</div>';
+  }
+);
+
+/* 登入狀態 */
+onAuthStateChanged(auth,user=>{
+  currentUser=user;
+  $("#adminBtn").textContent=isAdmin()?"登出管理員":"管理員登入";
+  $("#addBtn").classList.toggle("hidden",!isAdmin());
+  renderProducts();
+  renderMessages();
+});
+
+ensureOneVariantRow();
+</script>
+
+</body>
+</html>
