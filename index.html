@@ -222,17 +222,35 @@ button{cursor:pointer}
   overflow:hidden;min-width:0;display:flex;flex-direction:column;
 }
 .media{
-  position:relative;background:#222;display:flex;
-  justify-content:center;align-items:center;overflow:hidden;
-  width:100%;height:210px;min-height:210px;padding:14px;
+  position:relative;
+  background:#222;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  width:100%;
+  height:210px;
+  min-height:210px;
+  padding:14px;
 }
 .media::before{
   content:"";position:absolute;inset:0;background:#17171b;z-index:0;
 }
+/* 商品圖片統一尺寸：所有商品使用完全相同的 180×180 圖片框，
+   保留原比例，不拉伸、不變形、不因原圖尺寸不同而忽大忽小 */
 .media img{
-  position:relative;z-index:1;width:240px!important;height:180px!important;
-  min-width:240px;min-height:180px;max-width:240px;max-height:180px;
-  aspect-ratio:4/3;display:block;object-fit:contain;
+  position:relative;
+  z-index:1;
+  width:180px!important;
+  height:180px!important;
+  min-width:180px;
+  min-height:180px;
+  max-width:180px;
+  max-height:180px;
+  aspect-ratio:1/1;
+  display:block;
+  object-fit:contain;
+  object-position:center;
 }
 .body{
   padding:12px;display:grid;
@@ -380,29 +398,7 @@ dialog::backdrop{background:#000b}
 
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <div class="logo">O²</div>
-    <div>
-      <h1>O² M★STAR交易區</h1>
-      <div class="brand-meta">
-        <small>販售・收購・交流</small>
-        <a class="discord-admin-link top-contact-link"
-           href="https://discord.com/users/621734178228273155"
-           target="_blank" rel="noopener noreferrer">聯絡管理員</a>
-      </div>
-    </div>
-  </div>
-  <button id="adminBtn" class="btn">管理員登入</button>
-</header>
-
 <main class="wrap">
-
-<section class="hero">
-  <div class="hero-banner">
-    <img src="ostar-logo.PNG" alt="O² M★STAR交易區">
-  </div>
-</section>
 
 <section class="toolbar">
   <input id="searchInput" class="search" placeholder="搜尋商品名稱…">
@@ -412,11 +408,7 @@ dialog::backdrop{background:#000b}
 <!-- 風格 3：霓虹分類列 -->
 <nav id="tabs" class="tabs">
 
-  <button class="tab neon-red active" data-category="新家具" aria-label="新家具">
-    <span class="tab-icon badge">NEW</span><span>新家具</span>
-  </button>
-
-  <button class="tab neon-orange" data-category="家具" aria-label="家具">
+  <button class="tab neon-orange active" data-category="家具" aria-label="家具">
     <span class="tab-icon" aria-hidden="true">
       <svg viewBox="0 0 48 48" fill="none">
         <path d="M9 25v-6c0-5 4-9 9-9h12c5 0 9 4 9 9v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
@@ -476,10 +468,6 @@ dialog::backdrop{background:#000b}
         <path d="M24 21c0-6 3-10 8-12 1 6-1 10-8 12Z" fill="currentColor"/>
       </svg>
     </span><span>作物限女</span>
-  </button>
-
-  <button class="tab neon-yellow" data-category="出清區" aria-label="出清區">
-    <span class="tab-icon sale">SALE</span><span>出清區</span>
   </button>
 
 </nav>
@@ -547,14 +535,12 @@ dialog::backdrop{background:#000b}
 
       <label>分類
         <select id="productCategory" required>
-          <option value="新家具">新家具</option>
           <option value="家具">家具</option>
           <option value="花盆">花盆</option>
           <option value="戒指限男">戒指限男</option>
           <option value="戒指限女">戒指限女</option>
           <option value="作物限男">作物限男</option>
           <option value="作物限女">作物限女</option>
-          <option value="出清區">出清區</option>
         </select>
       </label>
 
@@ -563,7 +549,7 @@ dialog::backdrop{background:#000b}
       </label>
 
       <label>價格
-        <input id="productPrice" maxlength="40" required placeholder="例如：100T、80糖">
+        <input id="productPrice" maxlength="40" required inputmode="decimal" placeholder="例如：NT$ 1,200">
       </label>
 
       <div>
@@ -601,9 +587,12 @@ import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, serverTimestamp
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc,
+  onSnapshot, query, orderBy, serverTimestamp, where
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import {
+  getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBWH6HxuAXNbTpRQKGhNU10P5oLWcE36yQ",
@@ -618,13 +607,14 @@ const ADMIN_UID="IhFebcTe8tTN0jtpyjKgGvN6NmY2";
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
+const storage=getStorage(app);
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 
 let products=[];
 let messages=[];
-let currentCategory="新家具";
+let currentCategory="家具";
 let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
@@ -649,8 +639,8 @@ function formatTime(timestamp){
   });
 }
 
-/* 圖片標準化：保留透明背景並固定 600×450 */
-function normalizeImageDataURL(src){
+/* 圖片處理：先縮成 600×450 WebP，實際檔案放 Firebase Storage */
+function normalizeImageBlob(src){
   return new Promise((resolve,reject)=>{
     const img=new Image();
     img.onload=()=>{
@@ -667,8 +657,10 @@ function normalizeImageDataURL(src){
         ctx.imageSmoothingEnabled=true;
         ctx.imageSmoothingQuality="high";
         ctx.drawImage(img,0,0,img.naturalWidth,img.naturalHeight,x,y,w,h);
-        const webp=canvas.toDataURL("image/webp",.82);
-        resolve(webp.startsWith("data:image/webp")?webp:canvas.toDataURL("image/png"));
+        canvas.toBlob(blob=>{
+          if(blob) resolve(blob);
+          else reject(new Error("圖片轉檔失敗"));
+        },"image/webp",.82);
       }catch(e){reject(e)}
     };
     img.onerror=reject;
@@ -680,13 +672,36 @@ function compressImage(file){
   return new Promise((resolve,reject)=>{
     const reader=new FileReader();
     reader.onload=async()=>{
-      try{resolve(await normalizeImageDataURL(reader.result))}
+      try{resolve(await normalizeImageBlob(reader.result))}
       catch(e){reject(e)}
     };
     reader.onerror=reject;
     reader.readAsDataURL(file);
   });
 }
+
+async function uploadProductImage(file, productId, index){
+  const blob=await compressImage(file);
+  const path=`products/${productId}/${Date.now()}_${index}.webp`;
+  const fileRef=storageRef(storage,path);
+  await uploadBytes(fileRef,blob,{contentType:"image/webp"});
+  return await getDownloadURL(fileRef);
+}
+
+/* 價格格式：後台輸入金額後自動加上 NT$；保留原有文字價格相容性 */
+function formatNTPrice(value){
+  const raw=String(value??"").trim();
+  if(!raw) return "";
+  const cleaned=raw.replace(/^NT\$?\s*/i,"").trim();
+  if(!cleaned) return "";
+  return `NT$ ${cleaned}`;
+}
+function normalizePriceInput(){
+  const input=$("#productPrice");
+  if(input && input.value.trim()) input.value=formatNTPrice(input.value);
+}
+$("#productPrice")?.addEventListener("blur",normalizePriceInput);
+$("#productPrice")?.addEventListener("change",normalizePriceInput);
 
 /* 商品卡片 */
 function getProductPrice(product){
@@ -767,7 +782,7 @@ function renderProducts(){
 
     const price=document.createElement("div");
     price.className="price";
-    price.textContent=product.price||"";
+    price.textContent=formatNTPrice(product.price||"");
 
     const variants=Array.isArray(product.variants)&&product.variants.length
       ? product.variants
@@ -1011,7 +1026,7 @@ function openProductDialog(product=null){
   $("#productDialogTitle").textContent=product?"編輯商品":"新增商品";
   $("#productCategory").value=product?.category||currentCategory;
   $("#productName").value=product?.name||"";
-  $("#productPrice").value=product?.price||"";
+  $("#productPrice").value=formatNTPrice(product?.price||"");
 
   setVariantsInForm(
     product?.variants?.length
@@ -1031,7 +1046,7 @@ function openProductDialog(product=null){
 }
 
 /* 上傳圖片 */
-$("#productImage").addEventListener("change",async event=>{
+$("#productImage").addEventListener("change",event=>{
   const files=[...event.target.files||[]];
   if(!files.length) return;
 
@@ -1043,27 +1058,14 @@ $("#productImage").addEventListener("change",async event=>{
   }
 
   const filesToAdd=files.slice(0,remaining);
-
   const items=filesToAdd.map(file=>({
     file,
     src:URL.createObjectURL(file),
-    processing:true,
+    processing:false,
     existing:false
   }));
 
   selectedImageItems.push(...items);
-  renderImagePreview();
-
-  await Promise.all(items.map(async item=>{
-    try{
-      item.processed=await compressImage(item.file);
-    }catch(e){
-      console.warn("圖片標準化失敗",e);
-    }finally{
-      item.processing=false;
-    }
-  }));
-
   renderImagePreview();
   refreshVariantImageOptions();
   event.target.value="";
@@ -1078,14 +1080,24 @@ $("#productForm").addEventListener("submit",async event=>{
     return;
   }
 
+  const saveButton=$("#productForm button[type='submit']");
+  saveButton.disabled=true;
+  saveButton.textContent="儲存中…";
+
   try{
+    const id=$("#productId").value;
+    const productId=id || doc(collection(db,"products")).id;
     const images=[];
 
+    /* 保留原有圖片網址；新選取圖片才上傳 Storage */
+    let newIndex=0;
     for(const item of selectedImageItems){
-      if(item.processed) images.push(item.processed);
-      else if(item.src && !item.src.startsWith("blob:")) images.push(item.src);
-      else if(item.file){
-        images.push(await compressImage(item.file));
+      if(item.existing && item.src && !item.src.startsWith("blob:")){
+        images.push(item.src);
+      }else if(item.file){
+        toast(`圖片上傳中 ${newIndex+1}/${selectedImageItems.length}…`);
+        images.push(await uploadProductImage(item.file,productId,newIndex));
+        newIndex++;
       }
     }
 
@@ -1095,7 +1107,7 @@ $("#productForm").addEventListener("submit",async event=>{
     const payload={
       category:$("#productCategory").value,
       name:$("#productName").value.trim(),
-      price:$("#productPrice").value.trim(),
+      price:formatNTPrice($("#productPrice").value.trim()),
       stock,
       variants,
       images,
@@ -1103,14 +1115,12 @@ $("#productForm").addEventListener("submit",async event=>{
       updatedAt:serverTimestamp()
     };
 
-    const id=$("#productId").value;
-
     if(id){
       await updateDoc(doc(db,"products",id),payload);
       toast("商品已更新");
     }else{
       payload.createdAt=serverTimestamp();
-      await addDoc(collection(db,"products"),payload);
+      await setDoc(doc(db,"products",productId),payload);
       toast("商品已新增");
     }
 
@@ -1118,6 +1128,9 @@ $("#productForm").addEventListener("submit",async event=>{
   }catch(error){
     console.error(error);
     toast("商品儲存失敗");
+  }finally{
+    saveButton.disabled=false;
+    saveButton.textContent="儲存商品";
   }
 });
 
@@ -1181,7 +1194,7 @@ $("#tabs").addEventListener("click",event=>{
   $$(".tab").forEach(tab=>tab.classList.remove("active"));
   button.classList.add("active");
   currentCategory=button.dataset.category;
-  renderProducts();
+  subscribeProducts(["家具","花盆","戒指限男","戒指限女","作物限男","作物限女"].includes(currentCategory) ? currentCategory : "家具");
 });
 
 /* 搜尋 */
@@ -1330,18 +1343,43 @@ function renderMessages(){
   });
 }
 
-/* Firebase 商品即時監聽 */
-onSnapshot(
-  query(collection(db,"products"),orderBy("createdAt","desc")),
-  snapshot=>{
-    products=snapshot.docs.map(document=>({id:document.id,...document.data()}));
-    renderProducts();
-  },
-  error=>{
-    console.error(error);
-    $("#productGrid").innerHTML='<div class="empty">商品讀取失敗</div>';
+/* Firebase 商品即時監聽：只讀取目前分類，避免首頁一次下載全部商品 */
+let unsubscribeProducts=null;
+let productRequestToken=0;
+
+function subscribeProducts(category){
+  const token=++productRequestToken;
+
+  if(unsubscribeProducts){
+    unsubscribeProducts();
+    unsubscribeProducts=null;
   }
-);
+
+  products=[];
+  $("#productGrid").innerHTML='<div class="empty">讀取商品中…</div>';
+
+  unsubscribeProducts=onSnapshot(
+    query(
+      collection(db,"products"),
+      where("category","==",category)
+    ),
+    snapshot=>{
+      if(token!==productRequestToken) return;
+      products=snapshot.docs.map(document=>({id:document.id,...document.data()}));
+      products.sort((a,b)=>{
+        const ta=a.createdAt?.toMillis?.()||0;
+        const tb=b.createdAt?.toMillis?.()||0;
+        return tb-ta;
+      });
+      renderProducts();
+    },
+    error=>{
+      console.error(error);
+      if(token!==productRequestToken) return;
+      $("#productGrid").innerHTML='<div class="empty">商品讀取失敗</div>';
+    }
+  );
+}
 
 /* Firebase 留言即時監聽 */
 onSnapshot(
@@ -1366,6 +1404,7 @@ onAuthStateChanged(auth,user=>{
 });
 
 ensureOneVariantRow();
+subscribeProducts(currentCategory);
 </script>
 
 </body>
