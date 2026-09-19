@@ -139,13 +139,6 @@ button{cursor:pointer}
     inset 0 0 12px rgba(255,255,255,.06);
 }
 .tab > span:last-child{font-weight:800}
-.en-category{
-  font-size:10px;
-  font-weight:600;
-  opacity:.72;
-  margin-left:3px;
-  letter-spacing:.1px;
-}
 .tab-icon{
   width:31px;height:31px;min-width:31px;
   display:inline-flex;align-items:center;justify-content:center;
@@ -237,12 +230,9 @@ button{cursor:pointer}
   content:"";position:absolute;inset:0;background:#17171b;z-index:0;
 }
 .media img{
-  position:relative;z-index:1;
-  width:240px!important;height:180px!important;
-  min-width:240px;min-height:180px;
-  max-width:240px;max-height:180px;
-  aspect-ratio:4/3;
-  display:block;object-fit:contain;
+  position:relative;z-index:1;width:240px!important;height:180px!important;
+  min-width:240px;min-height:180px;max-width:240px;max-height:180px;
+  aspect-ratio:4/3;display:block;object-fit:contain;
 }
 .body{
   padding:12px;display:grid;
@@ -253,43 +243,10 @@ button{cursor:pointer}
   font-size:11px;color:#bbb;height:18px;line-height:18px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.name-wrap{
-  min-width:0;
-  height:36px;
-  overflow:hidden;
-}
 .name{
-  font-size:13px;font-weight:800;line-height:18px;height:18px;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  word-break:break-word;
-}
-.name-en{
-  font-size:11px;font-weight:600;line-height:17px;height:17px;
-  color:#aaa;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  font-family:Arial,"Microsoft JhengHei",sans-serif;
-}
-.price-input-wrap{
-  display:flex;
-  align-items:center;
-  width:100%;
-}
-.price-prefix{
-  height:43px;
-  display:flex;
-  align-items:center;
-  padding:0 10px;
-  background:#25252b;
-  color:#ffd86b;
-  border:1px solid #3b3b42;
-  border-right:0;
-  border-radius:10px 0 0 10px;
-  font-weight:900;
-  white-space:nowrap;
-}
-.price-input-wrap input{
-  flex:1;
-  min-width:0;
-  border-radius:0 10px 10px 0 !important;
+  font-size:13px;font-weight:800;line-height:18px;height:36px;
+  overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:2;word-break:break-word;
 }
 .price{
   font-size:18px;font-weight:900;height:27px;line-height:27px;
@@ -436,9 +393,16 @@ dialog::backdrop{background:#000b}
       </div>
     </div>
   </div>
+  <button id="adminBtn" class="btn">管理員登入</button>
 </header>
 
 <main class="wrap">
+
+<section class="hero">
+  <div class="hero-banner">
+    <img src="ostar-logo.PNG" alt="O² M★STAR交易區">
+  </div>
+</section>
 
 <section class="toolbar">
   <input id="searchInput" class="search" placeholder="搜尋商品名稱…">
@@ -447,14 +411,19 @@ dialog::backdrop{background:#000b}
 
 <!-- 風格 3：霓虹分類列 -->
 <nav id="tabs" class="tabs">
-<button class="tab neon-orange" data-category="家具" aria-label="家具">
+
+  <button class="tab neon-red active" data-category="新家具" aria-label="新家具">
+    <span class="tab-icon badge">NEW</span><span>新家具</span>
+  </button>
+
+  <button class="tab neon-orange" data-category="家具" aria-label="家具">
     <span class="tab-icon" aria-hidden="true">
       <svg viewBox="0 0 48 48" fill="none">
         <path d="M9 25v-6c0-5 4-9 9-9h12c5 0 9 4 9 9v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
         <path d="M7 25h34v8H7z" fill="currentColor"/>
         <path d="M10 33v6M38 33v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
       </svg>
-    </span><span>家具 <small class="en-category">Furniture</small></span>
+    </span><span>家具</span>
   </button>
 
   <button class="tab neon-green" data-category="花盆" aria-label="花盆">
@@ -465,7 +434,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 22v-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         <path d="M13 27h22l-3 12H16l-3-12Z" stroke="currentColor" stroke-width="3"/>
       </svg>
-    </span><span>花盆 <small class="en-category">Flower Pots</small></span>
+    </span><span>花盆</span>
   </button>
 
   <button class="tab neon-cyan" data-category="戒指限男" aria-label="戒指限男">
@@ -474,7 +443,7 @@ dialog::backdrop{background:#000b}
         <circle cx="24" cy="27" r="11" stroke="currentColor" stroke-width="4"/>
         <path d="M24 6l5 7-5 7-5-7 5-7Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
       </svg>
-    </span><span>戒指限男 <small class="en-category">Men's Rings</small></span>
+    </span><span>戒指限男</span>
   </button>
 
   <!-- 戒指限女：已改為「戒指」圖示，不再使用愛心 -->
@@ -485,7 +454,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 6l5 7-5 7-5-7 5-7Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
         <circle cx="24" cy="13" r="2" fill="currentColor"/>
       </svg>
-    </span><span>戒指限女 <small class="en-category">Women's Rings</small></span>
+    </span><span>戒指限女</span>
   </button>
 
   <button class="tab neon-purple" data-category="作物限男" aria-label="作物限男">
@@ -495,7 +464,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 28c-10 1-14-4-14-10 8-1 14 2 14 10Z" fill="currentColor"/>
         <path d="M24 24c10 1 14-4 14-10-8-1-14 2-14 10Z" fill="currentColor"/>
       </svg>
-    </span><span>作物限男 <small class="en-category">Men's Crops</small></span>
+    </span><span>作物限男</span>
   </button>
 
   <button class="tab neon-blue" data-category="作物限女" aria-label="作物限女">
@@ -506,13 +475,18 @@ dialog::backdrop{background:#000b}
         <path d="M24 34c9 0 13-5 13-11-8 0-13 3-13 11Z" fill="currentColor"/>
         <path d="M24 21c0-6 3-10 8-12 1 6-1 10-8 12Z" fill="currentColor"/>
       </svg>
-    </span><span>作物限女 <small class="en-category">Women's Crops</small></span>
+    </span><span>作物限女</span>
   </button>
+
+  <button class="tab neon-yellow" data-category="出清區" aria-label="出清區">
+    <span class="tab-icon sale">SALE</span><span>出清區</span>
+  </button>
+
 </nav>
 
 <section class="section-head">
   <div>
-    <div class="section-title-line"><h3 id="sectionTitle">家具</h3><span id="categoryNote" class="category-note hidden">購買戒指由買方支付升級費用</span></div>
+    <div class="section-title-line"><h3 id="sectionTitle">新家具</h3><span id="categoryNote" class="category-note hidden">購買戒指由買方支付升級費用</span></div>
     <div id="productCount" class="count">0 件商品</div>
   </div>
   <div class="sort-box">
@@ -573,28 +547,23 @@ dialog::backdrop{background:#000b}
 
       <label>分類
         <select id="productCategory" required>
-<option value="家具">家具 Furniture</option>
-          <option value="花盆">花盆 Flower Pots</option>
-          <option value="戒指限男">戒指限男 Men's Rings</option>
-          <option value="戒指限女">戒指限女 Women's Rings</option>
-          <option value="作物限男">作物限男 Men's Crops</option>
-          <option value="作物限女">作物限女 Women's Crops</option>
-</select>
+          <option value="新家具">新家具</option>
+          <option value="家具">家具</option>
+          <option value="花盆">花盆</option>
+          <option value="戒指限男">戒指限男</option>
+          <option value="戒指限女">戒指限女</option>
+          <option value="作物限男">作物限男</option>
+          <option value="作物限女">作物限女</option>
+          <option value="出清區">出清區</option>
+        </select>
       </label>
 
       <label>商品名稱
-        <input id="productName" maxlength="80" required placeholder="輸入中文商品名稱">
-      </label>
-
-      <label>英文商品名稱
-        <input id="productNameEn" maxlength="100" placeholder="輸入英文商品名稱，例如：Elegant Sofa">
+        <input id="productName" maxlength="80" required placeholder="輸入商品名稱">
       </label>
 
       <label>價格
-        <div class="price-input-wrap">
-          <span class="price-prefix">$NT</span>
-          <input id="productPrice" maxlength="40" required placeholder="例如：100、80">
-        </div>
+        <input id="productPrice" maxlength="40" required placeholder="例如：100T、80糖">
       </label>
 
       <div>
@@ -655,7 +624,7 @@ const $$=s=>[...document.querySelectorAll(s)];
 
 let products=[];
 let messages=[];
-let currentCategory="家具";
+let currentCategory="新家具";
 let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
@@ -791,18 +760,10 @@ function renderProducts(){
     badge.className="badge-text";
     badge.textContent=product.category||"";
 
-    const nameWrap=document.createElement("div");
-    nameWrap.className="name-wrap";
-
     const name=document.createElement("div");
     name.className="name";
     name.textContent=product.name||"";
     name.title=product.name||"";
-
-    const englishName=document.createElement("div");
-    englishName.className="name-en";
-    englishName.textContent=product.nameEn || "";
-    englishName.title=product.nameEn || "";
 
     const price=document.createElement("div");
     price.className="price";
@@ -868,7 +829,7 @@ function renderProducts(){
       setTimeout(updateVariantImage,0);
     }
 
-    nameWrap.append(name,englishName);\n    body.append(badge,nameWrap,summary,price,stock);
+    body.append(badge,name,summary,price,stock);
 
     if(isAdmin()){
       const actions=document.createElement("div");
@@ -1050,7 +1011,6 @@ function openProductDialog(product=null){
   $("#productDialogTitle").textContent=product?"編輯商品":"新增商品";
   $("#productCategory").value=product?.category||currentCategory;
   $("#productName").value=product?.name||"";
-  $("#productNameEn").value=product?.nameEn||"";
   $("#productPrice").value=product?.price||"";
 
   setVariantsInForm(
@@ -1135,7 +1095,6 @@ $("#productForm").addEventListener("submit",async event=>{
     const payload={
       category:$("#productCategory").value,
       name:$("#productName").value.trim(),
-      nameEn:$("#productNameEn").value.trim(),
       price:$("#productPrice").value.trim(),
       stock,
       variants,
@@ -1380,35 +1339,3 @@ onSnapshot(
   },
   error=>{
     console.error(error);
-    $("#productGrid").innerHTML='<div class="empty">商品讀取失敗</div>';
-  }
-);
-
-/* Firebase 留言即時監聽 */
-onSnapshot(
-  query(collection(db,"messages"),orderBy("createdAt","desc")),
-  snapshot=>{
-    messages=snapshot.docs.map(document=>({id:document.id,...document.data()}));
-    renderMessages();
-  },
-  error=>{
-    console.error(error);
-    $("#messages").innerHTML='<div class="message">留言讀取失敗</div>';
-  }
-);
-
-/* 登入狀態 */
-onAuthStateChanged(auth,user=>{
-  currentUser=user;
-  $("#adminBtn").textContent=isAdmin()?"登出管理員":"管理員登入";
-  $("#addBtn").classList.toggle("hidden",!isAdmin());
-  renderProducts();
-  renderMessages();
-});
-
-ensureOneVariantRow();
-</script>
-
-</body>
-</html>
-
