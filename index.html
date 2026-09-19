@@ -477,11 +477,6 @@ dialog::backdrop{background:#000b}
       </svg>
     </span><span>作物限女</span>
   </button>
-
-  <button class="tab neon-yellow" data-category="出清區" aria-label="出清區">
-    <span class="tab-icon sale">SALE</span><span>出清區</span>
-  </button>
-
 </nav>
 
 <section class="section-head">
@@ -547,14 +542,12 @@ dialog::backdrop{background:#000b}
 
       <label>分類
         <select id="productCategory" required>
-          <option value="新家具">新家具</option>
           <option value="家具">家具</option>
           <option value="花盆">花盆</option>
           <option value="戒指限男">戒指限男</option>
           <option value="戒指限女">戒指限女</option>
           <option value="作物限男">作物限男</option>
           <option value="作物限女">作物限女</option>
-          <option value="出清區">出清區</option>
         </select>
       </label>
 
@@ -624,7 +617,7 @@ const $$=s=>[...document.querySelectorAll(s)];
 
 let products=[];
 let messages=[];
-let currentCategory="新家具";
+let currentCategory="家具";
 let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
@@ -1370,3 +1363,4 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
