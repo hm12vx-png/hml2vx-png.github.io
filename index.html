@@ -669,6 +669,29 @@ function isAdmin(){
   return Boolean(currentUser && currentUser.uid===ADMIN_UID);
 }
 
+/* Firebase 錯誤分類：讓管理員直接知道是 Firestore 還是 Storage 權限問題 */
+function getFirebaseErrorMessage(error, action="操作失敗"){
+  const code=String(error?.code||"");
+  const message=String(error?.message||"");
+
+  if(code==="permission-denied" || code.includes("firestore/permission-denied")){
+    return `Firestore 權限錯誤：${action}需要管理員權限`;
+  }
+
+  if(code.startsWith("storage/") || message.toLowerCase().includes("storage")){
+    if(code==="storage/unauthorized" || code==="storage/unauthenticated"){
+      return `Storage 權限錯誤：${action}需要管理員權限`;
+    }
+    return `Storage 錯誤：${code||message}`;
+  }
+
+  if(code.startsWith("auth/")){
+    return `登入權限錯誤：${code}`;
+  }
+
+  return `${action}：${code||message||"未知錯誤"}`;
+}
+
 function formatTime(timestamp){
   if(!timestamp || !timestamp.toDate) return "";
   return timestamp.toDate().toLocaleString("zh-TW",{
@@ -939,7 +962,8 @@ function renderProducts(){
           await deleteDoc(doc(db,"products",product.id));
           toast("商品已刪除");
         }catch(e){
-          console.error(e); toast("商品刪除失敗");
+          console.error("商品刪除失敗",e);
+          toast(getFirebaseErrorMessage(e,"刪除商品"));
         }
       };
 
@@ -1360,8 +1384,8 @@ $("#productForm").addEventListener("submit",async event=>{
 
     $("#productDialog").close();
   }catch(error){
-    console.error(error);
-    toast("商品儲存失敗");
+    console.error("商品儲存失敗",error);
+    toast(getFirebaseErrorMessage(error,"儲存商品"));
   }
 });
 
@@ -1615,4 +1639,3 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
