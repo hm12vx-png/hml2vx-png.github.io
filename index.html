@@ -564,7 +564,7 @@ dialog::backdrop{background:#000b}
       <button class="icon-btn" type="button" data-close="productDialog">×</button>
     </div>
 
-    <form id="productForm" class="form">
+    <form id="productForm" class="form" novalidate>
       <input id="productId" type="hidden">
 
       <label>分類
@@ -1340,7 +1340,11 @@ async function migrateAllLegacyImages(){
 
 $("#migrateImagesBtn").onclick=migrateAllLegacyImages;
 
-/* 儲存商品 */
+/* 儲存商品：修正版 v3
+ * 1. 不再讓「英文名稱自動翻譯」阻塞商品儲存。
+ * 2. 新商品先建立 Firestore 文件，再上傳圖片。
+ * 3. 關閉瀏覽器原生表單阻擋，改由程式明確提示缺少欄位。
+ */
 $("#productForm").addEventListener("submit",async event=>{
   event.preventDefault();
 
@@ -1353,68 +1357,105 @@ $("#productForm").addEventListener("submit",async event=>{
   }
 
   const saveButton=$("#productForm button[type=submit]");
-  const oldText=saveButton?.textContent||"儲存商品";
-  if(saveButton){ saveButton.disabled=true; saveButton.textContent="儲存中…"; }
+  const oldText=saveButton?.textContent || "儲存商品";
+  if(saveButton?.disabled) return;
+
+  const chineseName=$("#productName").value.trim();
+  const priceInput=$("#productPrice").value.trim();
+
+  if(!chineseName){
+    toast("請先輸入商品名稱",5000);
+    alert("請先輸入商品名稱");
+    return;
+  }
+  if(!priceInput){
+    toast("請先輸入價格",5000);
+    alert("請先輸入價格");
+    return;
+  }
+
+  if(saveButton){
+    saveButton.disabled=true;
+    saveButton.textContent="儲存中…";
+  }
+
+  let createdNewProductRef=null;
 
   try{
     const variants=getVariantsFromForm();
-    const productIdForUpload=$("#productId").value || doc(collection(db,"products")).id;
-    const images=[];
+    const stock=variants.reduce((sum,v)=>sum+v.stock,0);
 
+    /* 不等待 Google Translate；若英文欄空白，直接使用本站內建翻譯。 */
+    let englishName=$("#productNameEn").value.trim();
+    if(!englishName){
+      englishName=getEnglishProductName({name:chineseName});
+      $("#productNameEn").value=englishName;
+    }
+
+    const id=$("#productId").value.trim();
+    const productRef=id
+      ? doc(db,"products",id)
+      : doc(collection(db,"products"));
+
+    const basePayload={
+      category:$("#productCategory").value,
+      name:chineseName,
+      nameEn:englishName,
+      price:formatPriceInput(priceInput),
+      stock,
+      variants,
+      updatedAt:serverTimestamp()
+    };
+
+    /* 新商品先建立文件，避免 Storage Rules 若檢查 products/{id} 存在時被拒絕。 */
+    if(id){
+      await updateDoc(productRef,basePayload);
+    }else{
+      createdNewProductRef=productRef;
+      await setDoc(productRef,{
+        ...basePayload,
+        images:[],
+        image:"",
+        createdAt:serverTimestamp()
+      });
+    }
+
+    const images=[];
     for(let i=0;i<selectedImageItems.length;i++){
       const item=selectedImageItems[i];
       if(item.existing && item.src && !item.src.startsWith("blob:")){
         images.push(item.src);
       }else if(item.processed){
-        images.push(await uploadProcessedImage(item.processed,productIdForUpload,i));
+        images.push(await uploadProcessedImage(item.processed,productRef.id,i));
       }else if(item.file){
         const processed=await compressImage(item.file);
-        images.push(await uploadProcessedImage(processed,productIdForUpload,i));
+        images.push(await uploadProcessedImage(processed,productRef.id,i));
       }
     }
 
-    const stock=variants.reduce((sum,v)=>sum+v.stock,0);
-    const chineseName=$("#productName").value.trim();
-    let englishName=$("#productNameEn").value.trim();
-    if(!englishName && chineseName){
-      englishName=await autoTranslateProductName(chineseName);
-      $("#productNameEn").value=englishName;
-    }
-
-    const payload={
-      category:$("#productCategory").value,
-      name:chineseName,
-      nameEn:englishName,
-      price:formatPriceInput($("#productPrice").value.trim()),
-      stock,
-      variants,
+    await updateDoc(productRef,{
       images,
       image:images[0]||"",
       updatedAt:serverTimestamp()
-    };
+    });
 
-    const id=$("#productId").value;
-
-    try{
-      if(id){
-        await updateDoc(doc(db,"products",id),payload);
-        toast("商品已更新");
-      }else{
-        payload.createdAt=serverTimestamp();
-        await addDoc(collection(db,"products"),payload);
-        toast("商品已新增");
-      }
-    }catch(error){
-      showFirebaseError(error,"Firestore 儲存商品");
-      return;
-    }
-
+    toast(id ? "商品已更新" : "商品已新增",3500);
     $("#productDialog").close();
   }catch(error){
+    console.error("商品儲存失敗：",error);
     const phase=error?.__firebasePhase || "商品儲存";
     showFirebaseError(error,phase);
+
+    /* 若新商品已建立但後續圖片/更新失敗，刪除空白商品文件，避免留下殘缺資料。 */
+    if(createdNewProductRef){
+      try{ await deleteDoc(createdNewProductRef); }
+      catch(cleanupError){ console.warn("清理失敗的新增商品文件失敗",cleanupError); }
+    }
   }finally{
-    if(saveButton){ saveButton.disabled=false; saveButton.textContent=oldText; }
+    if(saveButton){
+      saveButton.disabled=false;
+      saveButton.textContent=oldText;
+    }
   }
 });
 
