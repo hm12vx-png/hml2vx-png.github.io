@@ -657,39 +657,52 @@ let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
 
-function toast(text){
+function toast(text, duration=2200){
   const el=$("#toast");
   el.textContent=text;
   el.classList.remove("hidden");
   clearTimeout(window.__toastTimer);
-  window.__toastTimer=setTimeout(()=>el.classList.add("hidden"),2200);
+  window.__toastTimer=setTimeout(()=>el.classList.add("hidden"),duration);
 }
 
 function isAdmin(){
   return Boolean(currentUser && currentUser.uid===ADMIN_UID);
 }
 
-/* Firebase 錯誤分類：讓管理員直接知道是 Firestore 還是 Storage 權限問題 */
-function getFirebaseErrorMessage(error, action="操作失敗"){
+function firebaseErrorMessage(error, fallback="操作失敗", phase="") {
   const code=String(error?.code||"");
   const message=String(error?.message||"");
-
-  if(code==="permission-denied" || code.includes("firestore/permission-denied")){
-    return `Firestore 權限錯誤：${action}需要管理員權限`;
+  const lower=(code+" "+message).toLowerCase();
+  const prefix=phase?`${phase}：`:"";
+  if(lower.includes("storage/unauthorized") || lower.includes("storage/permission-denied")) {
+    return `${prefix}Storage 權限錯誤（${code || "storage/unauthorized"}）\n只有管理員 UID ${ADMIN_UID} 可以上傳商品圖片`;
   }
-
-  if(code.startsWith("storage/") || message.toLowerCase().includes("storage")){
-    if(code==="storage/unauthorized" || code==="storage/unauthenticated"){
-      return `Storage 權限錯誤：${action}需要管理員權限`;
-    }
-    return `Storage 錯誤：${code||message}`;
+  if(lower.includes("storage/bucket-not-found")) {
+    return `${prefix}Storage 找不到 Bucket（${code}）\n請確認 Firebase Storage 已啟用，Bucket 必須是 ostar-shop.firebasestorage.app`;
   }
-
-  if(code.startsWith("auth/")){
-    return `登入權限錯誤：${code}`;
+  if(lower.includes("storage/unauthenticated")) {
+    return `${prefix}Storage 未登入（${code}）\n請先登入管理員帳號`;
   }
+  if(lower.includes("storage/")) {
+    return `${prefix}Storage 錯誤（${code}）\n${message}`;
+  }
+  if(lower.includes("permission-denied") || lower.includes("permission_denied") || lower.includes("missing or insufficient permissions")) {
+    return `${prefix}Firestore 權限錯誤（${code || "permission-denied"}）\n目前登入 UID：${currentUser?.uid || "未登入"}\n管理員 UID：${ADMIN_UID}`;
+  }
+  if(lower.includes("failed-precondition")) {
+    return `${prefix}Firestore 前置條件錯誤（${code}）\n${message}`;
+  }
+  if(lower.includes("firestore/")) {
+    return `${prefix}Firestore 錯誤（${code}）\n${message}`;
+  }
+  return `${prefix}${fallback}（${code || "unknown"}）\n${message || "請查看瀏覽器主控台"}`;
+}
 
-  return `${action}：${code||message||"未知錯誤"}`;
+function showFirebaseError(error, phase, fallback="商品儲存失敗") {
+  console.error(`[${phase}]`, error);
+  const text=firebaseErrorMessage(error,fallback,phase);
+  toast(text,9000);
+  alert(text);
 }
 
 function formatTime(timestamp){
@@ -962,8 +975,7 @@ function renderProducts(){
           await deleteDoc(doc(db,"products",product.id));
           toast("商品已刪除");
         }catch(e){
-          console.error("商品刪除失敗",e);
-          toast(getFirebaseErrorMessage(e,"刪除商品"));
+          console.error(e); toast("商品刪除失敗");
         }
       };
 
@@ -1250,11 +1262,16 @@ async function uploadProcessedImage(processed, productId, index){
   const blob=await response.blob();
   const path=`products/${productId}/image_${Date.now()}_${index}.webp`;
   const fileRef=storageRef(storage,path);
-  await uploadBytes(fileRef,blob,{
-    contentType:"image/webp",
-    cacheControl:"public,max-age=31536000,immutable"
-  });
-  return await getDownloadURL(fileRef);
+  try{
+    await uploadBytes(fileRef,blob,{
+      contentType:"image/webp",
+      cacheControl:"public,max-age=31536000,immutable"
+    });
+    return await getDownloadURL(fileRef);
+  }catch(error){
+    error.__firebasePhase="Storage 圖片上傳";
+    throw error;
+  }
 }
 
 async function migrateLegacyProduct(product){
@@ -1328,9 +1345,16 @@ $("#productForm").addEventListener("submit",async event=>{
   event.preventDefault();
 
   if(!isAdmin()){
-    toast("只有管理員可以管理商品");
+    const uid=currentUser?.uid || "未登入";
+    const text=`目前沒有管理員權限。\n目前登入 UID：${uid}\n管理員 UID：${ADMIN_UID}`;
+    toast(text,9000);
+    alert(text);
     return;
   }
+
+  const saveButton=$("#productForm button[type=submit]");
+  const oldText=saveButton?.textContent||"儲存商品";
+  if(saveButton){ saveButton.disabled=true; saveButton.textContent="儲存中…"; }
 
   try{
     const variants=getVariantsFromForm();
@@ -1339,7 +1363,6 @@ $("#productForm").addEventListener("submit",async event=>{
 
     for(let i=0;i<selectedImageItems.length;i++){
       const item=selectedImageItems[i];
-      // 舊有 Storage / data URL 圖片直接保留；新上傳圖片才送 Storage。
       if(item.existing && item.src && !item.src.startsWith("blob:")){
         images.push(item.src);
       }else if(item.processed){
@@ -1349,7 +1372,6 @@ $("#productForm").addEventListener("submit",async event=>{
         images.push(await uploadProcessedImage(processed,productIdForUpload,i));
       }
     }
-
 
     const stock=variants.reduce((sum,v)=>sum+v.stock,0);
     const chineseName=$("#productName").value.trim();
@@ -1373,19 +1395,26 @@ $("#productForm").addEventListener("submit",async event=>{
 
     const id=$("#productId").value;
 
-    if(id){
-      await updateDoc(doc(db,"products",id),payload);
-      toast("商品已更新");
-    }else{
-      payload.createdAt=serverTimestamp();
-      await addDoc(collection(db,"products"),payload);
-      toast("商品已新增");
+    try{
+      if(id){
+        await updateDoc(doc(db,"products",id),payload);
+        toast("商品已更新");
+      }else{
+        payload.createdAt=serverTimestamp();
+        await addDoc(collection(db,"products"),payload);
+        toast("商品已新增");
+      }
+    }catch(error){
+      showFirebaseError(error,"Firestore 儲存商品");
+      return;
     }
 
     $("#productDialog").close();
   }catch(error){
-    console.error("商品儲存失敗",error);
-    toast(getFirebaseErrorMessage(error,"儲存商品"));
+    const phase=error?.__firebasePhase || "商品儲存";
+    showFirebaseError(error,phase);
+  }finally{
+    if(saveButton){ saveButton.disabled=false; saveButton.textContent=oldText; }
   }
 });
 
