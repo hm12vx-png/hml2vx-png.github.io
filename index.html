@@ -139,6 +139,27 @@ button{cursor:pointer}
     inset 0 0 12px rgba(255,255,255,.06);
 }
 .tab > span:last-child{font-weight:800}
+.tab-label{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  min-width:0;
+  line-height:1;
+}
+.tab-label .zh{
+  font-size:15px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.tab-label .en{
+  margin-top:3px;
+  font-size:9px;
+  font-weight:600;
+  line-height:1;
+  opacity:.72;
+  white-space:nowrap;
+}
 .tab-icon{
   width:31px;height:31px;min-width:31px;
   display:inline-flex;align-items:center;justify-content:center;
@@ -178,6 +199,8 @@ button{cursor:pointer}
 @media(max-width:700px){
   .tab{font-size:14px;min-height:48px;padding-right:13px}
   .tab-icon{width:28px;min-width:28px;height:28px}
+  .tab-label .zh{font-size:14px}
+  .tab-label .en{font-size:8px}
   .tab-label .zh{font-size:14px}
   .tab-label .en{font-size:9px}
 }
@@ -246,9 +269,19 @@ button{cursor:pointer}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .name{
-  font-size:13px;font-weight:800;line-height:18px;height:36px;
-  overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;
-  -webkit-line-clamp:2;word-break:break-word;
+  font-size:13px;font-weight:800;height:36px;
+  min-width:0;overflow:hidden;display:flex;flex-direction:column;
+  justify-content:flex-start;word-break:break-word;
+}
+.name-zh{
+  height:18px;line-height:18px;font-size:13px;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.name-en{
+  height:14px;line-height:14px;margin-top:1px;
+  font-size:9px;font-weight:600;color:#999;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  letter-spacing:.1px;
 }
 .price{
   font-size:18px;font-weight:900;height:27px;line-height:27px;
@@ -547,6 +580,10 @@ dialog::backdrop{background:#000b}
 
       <label>商品名稱
         <input id="productName" maxlength="80" required placeholder="輸入商品名稱">
+      </label>
+
+      <label>英文商品名稱
+        <input id="productNameEn" maxlength="120" placeholder="English product name（可留空自動翻譯）">
       </label>
 
       <label>價格
@@ -1508,3 +1545,4 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
