@@ -304,43 +304,6 @@ button{cursor:pointer}
 .card-actions .btn{flex:1}
 .empty{grid-column:1/-1;color:#777;padding:40px 0;text-align:center}
 
-/* 留言板 */
-.board{margin:55px 0;border-top:1px solid #333;padding-top:28px}
-.board-title{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.board h3{margin:0;font-size:26px}
-.board>p{color:#aaa;margin-top:6px}
-.discord-admin-link{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:9px 15px;border:1px solid #5865F2;border-radius:10px;
-  color:#fff;background:#5865F2;text-decoration:none;font-weight:800;font-size:13px;
-}
-.top-contact-link{padding:6px 10px;font-size:12px}
-.board-form{
-  display:grid;grid-template-columns:180px minmax(0,1fr) auto;
-  gap:10px;margin:18px 0;
-}
-.board input,.board textarea{
-  background:#151518;color:#fff;border:1px solid #333;
-  border-radius:11px;padding:11px;outline:none;
-}
-.board textarea{min-height:44px;resize:vertical}
-.messages{display:grid;gap:12px}
-.message{background:#151518;border:1px solid #333;border-radius:13px;padding:14px}
-.message-top{display:flex;justify-content:space-between;gap:12px}
-.message-name{font-weight:800;font-size:16px}
-.message-time{color:#777;font-size:11px;margin-top:4px}
-.message-text{margin-top:10px;white-space:pre-wrap;word-break:break-word;line-height:1.6}
-.reply-box{
-  margin-top:12px;margin-left:20px;padding:12px;background:#1b1b20;
-  border-left:3px solid #fff;border-radius:8px;
-}
-.reply-label{font-size:12px;color:#aaa;margin-bottom:5px}
-.reply-text{white-space:pre-wrap;word-break:break-word;line-height:1.5}
-.reply-time{color:#666;font-size:11px;margin-top:5px}
-.admin-reply-form{display:flex;gap:8px;margin-top:12px}
-.admin-reply-form input{flex:1}
-.note{color:#777;font-size:12px;margin-top:10px;line-height:1.6}
-
 /* Dialog */
 dialog{
   width:min(520px,calc(100% - 28px));border:1px solid #3d3d44;
@@ -524,17 +487,7 @@ dialog::backdrop{background:#000b}
   <div class="empty">讀取商品中…</div>
 </section>
 
-<section class="board">
-  <div class="board-title"><h3>留言板</h3></div>
-  <p>想詢問商品可以在這裡留言，管理員看到後會直接在留言下方回覆。</p>
-  <form id="messageForm" class="board-form">
-    <input id="messageName" maxlength="30" placeholder="暱稱" required>
-    <textarea id="messageText" maxlength="300" placeholder="留言內容" required></textarea>
-    <button class="btn primary" type="submit">送出留言</button>
-  </form>
-  <div id="messages" class="messages"></div>
-  <div class="note">請填寫你希望顯示在留言區的暱稱。</div>
-</section>
+
 
 </main>
 
@@ -651,7 +604,6 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 
 let products=[];
-let messages=[];
 let currentCategory="家具";
 let currentUser=null;
 let selectedImageItems=[];
@@ -713,29 +665,64 @@ function formatTime(timestamp){
   });
 }
 
-/* 圖片標準化：保留透明背景並固定 600×450 */
+/* 圖片標準化：固定 600×450，並壓縮成適合直接存入 Firestore 的 WebP */
 function normalizeImageDataURL(src){
   return new Promise((resolve,reject)=>{
     const img=new Image();
     img.onload=()=>{
       try{
         const canvas=document.createElement("canvas");
-        canvas.width=600; canvas.height=450;
+        canvas.width=600;
+        canvas.height=450;
+
         const ctx=canvas.getContext("2d");
+        if(!ctx) throw new Error("瀏覽器無法建立圖片畫布");
+
         const scale=Math.min(600/img.naturalWidth,450/img.naturalHeight);
         const w=Math.max(1,Math.round(img.naturalWidth*scale));
         const h=Math.max(1,Math.round(img.naturalHeight*scale));
         const x=Math.round((600-w)/2);
         const y=Math.round((450-h)/2);
+
         ctx.clearRect(0,0,600,450);
         ctx.imageSmoothingEnabled=true;
         ctx.imageSmoothingQuality="high";
         ctx.drawImage(img,0,0,img.naturalWidth,img.naturalHeight,x,y,w,h);
-        const webp=canvas.toDataURL("image/webp",.82);
-        resolve(webp.startsWith("data:image/webp")?webp:canvas.toDataURL("image/png"));
-      }catch(e){reject(e)}
+
+        /*
+         * Firestore 單一文件約 1 MiB 上限。
+         * 新商品最多 6 張圖片，因此每張圖片先控制在約 90 KB 以下，
+         * 避免多張圖片一起寫入時超過文件大小限制。
+         */
+        const maxBytes=90*1024;
+        let best="";
+
+        for(let quality=0.82; quality>=0.42; quality-=0.05){
+          const data=canvas.toDataURL("image/webp",quality);
+          if(!data.startsWith("data:image/webp")) break;
+
+          best=data;
+
+          const base64=data.split(",")[1]||"";
+          const approxBytes=Math.floor(base64.length*3/4);
+
+          if(approxBytes<=maxBytes){
+            resolve(data);
+            return;
+          }
+        }
+
+        if(best){
+          resolve(best);
+          return;
+        }
+
+        throw new Error("目前瀏覽器不支援 WebP 圖片壓縮");
+      }catch(e){
+        reject(e);
+      }
     };
-    img.onerror=reject;
+    img.onerror=()=>reject(new Error("圖片讀取失敗"));
     img.src=src;
   });
 }
@@ -1340,10 +1327,10 @@ async function migrateAllLegacyImages(){
 
 $("#migrateImagesBtn").onclick=migrateAllLegacyImages;
 
-/* 儲存商品：修正版 v3
- * 1. 不再讓「英文名稱自動翻譯」阻塞商品儲存。
- * 2. 新商品先建立 Firestore 文件，再上傳圖片。
- * 3. 關閉瀏覽器原生表單阻擋，改由程式明確提示缺少欄位。
+/* 儲存商品：v6
+ * 1. 新增商品不再上傳 Firebase Storage。
+ * 2. 圖片壓縮後直接寫入 Firestore。
+ * 3. 保留多圖片、顏色、庫存與舊商品編輯功能。
  */
 $("#productForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -1406,21 +1393,42 @@ $("#productForm").addEventListener("submit",async event=>{
     };
 
     /*
-     * 新商品不先寫 Firestore。
-     * 先使用預先產生的商品 ID 上傳圖片，最後只寫入一次 Firestore。
-     * 這樣恢復原本「正常、較快」的儲存流程，避免新增商品多做一次 setDoc + updateDoc。
+     * v6：新增圖片不再上傳 Firebase Storage。
+     * 已處理完成的圖片直接以壓縮後 data URL 寫入 Firestore。
+     * 舊商品如果原本是 Storage URL，則完整保留，不重新上傳。
      */
     const images=[];
     for(let i=0;i<selectedImageItems.length;i++){
       const item=selectedImageItems[i];
+
       if(item.existing && item.src && !item.src.startsWith("blob:")){
         images.push(item.src);
       }else if(item.processed){
-        images.push(await uploadProcessedImage(item.processed,productRef.id,i));
+        images.push(item.processed);
       }else if(item.file){
-        const processed=await compressImage(item.file);
-        images.push(await uploadProcessedImage(processed,productRef.id,i));
+        images.push(await compressImage(item.file));
       }
+    }
+
+    /* 儲存前檢查商品文件大小，避免 Firestore 文件超過約 1 MiB 限制。 */
+    const previewPayload={
+      ...basePayload,
+      images,
+      image:images[0]||"",
+      ...(id ? {} : {createdAt:serverTimestamp()})
+    };
+    const estimatedBytes=new TextEncoder().encode(JSON.stringify(
+      previewPayload,
+      (key,value)=>value && typeof value==="object" && value.constructor?.name==="FieldValue"
+        ? null
+        : value
+    )).length;
+
+    if(estimatedBytes>900*1024){
+      throw Object.assign(
+        new Error("圖片總容量過大，請減少圖片張數或重新選擇較小圖片。"),
+        {__firebasePhase:"Firestore 圖片容量檢查",code:"image-size-too-large"}
+      );
     }
 
     if(id){
@@ -1526,143 +1534,6 @@ $("#searchInput").addEventListener("input",()=>{
 /* 排序 */
 $("#productSort").addEventListener("change",renderProducts);
 
-/* 留言 */
-$("#messageForm").addEventListener("submit",async event=>{
-  event.preventDefault();
-
-  const name=$("#messageName").value.trim();
-  const text=$("#messageText").value.trim();
-
-  if(!name||!text){
-    toast("請完整填寫暱稱和留言");
-    return;
-  }
-
-  try{
-    await addDoc(collection(db,"messages"),{
-      name,text,createdAt:serverTimestamp(),reply:"",replyAt:null
-    });
-    $("#messageText").value="";
-    toast("留言已送出");
-  }catch(error){
-    console.error(error);
-    toast("留言送出失敗");
-  }
-});
-
-/* 留言顯示 */
-function renderMessages(){
-  const box=$("#messages");
-  box.innerHTML="";
-
-  if(!messages.length){
-    box.innerHTML='<div class="message">目前還沒有留言</div>';
-    return;
-  }
-
-  messages.forEach(message=>{
-    const item=document.createElement("div");
-    item.className="message";
-
-    const top=document.createElement("div");
-    top.className="message-top";
-
-    const left=document.createElement("div");
-    const name=document.createElement("div");
-    name.className="message-name";
-    name.textContent=message.name||"匿名";
-
-    const time=document.createElement("div");
-    time.className="message-time";
-    time.textContent=formatTime(message.createdAt);
-
-    left.append(name,time);
-    top.appendChild(left);
-
-    if(isAdmin()){
-      const remove=document.createElement("button");
-      remove.className="btn small danger";
-      remove.textContent="刪除";
-      remove.onclick=async()=>{
-        if(!confirm("確定刪除這則留言嗎？")) return;
-        try{
-          await deleteDoc(doc(db,"messages",message.id));
-          toast("留言已刪除");
-        }catch(e){
-          console.error(e);toast("留言刪除失敗");
-        }
-      };
-      top.appendChild(remove);
-    }
-
-    item.appendChild(top);
-
-    const text=document.createElement("div");
-    text.className="message-text";
-    text.textContent=message.text||"";
-    item.appendChild(text);
-
-    if(message.reply){
-      const reply=document.createElement("div");
-      reply.className="reply-box";
-
-      const label=document.createElement("div");
-      label.className="reply-label";
-      label.textContent="管理員回覆";
-
-      const replyText=document.createElement("div");
-      replyText.className="reply-text";
-      replyText.textContent=message.reply;
-
-      const replyTime=document.createElement("div");
-      replyTime.className="reply-time";
-      replyTime.textContent=formatTime(message.replyAt);
-
-      reply.append(label,replyText,replyTime);
-      item.appendChild(reply);
-    }
-
-    if(isAdmin()){
-      const form=document.createElement("form");
-      form.className="admin-reply-form";
-
-      const input=document.createElement("input");
-      input.maxLength=300;
-      input.placeholder=message.reply?"修改管理員回覆…":"輸入管理員回覆…";
-      input.value=message.reply||"";
-
-      const button=document.createElement("button");
-      button.type="submit";
-      button.className="btn primary";
-      button.textContent=message.reply?"修改回覆":"回覆";
-
-      form.append(input,button);
-
-      form.onsubmit=async e=>{
-        e.preventDefault();
-        const reply=input.value.trim();
-        if(!reply){
-          toast("請輸入回覆內容");
-          return;
-        }
-        try{
-          await updateDoc(doc(db,"messages",message.id),{
-            reply,replyAt:serverTimestamp()
-          });
-          toast("回覆已送出");
-        }catch(error){
-          console.error(error);
-          toast("回覆失敗");
-        }
-      };
-
-      item.appendChild(form);
-    }
-
-    box.appendChild(item);
-  });
-}
-
 /* Firebase 商品即時監聽 */
 onSnapshot(
   query(collection(db,"products"),orderBy("createdAt","desc")),
@@ -1676,19 +1547,6 @@ onSnapshot(
   }
 );
 
-/* Firebase 留言即時監聽 */
-onSnapshot(
-  query(collection(db,"messages"),orderBy("createdAt","desc")),
-  snapshot=>{
-    messages=snapshot.docs.map(document=>({id:document.id,...document.data()}));
-    renderMessages();
-  },
-  error=>{
-    console.error(error);
-    $("#messages").innerHTML='<div class="message">留言讀取失敗</div>';
-  }
-);
-
 /* 登入狀態 */
 onAuthStateChanged(auth,user=>{
   currentUser=user;
@@ -1696,7 +1554,6 @@ onAuthStateChanged(auth,user=>{
   $("#addBtn").classList.toggle("hidden",!isAdmin());
   $("#migrateImagesBtn").classList.toggle("hidden",!isAdmin());
   renderProducts();
-  renderMessages();
 });
 
 ensureOneVariantRow();
@@ -1704,5 +1561,4 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
 
