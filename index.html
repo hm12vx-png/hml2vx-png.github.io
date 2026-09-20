@@ -176,8 +176,10 @@ button{cursor:pointer}
 .neon-yellow{--neon:#ffe22e}
 
 @media(max-width:700px){
-  .tab{font-size:14px;min-height:42px;padding-right:13px}
+  .tab{font-size:14px;min-height:48px;padding-right:13px}
   .tab-icon{width:28px;min-width:28px;height:28px}
+  .tab-label .zh{font-size:14px}
+  .tab-label .en{font-size:9px}
 }
 
 /* 商品標題 */
@@ -414,7 +416,7 @@ dialog::backdrop{background:#000b}
         <path d="M7 25h34v8H7z" fill="currentColor"/>
         <path d="M10 33v6M38 33v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
       </svg>
-    </span><span>家具</span>
+    </span><span class="tab-label"><span class="zh">家具</span><span class="en">Furniture</span></span>
   </button>
 
   <button class="tab neon-green" data-category="花盆" aria-label="花盆">
@@ -425,7 +427,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 22v-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         <path d="M13 27h22l-3 12H16l-3-12Z" stroke="currentColor" stroke-width="3"/>
       </svg>
-    </span><span>花盆</span>
+    </span><span class="tab-label"><span class="zh">花盆</span><span class="en">Flower Pots</span></span>
   </button>
 
   <button class="tab neon-cyan" data-category="戒指限男" aria-label="戒指限男">
@@ -434,7 +436,7 @@ dialog::backdrop{background:#000b}
         <circle cx="24" cy="27" r="11" stroke="currentColor" stroke-width="4"/>
         <path d="M24 6l5 7-5 7-5-7 5-7Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
       </svg>
-    </span><span>戒指限男</span>
+    </span><span class="tab-label"><span class="zh">戒指限男</span><span class="en">Rings · Men</span></span>
   </button>
 
   <!-- 戒指限女：已改為「戒指」圖示，不再使用愛心 -->
@@ -445,7 +447,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 6l5 7-5 7-5-7 5-7Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
         <circle cx="24" cy="13" r="2" fill="currentColor"/>
       </svg>
-    </span><span>戒指限女</span>
+    </span><span class="tab-label"><span class="zh">戒指限女</span><span class="en">Rings · Women</span></span>
   </button>
 
   <button class="tab neon-purple" data-category="作物限男" aria-label="作物限男">
@@ -455,7 +457,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 28c-10 1-14-4-14-10 8-1 14 2 14 10Z" fill="currentColor"/>
         <path d="M24 24c10 1 14-4 14-10-8-1-14 2-14 10Z" fill="currentColor"/>
       </svg>
-    </span><span>作物限男</span>
+    </span><span class="tab-label"><span class="zh">作物限男</span><span class="en">Crops · Men</span></span>
   </button>
 
   <button class="tab neon-blue" data-category="作物限女" aria-label="作物限女">
@@ -466,7 +468,7 @@ dialog::backdrop{background:#000b}
         <path d="M24 34c9 0 13-5 13-11-8 0-13 3-13 11Z" fill="currentColor"/>
         <path d="M24 21c0-6 3-10 8-12 1 6-1 10-8 12Z" fill="currentColor"/>
       </svg>
-    </span><span>作物限女</span>
+    </span><span class="tab-label"><span class="zh">作物限女</span><span class="en">Crops · Women</span></span>
   </button>
 
 </nav>
@@ -565,7 +567,7 @@ dialog::backdrop{background:#000b}
 
       <label>商品圖片
         <input id="productImage" type="file" accept="image/*" multiple>
-        <div class="variant-summary-note">可一次選擇多張商品圖片，最多 6 張。</div>
+        <div class="variant-summary-note">可一次選擇多張商品圖片，最多 6 張；上傳後會統一為 600×450、置中、不變形。</div>
       </label>
 
       <div id="imagePreview" class="preview">尚未選擇圖片</div>
@@ -684,6 +686,33 @@ function getProductPrice(product){
   return Number.isFinite(n)?n:0;
 }
 
+const PRODUCT_NAME_EN_MAP = {
+  "訂製粉嫩毛絨小兔": "Custom Pink Plush Bunny",
+  "淨焰之火情侶對戒": "Pure Flame Couple Rings",
+  "粉紅蜜蠟情侶對戒": "Pink Beeswax Couple Rings",
+  "粉紅帝王鑽石情侶對戒": "Pink Imperial Diamond Couple Rings"
+};
+
+function getEnglishProductName(product){
+  const name=String(product?.name||"").trim();
+  const saved=String(product?.nameEn||"").trim();
+  if(saved) return saved;
+  for(const [zh,en] of Object.entries(PRODUCT_NAME_EN_MAP)){
+    if(name.includes(zh)) return en;
+  }
+  // 常見名稱片語自動組合；未提供英文名稱的舊商品會盡量翻譯。
+  const phraseMap=[
+    ["訂製","Custom "],["粉嫩","Pink "],["毛絨","Plush "],["小兔","Bunny"],
+    ["淨焰之火","Pure Flame"],["粉紅","Pink"],["蜜蠟","Beeswax"],
+    ["帝王","Imperial"],["鑽石","Diamond"],["情侶對戒","Couple Rings"],
+    ["對戒","Couple Rings"],["戒指","Ring"],["家具","Furniture"],
+    ["花盆","Flower Pot"],["作物","Crops"],["限男","Men"],["限女","Women"]
+  ];
+  let result=name;
+  for(const [zh,en] of phraseMap) result=result.split(zh).join(en);
+  return result===name ? "English name not set" : result.replace(/\\s+/g," ").trim();
+}
+
 function renderProducts(){
   const keyword=$("#searchInput").value.trim().toLowerCase();
 
@@ -751,8 +780,17 @@ function renderProducts(){
 
     const name=document.createElement("div");
     name.className="name";
-    name.textContent=product.name||"";
-    name.title=product.name||"";
+    name.title=`${product.name||""} / ${getEnglishProductName(product)}`;
+
+    const nameZh=document.createElement("div");
+    nameZh.className="name-zh";
+    nameZh.textContent=product.name||"";
+
+    const nameEn=document.createElement("div");
+    nameEn.className="name-en";
+    nameEn.textContent=getEnglishProductName(product);
+
+    name.append(nameZh,nameEn);
 
     const price=document.createElement("div");
     price.className="price";
@@ -1015,6 +1053,7 @@ function openProductDialog(product=null){
   $("#productDialogTitle").textContent=product?"編輯商品":"新增商品";
   $("#productCategory").value=product?.category||currentCategory;
   $("#productName").value=product?.name||"";
+  $("#productNameEn").value=product?.nameEn||"";
   $("#productPrice").value=formatPriceInput(product?.price||"");
 
   setVariantsInForm(
@@ -1192,6 +1231,7 @@ $("#productForm").addEventListener("submit",async event=>{
     const payload={
       category:$("#productCategory").value,
       name:$("#productName").value.trim(),
+      nameEn:$("#productNameEn").value.trim() || getEnglishProductName({name:$("#productName").value.trim()}),
       price:formatPriceInput($("#productPrice").value.trim()),
       stock,
       variants,
