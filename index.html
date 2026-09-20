@@ -730,6 +730,32 @@ const PRODUCT_NAME_EN_MAP = {
   "粉紅帝王鑽石情侶對戒": "Pink Imperial Diamond Couple Rings"
 };
 
+async function autoTranslateProductName(chineseName){
+  const text=String(chineseName||"").trim();
+  if(!text) return "";
+
+  // 已有固定商品名稱先直接使用，避免重複呼叫翻譯服務。
+  for(const [zh,en] of Object.entries(PRODUCT_NAME_EN_MAP)){
+    if(text===zh || text.includes(zh)) return en;
+  }
+
+  // 使用 Google Translate 公開翻譯端點；失敗時改用本站內建片語翻譯。
+  try{
+    const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    const response=await fetch(url,{method:"GET"});
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data=await response.json();
+    const translated=Array.isArray(data?.[0])
+      ? data[0].map(item=>item?.[0]||"").join("").trim()
+      : "";
+    if(translated) return translated;
+  }catch(error){
+    console.warn("英文名稱自動翻譯失敗，改用內建翻譯",error);
+  }
+
+  return getEnglishProductName({name:text});
+}
+
 function getEnglishProductName(product){
   const name=String(product?.name||"").trim();
   const saved=String(product?.nameEn||"").trim();
@@ -1084,6 +1110,40 @@ $("#productPrice").addEventListener("input",event=>{
   }
 });
 
+let productNameTranslateTimer=null;
+let productNameTranslateToken=0;
+
+async function updateProductEnglishName(){
+  const zhInput=$("#productName");
+  const enInput=$("#productNameEn");
+  if(!zhInput || !enInput) return;
+  const chinese=zhInput.value.trim();
+  if(!chinese) return;
+
+  const token=++productNameTranslateToken;
+  enInput.placeholder="自動翻譯中…";
+  const translated=await autoTranslateProductName(chinese);
+  if(token!==productNameTranslateToken) return;
+
+  // 使用者手動輸入英文後，不覆蓋使用者內容。
+  if(!enInput.value.trim() || enInput.dataset.autoValue===enInput.value.trim()){
+    enInput.value=translated;
+    enInput.dataset.autoValue=translated;
+  }
+  enInput.placeholder="English product name（自動翻譯）";
+}
+
+$("#productName").addEventListener("input",()=>{
+  const enInput=$("#productNameEn");
+  if(enInput) enInput.dataset.autoValue=enInput.value.trim();
+  clearTimeout(productNameTranslateTimer);
+  productNameTranslateTimer=setTimeout(updateProductEnglishName,650);
+});
+
+$("#productNameEn").addEventListener("input",event=>{
+  event.target.dataset.autoValue="";
+});
+
 function openProductDialog(product=null){
   $("#productForm").reset();
   $("#productId").value=product?.id||"";
@@ -1091,6 +1151,10 @@ function openProductDialog(product=null){
   $("#productCategory").value=product?.category||currentCategory;
   $("#productName").value=product?.name||"";
   $("#productNameEn").value=product?.nameEn||"";
+  $("#productNameEn").dataset.autoValue=$("#productNameEn").value.trim();
+  if(!$("#productNameEn").value.trim() && $("#productName").value.trim()){
+    setTimeout(updateProductEnglishName,50);
+  }
   $("#productPrice").value=formatPriceInput(product?.price||"");
 
   setVariantsInForm(
@@ -1264,11 +1328,17 @@ $("#productForm").addEventListener("submit",async event=>{
 
 
     const stock=variants.reduce((sum,v)=>sum+v.stock,0);
+    const chineseName=$("#productName").value.trim();
+    let englishName=$("#productNameEn").value.trim();
+    if(!englishName && chineseName){
+      englishName=await autoTranslateProductName(chineseName);
+      $("#productNameEn").value=englishName;
+    }
 
     const payload={
       category:$("#productCategory").value,
-      name:$("#productName").value.trim(),
-      nameEn:$("#productNameEn").value.trim() || getEnglishProductName({name:$("#productName").value.trim()}),
+      name:chineseName,
+      nameEn:englishName,
       price:formatPriceInput($("#productPrice").value.trim()),
       stock,
       variants,
