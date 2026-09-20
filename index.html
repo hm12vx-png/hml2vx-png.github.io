@@ -1379,8 +1379,6 @@ $("#productForm").addEventListener("submit",async event=>{
     saveButton.textContent="儲存中…";
   }
 
-  let createdNewProductRef=null;
-
   try{
     const variants=getVariantsFromForm();
     const stock=variants.reduce((sum,v)=>sum+v.stock,0);
@@ -1407,19 +1405,11 @@ $("#productForm").addEventListener("submit",async event=>{
       updatedAt:serverTimestamp()
     };
 
-    /* 新商品先建立文件，避免 Storage Rules 若檢查 products/{id} 存在時被拒絕。 */
-    if(id){
-      await updateDoc(productRef,basePayload);
-    }else{
-      createdNewProductRef=productRef;
-      await setDoc(productRef,{
-        ...basePayload,
-        images:[],
-        image:"",
-        createdAt:serverTimestamp()
-      });
-    }
-
+    /*
+     * 新商品不先寫 Firestore。
+     * 先使用預先產生的商品 ID 上傳圖片，最後只寫入一次 Firestore。
+     * 這樣恢復原本「正常、較快」的儲存流程，避免新增商品多做一次 setDoc + updateDoc。
+     */
     const images=[];
     for(let i=0;i<selectedImageItems.length;i++){
       const item=selectedImageItems[i];
@@ -1433,11 +1423,21 @@ $("#productForm").addEventListener("submit",async event=>{
       }
     }
 
-    await updateDoc(productRef,{
-      images,
-      image:images[0]||"",
-      updatedAt:serverTimestamp()
-    });
+    if(id){
+      await updateDoc(productRef,{
+        ...basePayload,
+        images,
+        image:images[0]||"",
+        updatedAt:serverTimestamp()
+      });
+    }else{
+      await setDoc(productRef,{
+        ...basePayload,
+        images,
+        image:images[0]||"",
+        createdAt:serverTimestamp()
+      });
+    }
 
     toast(id ? "商品已更新" : "商品已新增",3500);
     $("#productDialog").close();
@@ -1446,11 +1446,6 @@ $("#productForm").addEventListener("submit",async event=>{
     const phase=error?.__firebasePhase || "商品儲存";
     showFirebaseError(error,phase);
 
-    /* 若新商品已建立但後續圖片/更新失敗，刪除空白商品文件，避免留下殘缺資料。 */
-    if(createdNewProductRef){
-      try{ await deleteDoc(createdNewProductRef); }
-      catch(cleanupError){ console.warn("清理失敗的新增商品文件失敗",cleanupError); }
-    }
   }finally{
     if(saveButton){
       saveButton.disabled=false;
@@ -1709,4 +1704,5 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
 
