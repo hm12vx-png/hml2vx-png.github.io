@@ -50,6 +50,62 @@ button{cursor:pointer}
 .brand-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .brand small{color:#aaa}
 
+.top-contact-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:36px;
+  padding:7px 15px;
+  border-radius:10px;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.3px;
+  color:#fff;
+  border:1.5px solid #b45cff;
+  background:linear-gradient(135deg,#5b16b8,#8f2cff);
+  box-shadow:
+    0 0 8px #a85cff99,
+    0 0 20px #a85cff55,
+    inset 0 0 10px rgba(255,255,255,.12);
+  text-shadow:0 0 6px rgba(255,255,255,.65);
+  transition:.18s ease;
+}
+
+.top-contact-link:hover{
+  color:#fff;
+  background:linear-gradient(135deg,#7224d8,#a84cff);
+  border-color:#d39aff;
+  box-shadow:
+    0 0 12px #b45cff,
+    0 0 28px #a85cff88,
+    inset 0 0 12px rgba(255,255,255,.16);
+  transform:translateY(-1px);
+}
+
+.payment-notice{
+  margin-top:7px;
+  padding:7px 10px;
+  width:fit-content;
+  max-width:100%;
+  color:#ffe98a;
+  border-left:3px solid #ffc400;
+  background:rgba(255,196,0,.06);
+  border-radius:0 8px 8px 0;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.5;
+  letter-spacing:.1px;
+}
+
+@media(max-width:600px){
+  .payment-notice{
+    font-size:11px;
+    width:100%;
+  }
+}
+
 /* 通用按鈕 */
 .btn{
   border:1px solid #3a3a40;background:#1b1b1f;color:#fff;
@@ -385,9 +441,13 @@ dialog::backdrop{background:#000b}
       <h1>O² M★STAR交易區</h1>
       <div class="brand-meta">
         <small>販售・收購・交流</small>
-        <a class="discord-admin-link top-contact-link"
+        <a class="top-contact-link"
            href="https://discord.com/users/621734178228273155"
-           target="_blank" rel="noopener noreferrer">聯絡管理員</a>
+           target="_blank" rel="noopener noreferrer"
+           aria-label="聯絡賣家">✉ 聯絡賣家</a>
+      </div>
+      <div class="payment-notice">
+        可使用台幣或糖果交易・採先付款後交易
       </div>
     </div>
   </div>
