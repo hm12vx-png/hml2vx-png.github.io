@@ -839,8 +839,10 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 const storage=getStorage(app);
 const functions=getFunctions(app, "asia-east1");
+const functionsDefault=getFunctions(app);
 // 訂單由 Firebase Cloud Function 在伺服器端以 Firestore Transaction 建立，避免前端直接改庫存。
 const createOrderCallable=httpsCallable(functions, "createOrder");
+const createOrderCallableDefault=httpsCallable(functionsDefault, "createOrder");
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -1525,6 +1527,10 @@ async function submitCartOrder(){
   if(submit){ submit.disabled=true; submit.textContent="建立訂單中…"; }
 
   try{
+    // 重要：一定先取得 Firebase Auth 身分，再呼叫 onCall。
+    // 頁面剛載入時若匿名登入尚未完成，原版本可能直接送出並讓後端回傳 internal。
+    await ensureBuyerAuth();
+
     const payload={
       character:checkoutCharacter,
       payment:checkoutPayment,
@@ -1536,7 +1542,20 @@ async function submitCartOrder(){
       }))
     };
 
-    const result=await createOrderCallable(payload);
+    let result;
+    try{
+      result=await createOrderCallable(payload);
+    }catch(firstError){
+      // 若 createOrder 實際部署在 Firebase 預設區域，asia-east1 會回傳 not-found。
+      // 只有在「找不到函式」時才切換區域，避免真正的伺服器錯誤被重試。
+      const firstCode=String(firstError?.code||"");
+      if(firstCode.includes("functions/not-found")){
+        result=await createOrderCallableDefault(payload);
+      }else{
+        throw firstError;
+      }
+    }
+
     const data=result?.data||{};
     const orderNo=data.orderNo||"";
     currentOrderId=String(data.orderId||"");
@@ -1591,8 +1610,23 @@ async function submitCartOrder(){
     window.open("https://discord.com/users/621734178228273155","_blank","noopener,noreferrer");
   }catch(error){
     console.error("訂單建立失敗",error);
-    const message=error?.message||"訂單建立失敗，請重新整理後再試。";
-    toast(message,7000);
+    const code=String(error?.code||"");
+    const details=typeof error?.details==="string" ? error.details : "";
+    let message=error?.message||"訂單建立失敗，請重新整理後再試。";
+
+    if(code.includes("functions/unauthenticated")){
+      message="訪客登入尚未完成，無法建立訂單。請重新整理頁面後再試。";
+    }else if(code.includes("functions/not-found")){
+      message="找不到 Firebase createOrder 函式。請確認 Cloud Function「createOrder」已部署。";
+    }else if(code.includes("functions/internal")){
+      message=`Firebase createOrder 發生伺服器錯誤（functions/internal）。${details ? `
+${details}` : ""}
+請檢查 Firebase Cloud Functions 的 createOrder 部署與日誌。`;
+    }else if(code.includes("functions/permission-denied")){
+      message="Firebase createOrder 權限不足，請檢查 Cloud Function 與 Firestore 權限設定。";
+    }
+
+    toast(message,9000);
     alert(message);
     renderCart();
   }finally{
@@ -2337,14 +2371,29 @@ $("#searchInput").addEventListener("input",()=>{
 /* 排序 */
 $("#productSort").addEventListener("change",renderProducts);
 
+let buyerAuthPromise=null;
+
 async function ensureBuyerAuth(){
-  if(auth.currentUser) return;
-  try{
-    await signInAnonymously(auth);
-  }catch(error){
-    console.error("匿名登入失敗",error);
-    toast("目前無法建立訪客登入，訂單功能需要開啟 Firebase 匿名登入。",7000);
+  if(auth.currentUser) return auth.currentUser;
+
+  if(!buyerAuthPromise){
+    buyerAuthPromise=signInAnonymously(auth)
+      .then(credential=>{
+        currentUser=credential.user;
+        return credential.user;
+      })
+      .catch(error=>{
+        buyerAuthPromise=null;
+        console.error("匿名登入失敗",error);
+        const code=String(error?.code||"");
+        if(code.includes("operation-not-allowed")){
+          throw new Error("Firebase 尚未啟用「匿名登入（Anonymous）」；請到 Firebase Console → Authentication → Sign-in method 開啟 Anonymous。");
+        }
+        throw new Error(`訪客登入失敗（${code||"unknown"}）：${error?.message||"請重新整理頁面後再試。"}`);
+      });
   }
+
+  return buyerAuthPromise;
 }
 
 /* Firebase 商品即時監聽 */
@@ -2383,8 +2432,12 @@ onAuthStateChanged(auth,user=>{
 
 ensureOneVariantRow();
 loadCart();
-ensureBuyerAuth();
+ensureBuyerAuth().catch(error=>{
+  console.error("初始化訪客登入失敗",error);
+  toast(error?.message||"訪客登入失敗，訂單功能暫時無法使用。",7000);
+});
 </script>
 
 </body>
 </html>
+
