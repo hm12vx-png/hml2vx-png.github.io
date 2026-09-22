@@ -50,37 +50,27 @@ button{cursor:pointer}
 .brand-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .brand small{color:#aaa}
 
-.top-contact-link{
+ .top-contact-link{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:7px;
-  min-height:36px;
-  padding:7px 15px;
-  border-radius:10px;
+  min-height:42px;
+  padding:7px 12px;
+  border-radius:12px;
   text-decoration:none;
-  font-size:14px;
-  font-weight:900;
-  letter-spacing:.3px;
   color:#fff;
-  border:1.5px solid #b45cff;
-  background:linear-gradient(135deg,#5b16b8,#8f2cff);
-  box-shadow:
-    0 0 8px #a85cff99,
-    0 0 20px #a85cff55,
-    inset 0 0 10px rgba(255,255,255,.12);
-  text-shadow:0 0 6px rgba(255,255,255,.65);
+  border:1.5px solid #5865f2;
+  background:#5865f2;
+  box-shadow:0 0 8px rgba(88,101,242,.65),0 0 20px rgba(88,101,242,.35);
   transition:.18s ease;
 }
-
+.top-contact-link svg{width:25px;height:25px;display:block;fill:currentColor;flex:0 0 auto}
+.top-contact-text{white-space:nowrap;font-size:14px;font-weight:900;}
 .top-contact-link:hover{
   color:#fff;
-  background:linear-gradient(135deg,#7224d8,#a84cff);
-  border-color:#d39aff;
-  box-shadow:
-    0 0 12px #b45cff,
-    0 0 28px #a85cff88,
-    inset 0 0 12px rgba(255,255,255,.16);
+  background:#6f7bf7;
+  border-color:#9aa3ff;
+  box-shadow:0 0 12px #5865f2,0 0 28px rgba(88,101,242,.65);
   transform:translateY(-1px);
 }
 
@@ -444,7 +434,13 @@ dialog::backdrop{background:#000b}
         <a class="top-contact-link"
            href="https://discord.com/users/621734178228273155"
            target="_blank" rel="noopener noreferrer"
-           aria-label="聯絡賣家">✉ 聯絡賣家</a>
+           aria-label="Discord 聯絡賣家"
+           title="Discord 聯絡賣家">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19.54 5.03A16.16 16.16 0 0 0 15.49 3.8l-.5 1.03a14.3 14.3 0 0 0-5.98 0L8.51 3.8a16.2 16.2 0 0 0-4.05 1.23C1.9 9.05 1.2 12.99 1.55 16.87a16.36 16.36 0 0 0 4.98 2.51l1.21-1.64c-.66-.25-1.29-.57-1.88-.95l.46-.35c3.63 1.69 7.57 1.69 11.15 0 .15.12.3.23.46.35-.59.38-1.22.7-1.88.95l1.21 1.64a16.35 16.35 0 0 0 4.98-2.51c.41-4.49-.7-8.39-2.7-11.84ZM8.35 14.83c-1.08 0-1.97-.99-1.97-2.2s.87-2.21 1.97-2.21c1.11 0 1.99.99 1.97 2.21 0 1.21-.87 2.2-1.97 2.2Zm7.3 0c-1.08 0-1.97-.99-1.97-2.2s.87-2.21 1.97-2.21c1.11 0 1.99.99 1.97 2.21 0 1.21-.87 2.2-1.97 2.2Z"/>
+          </svg>
+          <span class="top-contact-text">聯絡賣家</span>
+        </a>
       </div>
       <div class="payment-notice">
         可使用台幣或糖果交易・採先付款後交易
