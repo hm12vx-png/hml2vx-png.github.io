@@ -50,62 +50,6 @@ button{cursor:pointer}
 .brand-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .brand small{color:#aaa}
 
-.top-contact-link{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  min-height:36px;
-  padding:7px 15px;
-  border-radius:10px;
-  text-decoration:none;
-  font-size:14px;
-  font-weight:900;
-  letter-spacing:.3px;
-  color:#fff;
-  border:1.5px solid #b45cff;
-  background:linear-gradient(135deg,#5b16b8,#8f2cff);
-  box-shadow:
-    0 0 8px #a85cff99,
-    0 0 20px #a85cff55,
-    inset 0 0 10px rgba(255,255,255,.12);
-  text-shadow:0 0 6px rgba(255,255,255,.65);
-  transition:.18s ease;
-}
-
-.top-contact-link:hover{
-  color:#fff;
-  background:linear-gradient(135deg,#7224d8,#a84cff);
-  border-color:#d39aff;
-  box-shadow:
-    0 0 12px #b45cff,
-    0 0 28px #a85cff88,
-    inset 0 0 12px rgba(255,255,255,.16);
-  transform:translateY(-1px);
-}
-
-.payment-notice{
-  margin-top:7px;
-  padding:7px 10px;
-  width:fit-content;
-  max-width:100%;
-  color:#ffe98a;
-  border-left:3px solid #ffc400;
-  background:rgba(255,196,0,.06);
-  border-radius:0 8px 8px 0;
-  font-size:12px;
-  font-weight:800;
-  line-height:1.5;
-  letter-spacing:.1px;
-}
-
-@media(max-width:600px){
-  .payment-notice{
-    font-size:11px;
-    width:100%;
-  }
-}
-
 /* 通用按鈕 */
 .btn{
   border:1px solid #3a3a40;background:#1b1b1f;color:#fff;
@@ -317,7 +261,7 @@ button{cursor:pointer}
 }
 .body{
   padding:12px;display:grid;
-  grid-template-rows:18px 36px 40px 27px 22px auto;
+  grid-template-rows:18px 36px 40px 40px 22px auto;
   row-gap:0;flex:1;min-width:0;
 }
 .badge-text{
@@ -358,7 +302,86 @@ button{cursor:pointer}
 }
 .card-actions{display:flex;gap:8px;margin-top:12px}
 .card-actions .btn{flex:1}
-.empty{grid-column:1/-1;color:#777;padding:40px 0;text-align:center}
+.order-btn{
+  width:100%;
+  margin-top:10px;
+  border:0;
+  background:#e78aad;
+  color:#fff;
+  font-weight:900;
+  border-radius:11px;
+  padding:9px 10px;
+  box-shadow:0 5px 16px rgba(231,138,173,.22);
+}
+.order-btn:hover{background:#f09abb;transform:translateY(-1px)}
+.order-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.cart-top-btn{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.cart-count{
+  min-width:21px;height:21px;padding:0 6px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#e78aad;color:#fff;font-size:11px;font-weight:900;
+}
+.top-actions{display:flex;align-items:center;gap:8px}
+.cart-empty{color:#888;text-align:center;padding:28px 10px}
+.cart-list{display:grid;gap:10px;max-height:46vh;overflow:auto;padding-right:2px}
+.cart-item{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr);
+  gap:10px;
+  padding:10px;
+  background:#101014;
+  border:1px solid #303038;
+  border-radius:12px;
+}
+.cart-item img{
+  width:62px;height:62px;object-fit:contain;background:#17171b;border-radius:9px;
+}
+.cart-item-main{min-width:0}
+.cart-item-title{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-meta{font-size:11px;color:#aaa;margin-top:3px;line-height:1.45}
+.cart-item-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px}
+.qty-box{display:flex;align-items:center;gap:5px}
+.qty-btn{
+  width:27px;height:27px;border:1px solid #444;background:#1b1b20;color:#fff;
+  border-radius:7px;font-weight:900;
+}
+.qty-input{
+  width:42px;height:27px;text-align:center;background:#0c0c0f;color:#fff;
+  border:1px solid #444;border-radius:7px;font-size:12px;
+}
+.remove-cart{color:#ff9aa4!important;border-color:#6d3439!important}
+.cart-total{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:12px;padding:12px 13px;background:#111116;border:1px solid #35353b;
+  border-radius:11px;font-size:15px;
+}
+.cart-total strong{font-size:19px}
+.checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice-group{display:grid;gap:7px}
+.choice-group>span{font-size:12px;color:#aaa;font-weight:800}
+.choice-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.choice-btn{
+  border:1px solid #3b3b42;background:#101014;color:#ddd;border-radius:10px;
+  padding:10px 8px;font-weight:800;
+}
+.choice-btn.active{border-color:#e78aad;background:#2a1821;color:#fff;box-shadow:0 0 0 1px #e78aad}
+.checkout-note{font-size:11px;color:#888;line-height:1.5;margin-top:9px}
+@media(max-width:600px){
+  .top-actions{gap:5px}
+  .top-actions .btn{padding:8px 9px;font-size:12px}
+  .checkout-grid{grid-template-columns:1fr}
+}
+
+
+/* 訂單管理 */
+.orders-list{display:grid;gap:10px;max-height:70vh;overflow:auto}
+.order-admin-card{background:#101014;border:1px solid #35353b;border-radius:12px;padding:12px}
+.order-admin-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.order-no{font-weight:900;color:#fff}
+.order-status{font-size:11px;padding:4px 8px;border-radius:999px;background:#2a1821;color:#ffb1cf;border:1px solid #7a4056}
+.order-admin-meta{font-size:11px;color:#999;line-height:1.6;margin-top:7px}
+.order-admin-items{margin-top:8px;padding-top:8px;border-top:1px solid #29292f;display:grid;gap:5px;font-size:12px;color:#ddd}
+.order-admin-total{margin-top:9px;font-weight:900;text-align:right}
 
 /* Dialog */
 dialog{
@@ -441,17 +464,17 @@ dialog::backdrop{background:#000b}
       <h1>O² M★STAR交易區</h1>
       <div class="brand-meta">
         <small>販售・收購・交流</small>
-        <a class="top-contact-link"
+        <a class="discord-admin-link top-contact-link"
            href="https://discord.com/users/621734178228273155"
-           target="_blank" rel="noopener noreferrer"
-           aria-label="聯絡賣家">✉ 聯絡賣家</a>
-      </div>
-      <div class="payment-notice">
-        可使用台幣或糖果交易・採先付款後交易
+           target="_blank" rel="noopener noreferrer">聯絡管理員</a>
       </div>
     </div>
   </div>
-  <button id="adminBtn" class="btn">管理員登入</button>
+  <div class="top-actions">
+    <button id="cartBtn" class="btn cart-top-btn" type="button">🛒 購物車 <span id="cartCount" class="cart-count">0</span></button>
+    <button id="ordersBtn" class="btn hidden" type="button">📋 訂單管理</button>
+    <button id="adminBtn" class="btn">管理員登入</button>
+  </div>
 </header>
 
 <main class="wrap">
@@ -599,9 +622,14 @@ dialog::backdrop{background:#000b}
         <input id="productNameEn" maxlength="120" placeholder="English product name（可留空自動翻譯）">
       </label>
 
-      <label>價格
+      <label>現金價格
         <input id="productPrice" maxlength="40" inputmode="numeric" autocomplete="off" required placeholder="輸入數字，例如 100">
       </label>
+
+      <label>糖果價格
+        <input id="productCandyPrice" maxlength="40" inputmode="numeric" autocomplete="off" placeholder="可留空，例如 50">
+      </label>
+      <div class="variant-summary-note">購物車可讓買家選擇「現金」或「糖果」；糖果價格留空時，該商品無法選擇糖果付款。</div>
 
       <div>
         <label>顏色／庫存</label>
@@ -630,12 +658,63 @@ dialog::backdrop{background:#000b}
   </div>
 </dialog>
 
+<!-- 購物車 / 結帳 -->
+<dialog id="cartDialog">
+  <div class="dialog-wrap">
+    <div class="dialog-head">
+      <h3>🛒 購物車</h3>
+      <button class="icon-btn" type="button" data-close="cartDialog">×</button>
+    </div>
+
+    <div id="cartList" class="cart-list"></div>
+    <div id="cartTotal" class="cart-total hidden">
+      <span>訂單合計</span><strong>NT$0</strong>
+    </div>
+
+    <div id="checkoutArea" class="hidden" style="margin-top:14px">
+      <div class="checkout-grid">
+        <div class="choice-group">
+          <span>交易角色</span>
+          <div class="choice-row">
+            <button class="choice-btn active" type="button" data-character="男角">👨 男角</button>
+            <button class="choice-btn" type="button" data-character="女角">👩 女角</button>
+          </div>
+        </div>
+
+        <div class="choice-group">
+          <span>付款方式</span>
+          <div class="choice-row">
+            <button class="choice-btn active" type="button" data-payment="cash">💵 現金</button>
+            <button class="choice-btn" type="button" data-payment="candy">🍬 糖果</button>
+          </div>
+        </div>
+      </div>
+      <div id="paymentHint" class="checkout-note"></div>
+    </div>
+
+    <div class="dialog-actions">
+      <button class="btn" type="button" data-close="cartDialog">繼續購物</button>
+      <button id="submitOrderBtn" class="btn primary hidden" type="button">送出訂單</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="ordersDialog">
+  <div class="dialog-wrap" style="max-width:900px">
+    <div class="dialog-head">
+      <h3>📋 訂單管理</h3>
+      <button class="icon-btn" type="button" data-close="ordersDialog">×</button>
+    </div>
+    <div id="ordersList" class="orders-list">讀取訂單中…</div>
+  </div>
+</dialog>
+
 <div id="toast" class="toast hidden"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import {
-  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, setDoc, updateDoc, deleteDoc, doc,
@@ -644,6 +723,9 @@ import {
 import {
   getStorage, ref as storageRef, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
+import {
+  getFunctions, httpsCallable
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyBWH6HxuAXNbTpRQKGhNU10P5oLWcE36yQ",
@@ -659,6 +741,9 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const storage=getStorage(app);
+const functions=getFunctions(app, "asia-east1");
+// 訂單由 Firebase Cloud Function 在伺服器端以 Firestore Transaction 建立，避免前端直接改庫存。
+const createOrderCallable=httpsCallable(functions, "createOrder");
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -668,6 +753,12 @@ let currentCategory="家具";
 let currentUser=null;
 let selectedImageItems=[];
 let searchTimer=null;
+let cartItems=[];
+let checkoutCharacter="男角";
+let checkoutPayment="cash";
+let orderSubmitting=false;
+let orders=[];
+let unsubscribeOrders=null;
 
 function toast(text, duration=2200){
   const el=$("#toast");
@@ -801,9 +892,27 @@ function compressImage(file){
 
 /* 商品卡片 */
 function getProductPrice(product){
-  const value=String(product?.price??"").replace(/[^0-9.]/g,"");
+  const value=String(product?.cashPrice ?? product?.price ?? "").replace(/[^0-9.]/g,"");
   const n=Number(value);
   return Number.isFinite(n)?n:0;
+}
+
+function getProductCashPrice(product){
+  return getProductPrice(product);
+}
+
+function getProductCandyPrice(product){
+  const value=String(product?.candyPrice ?? "").replace(/[^0-9.]/g,"");
+  const n=Number(value);
+  return Number.isFinite(n) && n>0 ? n : 0;
+}
+
+function formatMoney(value){
+  return `NT$${Number(value||0).toLocaleString("zh-TW")}`;
+}
+
+function formatCandy(value){
+  return `${Number(value||0).toLocaleString("zh-TW")} 糖`;
 }
 
 const PRODUCT_NAME_EN_MAP = {
@@ -940,7 +1049,18 @@ function renderProducts(){
 
     const price=document.createElement("div");
     price.className="price";
-    price.textContent=product.price||"";
+    const cashPrice=getProductCashPrice(product);
+    const candyPrice=getProductCandyPrice(product);
+    price.innerHTML="";
+    const cashLine=document.createElement("div");
+    cashLine.textContent=cashPrice ? formatMoney(cashPrice) : (product.price||"");
+    price.appendChild(cashLine);
+    if(candyPrice){
+      const candyLine=document.createElement("div");
+      candyLine.className="name-en";
+      candyLine.textContent=`🍬 ${formatCandy(candyPrice)}`;
+      price.appendChild(candyLine);
+    }
 
     const variants=Array.isArray(product.variants)&&product.variants.length
       ? product.variants
@@ -964,6 +1084,7 @@ function renderProducts(){
 
     const colorVariants=variants.filter(v=>String(v.color||"").trim());
 
+    let selectedVariantIndex=0;
     if(colorVariants.length){
       const row=document.createElement("div");
       row.className="variant-summary-row";
@@ -996,13 +1117,43 @@ function renderProducts(){
         if(img && src) img.src=src;
       };
 
-      select.addEventListener("change",updateVariantImage);
+      select.addEventListener("change",()=>{
+        selectedVariantIndex=Number(select.value)||0;
+        updateVariantImage();
+        updateAddButtonState();
+      });
       row.append(label,select);
       summary.appendChild(row);
       setTimeout(updateVariantImage,0);
     }
 
     body.append(badge,name,summary,price,stock);
+
+    const addButton=document.createElement("button");
+    addButton.type="button";
+    addButton.className="order-btn";
+    addButton.textContent="🛒 加入購物車 / Add to Cart";
+
+    const getSelectedVariant=()=>{
+      if(!colorVariants.length) return variants[0]||{color:"",stock:0,imageIndex:0};
+      return colorVariants[selectedVariantIndex]||colorVariants[0];
+    };
+
+    const updateAddButtonState=()=>{
+      const v=getSelectedVariant();
+      const available=Math.max(0,Number(v?.stock)||0);
+      addButton.disabled=available<=0;
+      addButton.textContent=available>0
+        ? "🛒 加入購物車 / Add to Cart"
+        : "售罄 / Sold Out";
+    };
+
+    addButton.onclick=()=>{
+      const v=getSelectedVariant();
+      addToCart(product,v,selectedVariantIndex);
+    };
+    updateAddButtonState();
+    body.appendChild(addButton);
 
     if(isAdmin()){
       const actions=document.createElement("div");
@@ -1036,6 +1187,383 @@ function renderProducts(){
 
   grid.appendChild(fragment);
 }
+
+/* =========================================================
+   購物車
+========================================================= */
+function loadCart(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("ostar_cart")||"[]");
+    cartItems=Array.isArray(saved)?saved:[];
+  }catch{
+    cartItems=[];
+  }
+  updateCartCount();
+}
+
+function saveCart(){
+  localStorage.setItem("ostar_cart",JSON.stringify(cartItems));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  const count=cartItems.reduce((sum,item)=>sum+Math.max(0,Number(item.quantity)||0),0);
+  const el=$("#cartCount");
+  if(el) el.textContent=String(count);
+}
+
+function findCurrentProduct(productId){
+  return products.find(p=>p.id===productId)||null;
+}
+
+function getCartUnitPrice(product,payment=checkoutPayment){
+  if(payment==="candy") return getProductCandyPrice(product);
+  return getProductCashPrice(product);
+}
+
+function getCartUnitLabel(payment=checkoutPayment){
+  return payment==="candy" ? "糖果" : "現金";
+}
+
+function addToCart(product,variant,variantIndex=0){
+  const stock=Math.max(0,Number(variant?.stock)||0);
+  if(stock<=0){
+    toast("這個款式目前售罄");
+    return;
+  }
+
+  const key=`${product.id}__${String(variant?.color||"")}__${variantIndex}`;
+  const existing=cartItems.find(item=>item.key===key);
+  if(existing){
+    if(existing.quantity>=stock){
+      toast(`目前最多只能購買 ${stock} 件`);
+      return;
+    }
+    existing.quantity+=1;
+  }else{
+    const productImages=Array.isArray(product.images)
+      ? product.images.filter(Boolean)
+      : (product.image?[product.image]:[]);
+    const imageIndex=Number.isInteger(Number(variant?.imageIndex))
+      ? Number(variant.imageIndex):variantIndex;
+    cartItems.push({
+      key,
+      productId:product.id,
+      name:product.name||"",
+      nameEn:getEnglishProductName(product),
+      color:String(variant?.color||""),
+      quantity:1,
+      stock,
+      image:productImages[imageIndex]||productImages[0]||""
+    });
+  }
+
+  saveCart();
+  toast("已加入購物車");
+}
+
+function getCartLines(){
+  return cartItems.map(item=>{
+    const product=findCurrentProduct(item.productId);
+    const fallbackProduct={
+      name:item.name,nameEn:item.nameEn,price:item.price||"",cashPrice:item.cashPrice||"",
+      candyPrice:item.candyPrice||""
+    };
+    const p=product||fallbackProduct;
+    const currentVariants=Array.isArray(p.variants)&&p.variants.length?p.variants:[{color:"",stock:Number(p.stock??0),imageIndex:0}];
+    const variant=currentVariants.find(v=>String(v.color||"")===String(item.color||"")) || currentVariants[0] || {};
+    const stock=Math.max(0,Number(variant.stock)||0);
+    return {item,product:p,variant,stock};
+  });
+}
+
+function canUseCandyPayment(){
+  return getCartLines().every(line=>getProductCandyPrice(line.product)>0);
+}
+
+function getCartTotal(){
+  return getCartLines().reduce((sum,line)=>{
+    const unit=getCartUnitPrice(line.product);
+    return sum+unit*Math.max(0,Number(line.item.quantity)||0);
+  },0);
+}
+
+function renderCart(){
+  const list=$("#cartList");
+  const totalBox=$("#cartTotal");
+  const checkout=$("#checkoutArea");
+  const submit=$("#submitOrderBtn");
+  if(!list) return;
+
+  list.innerHTML="";
+
+  if(!cartItems.length){
+    list.innerHTML='<div class="cart-empty">購物車目前是空的<br>請先選擇商品加入購物車。</div>';
+    totalBox?.classList.add("hidden");
+    checkout?.classList.add("hidden");
+    submit?.classList.add("hidden");
+    return;
+  }
+
+  const lines=getCartLines();
+  const validPayment=checkoutPayment==="cash" || canUseCandyPayment();
+
+  lines.forEach(({item,product,variant,stock})=>{
+    if(stock>0 && item.quantity>stock) item.quantity=stock;
+
+    const box=document.createElement("div");
+    box.className="cart-item";
+
+    const img=document.createElement("img");
+    img.src=item.image||((Array.isArray(product.images)&&product.images[0])||product.image||"");
+    img.alt=item.name||"商品";
+    img.onerror=()=>{img.style.visibility="hidden";};
+
+    const main=document.createElement("div");
+    main.className="cart-item-main";
+
+    const title=document.createElement("div");
+    title.className="cart-item-title";
+    title.textContent=item.name||product.name||"商品";
+
+    const meta=document.createElement("div");
+    meta.className="cart-item-meta";
+    const colorText=item.color?`款式：${item.color}｜`:"";
+    const unit=getCartUnitPrice(product);
+    const unitText=checkoutPayment==="candy"
+      ? (unit?formatCandy(unit):"未設定糖果價格")
+      : (unit?formatMoney(unit):"未設定現金價格");
+    meta.textContent=`${colorText}${getCartUnitLabel()}：${unitText}｜庫存：${stock}`;
+
+    const row=document.createElement("div");
+    row.className="cart-item-row";
+
+    const qty=document.createElement("div");
+    qty.className="qty-box";
+
+    const minus=document.createElement("button");
+    minus.type="button"; minus.className="qty-btn"; minus.textContent="−";
+    minus.onclick=()=>{
+      item.quantity=Math.max(1,(Number(item.quantity)||1)-1);
+      saveCart(); renderCart();
+    };
+
+    const input=document.createElement("input");
+    input.className="qty-input"; input.type="number"; input.min="1";
+    input.max=String(Math.max(1,stock)); input.value=String(item.quantity);
+    input.onchange=()=>{
+      const n=Math.max(1,Math.min(stock||1,parseInt(input.value,10)||1));
+      item.quantity=n; saveCart(); renderCart();
+    };
+
+    const plus=document.createElement("button");
+    plus.type="button"; plus.className="qty-btn"; plus.textContent="+";
+    plus.onclick=()=>{
+      if((Number(item.quantity)||1)>=stock){
+        toast(`庫存不足，目前最多 ${stock} 件`);
+        return;
+      }
+      item.quantity+=1; saveCart(); renderCart();
+    };
+
+    qty.append(minus,input,plus);
+
+    const remove=document.createElement("button");
+    remove.type="button"; remove.className="btn small remove-cart";
+    remove.textContent="移除";
+    remove.onclick=()=>{
+      cartItems=cartItems.filter(x=>x.key!==item.key);
+      saveCart(); renderCart();
+    };
+
+    row.append(qty,remove);
+    main.append(title,meta,row);
+    box.append(img,main);
+    list.appendChild(box);
+  });
+
+  if(checkoutPayment==="candy" && !validPayment){
+    $("#paymentHint").textContent="目前購物車有商品尚未設定糖果價格，因此不能使用糖果付款；請改選現金，或請管理員補上糖果價格。";
+  }else{
+    $("#paymentHint").textContent=`交易角色：${checkoutCharacter}｜付款方式：${checkoutPayment==="candy"?"糖果":"現金"}。送出訂單後會自動複製訂單內容，接著可聯絡賣家。`;
+  }
+
+  totalBox?.classList.remove("hidden");
+  totalBox.querySelector("strong").textContent=
+    checkoutPayment==="candy"
+      ? (validPayment?formatCandy(getCartTotal()):"未完成")
+      : formatMoney(getCartTotal());
+
+  checkout?.classList.remove("hidden");
+  submit?.classList.remove("hidden");
+  submit.disabled=!validPayment;
+  submit.textContent=validPayment?"送出訂單":"請選擇可用付款方式";
+  saveCart();
+}
+
+async function submitCartOrder(){
+  if(orderSubmitting || !cartItems.length) return;
+  if(checkoutPayment==="candy" && !canUseCandyPayment()){
+    toast("有商品尚未設定糖果價格，無法使用糖果付款",5000);
+    return;
+  }
+
+  const lines=getCartLines();
+  const invalid=lines.find(line=>line.stock<=0 || Number(line.item.quantity)>line.stock);
+  if(invalid){
+    toast(`「${invalid.item.name}」庫存已不足，請重新整理購物車`,5000);
+    renderCart();
+    return;
+  }
+
+  const submit=$("#submitOrderBtn");
+  orderSubmitting=true;
+  if(submit){ submit.disabled=true; submit.textContent="建立訂單中…"; }
+
+  try{
+    const payload={
+      character:checkoutCharacter,
+      payment:checkoutPayment,
+      items:lines.map(line=>({
+        productId:line.item.productId,
+        color:String(line.item.color||""),
+        quantity:Math.max(1,Number(line.item.quantity)||1)
+      }))
+    };
+
+    const result=await createOrderCallable(payload);
+    const data=result?.data||{};
+    const orderNo=data.orderNo||"";
+    const totalText=checkoutPayment==="candy"
+      ? formatCandy(Number(data.total)||0)
+      : formatMoney(Number(data.total)||0);
+
+    const text=[
+      "【O² M★STAR交易區｜訂單成立】",
+      `訂單編號：${orderNo}`,
+      `交易角色：${checkoutCharacter}`,
+      `付款方式：${checkoutPayment==="candy"?"糖果":"現金"}`,
+      "",
+      ...(data.items||[]).map((item,index)=>
+        `${index+1}. ${item.name}${item.color?`｜款式：${item.color}`:""}｜數量：${item.quantity}｜單價：${checkoutPayment==="candy"?formatCandy(item.unitPrice):formatMoney(item.unitPrice)}｜小計：${checkoutPayment==="candy"?formatCandy(item.subtotal):formatMoney(item.subtotal)}`
+      ),
+      "",
+      `訂單合計：${totalText}`,
+      "狀態：待交易",
+      "請與賣家確認交易時間。"
+    ].join("\n");
+
+    try{ await navigator.clipboard.writeText(text); }catch{}
+
+    cartItems=[];
+    saveCart();
+    renderCart();
+    $("#cartDialog").close();
+    toast(`訂單 ${orderNo} 已成立，庫存已自動扣除`,5000);
+
+    // 自動開啟 Discord 聯絡管理員頁面；若瀏覽器阻擋新分頁，訂單仍已成立。
+    window.open("https://discord.com/users/621734178228273155","_blank","noopener,noreferrer");
+  }catch(error){
+    console.error("訂單建立失敗",error);
+    const message=error?.message||"訂單建立失敗，請重新整理後再試。";
+    toast(message,7000);
+    alert(message);
+    renderCart();
+  }finally{
+    orderSubmitting=false;
+    if(submit){ submit.disabled=false; submit.textContent="送出訂單"; }
+  }
+}
+
+$("#cartBtn").onclick=()=>{
+  renderCart();
+  $("#cartDialog").showModal();
+};
+
+$$("[data-character]").forEach(button=>{
+  button.onclick=()=>{
+    checkoutCharacter=button.dataset.character;
+    $$("[data-character]").forEach(b=>b.classList.toggle("active",b===button));
+    renderCart();
+  };
+});
+
+$$("[data-payment]").forEach(button=>{
+  button.onclick=()=>{
+    checkoutPayment=button.dataset.payment;
+    $$("[data-payment]").forEach(b=>b.classList.toggle("active",b===button));
+    renderCart();
+  };
+});
+
+$("#submitOrderBtn").onclick=submitCartOrder;
+
+/* =========================================================
+   管理員訂單
+========================================================= */
+function renderAdminOrders(){
+  const box=$("#ordersList");
+  if(!box) return;
+  box.innerHTML="";
+  if(!orders.length){
+    box.innerHTML='<div class="cart-empty">目前沒有訂單</div>';
+    return;
+  }
+  orders.forEach(order=>{
+    const card=document.createElement("div");
+    card.className="order-admin-card";
+    const head=document.createElement("div");
+    head.className="order-admin-head";
+    const no=document.createElement("div");
+    no.className="order-no";
+    no.textContent=order.orderNo||order.id;
+    const status=document.createElement("span");
+    status.className="order-status";
+    status.textContent=order.status||"待交易";
+    head.append(no,status);
+
+    const meta=document.createElement("div");
+    meta.className="order-admin-meta";
+    const payment=order.payment==="candy"?"糖果":"現金";
+    meta.textContent=`交易角色：${order.character||""}｜付款：${payment}｜建立時間：${formatTime(order.createdAt)}`;
+
+    const items=document.createElement("div");
+    items.className="order-admin-items";
+    (order.items||[]).forEach((item,index)=>{
+      const row=document.createElement("div");
+      row.textContent=`${index+1}. ${item.name||"商品"}${item.color?`｜${item.color}`:""} × ${item.quantity||0}｜${order.payment==="candy"?formatCandy(item.unitPrice):formatMoney(item.unitPrice)}`;
+      items.appendChild(row);
+    });
+
+    const total=document.createElement("div");
+    total.className="order-admin-total";
+    total.textContent=`合計：${order.payment==="candy"?formatCandy(order.total):formatMoney(order.total)}`;
+
+    card.append(head,meta,items,total);
+    box.appendChild(card);
+  });
+}
+
+function subscribeAdminOrders(){
+  if(unsubscribeOrders) unsubscribeOrders();
+  unsubscribeOrders=onSnapshot(
+    query(collection(db,"orders"),orderBy("createdAt","desc")),
+    snapshot=>{
+      orders=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+      renderAdminOrders();
+    },
+    error=>{
+      console.error("訂單讀取失敗",error);
+      $("#ordersList").innerHTML='<div class="cart-empty">訂單讀取失敗，請確認 Firestore Rules。</div>';
+    }
+  );
+}
+
+$("#ordersBtn").onclick=()=>{
+  if(!isAdmin()) return;
+  renderAdminOrders();
+  $("#ordersDialog").showModal();
+};
 
 /* 商品圖片預覽 */
 function renderImagePreview(){
@@ -1183,6 +1711,19 @@ function formatPriceInput(value){
   return digits?`NT$${digits}`:"";
 }
 
+function bindCandyPriceInput(){
+  const input=$("#productCandyPrice");
+  if(!input) return;
+  input.addEventListener("input",event=>{
+    const digits=event.target.value.replace(/\D/g,"");
+    const formatted=digits?`${digits}糖`:"";
+    if(event.target.value!==formatted){
+      event.target.value=formatted;
+      try{event.target.setSelectionRange(event.target.value.length,event.target.value.length)}catch{}
+    }
+  });
+}
+
 $("#productPrice").addEventListener("input",event=>{
   const input=event.target;
   const digits=input.value.replace(/\D/g,"");
@@ -1192,6 +1733,12 @@ $("#productPrice").addEventListener("input",event=>{
     try{input.setSelectionRange(input.value.length,input.value.length)}catch{}
   }
 });
+bindCandyPriceInput();
+
+function formatCandyPriceInput(value){
+  const digits=String(value??"").replace(/\D/g,"");
+  return digits?`${digits}糖`:"";
+}
 
 let productNameTranslateTimer=null;
 let productNameTranslateToken=0;
@@ -1238,7 +1785,8 @@ function openProductDialog(product=null){
   if(!$("#productNameEn").value.trim() && $("#productName").value.trim()){
     setTimeout(updateProductEnglishName,50);
   }
-  $("#productPrice").value=formatPriceInput(product?.price||"");
+  $("#productPrice").value=formatPriceInput(product?.cashPrice ?? product?.price ?? "");
+  $("#productCandyPrice").value=formatCandyPriceInput(product?.candyPrice ?? "");
 
   setVariantsInForm(
     product?.variants?.length
@@ -1387,10 +1935,11 @@ async function migrateAllLegacyImages(){
 
 $("#migrateImagesBtn").onclick=migrateAllLegacyImages;
 
-/* 儲存商品：v6
+/* 儲存商品：v7
  * 1. 新增商品不再上傳 Firebase Storage。
  * 2. 圖片壓縮後直接寫入 Firestore。
  * 3. 保留多圖片、顏色、庫存與舊商品編輯功能。
+ * 4. 新增現金／糖果雙價格與購物車結帳。
  */
 $("#productForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -1447,6 +1996,8 @@ $("#productForm").addEventListener("submit",async event=>{
       name:chineseName,
       nameEn:englishName,
       price:formatPriceInput(priceInput),
+      cashPrice:formatPriceInput(priceInput),
+      candyPrice:formatCandyPriceInput($("#productCandyPrice").value),
       stock,
       variants,
       updatedAt:serverTimestamp()
@@ -1549,6 +2100,7 @@ $("#loginForm").addEventListener("submit",async event=>{
 $("#adminBtn").onclick=async()=>{
   if(isAdmin()){
     await signOut(auth);
+    await ensureBuyerAuth();
     toast("已登出");
   }else{
     $("#loginDialog").showModal();
@@ -1594,6 +2146,16 @@ $("#searchInput").addEventListener("input",()=>{
 /* 排序 */
 $("#productSort").addEventListener("change",renderProducts);
 
+async function ensureBuyerAuth(){
+  if(auth.currentUser) return;
+  try{
+    await signInAnonymously(auth);
+  }catch(error){
+    console.error("匿名登入失敗",error);
+    toast("目前無法建立訪客登入，訂單功能需要開啟 Firebase 匿名登入。",7000);
+  }
+}
+
 /* Firebase 商品即時監聽 */
 onSnapshot(
   query(collection(db,"products"),orderBy("createdAt","desc")),
@@ -1610,16 +2172,21 @@ onSnapshot(
 /* 登入狀態 */
 onAuthStateChanged(auth,user=>{
   currentUser=user;
-  $("#adminBtn").textContent=isAdmin()?"登出管理員":"管理員登入";
-  $("#addBtn").classList.toggle("hidden",!isAdmin());
-  $("#migrateImagesBtn").classList.toggle("hidden",!isAdmin());
+  const admin=isAdmin();
+  $("#adminBtn").textContent=admin?"登出管理員":"管理員登入";
+  $("#addBtn").classList.toggle("hidden",!admin);
+  $("#migrateImagesBtn").classList.toggle("hidden",!admin);
+  $("#ordersBtn").classList.toggle("hidden",!admin);
+  if(admin) subscribeAdminOrders();
+  else if(unsubscribeOrders){ unsubscribeOrders(); unsubscribeOrders=null; orders=[]; }
   renderProducts();
 });
 
 ensureOneVariantRow();
+loadCart();
+ensureBuyerAuth();
 </script>
 
 </body>
 </html>
-
 
