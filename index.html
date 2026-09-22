@@ -62,6 +62,54 @@ button{cursor:pointer}
 .btn.danger{color:#ff9aa4;border-color:#6d3439}
 .btn.small{padding:7px 10px;font-size:13px}
 
+/* Discord 聯絡賣家按鈕 */
+.discord-admin-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:8px 13px;
+  border:1px solid #7289da;
+  border-radius:10px;
+  color:#fff!important;
+  background:#5865f2;
+  text-decoration:none!important;
+  font-weight:900;
+  font-size:13px;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 3px 12px rgba(88,101,242,.32);
+  transition:.18s ease;
+}
+.discord-admin-link:hover{
+  background:#6875f5;
+  border-color:#8ea0ff;
+  transform:translateY(-1px);
+  box-shadow:0 5px 18px rgba(88,101,242,.48);
+}
+.discord-admin-link:active{transform:translateY(0) scale(.98)}
+.discord-icon{
+  width:23px;
+  height:23px;
+  min-width:23px;
+  display:block;
+  fill:currentColor;
+}
+.discord-link-text{display:inline-block}
+.top-contact-link{
+  padding:7px 11px;
+  font-size:13px;
+}
+.payment-trade-note{
+  flex-basis:100%;
+  margin-top:4px;
+  font-size:12px;
+  line-height:1.5;
+  color:#f0f0f0;
+  font-weight:700;
+  white-space:nowrap;
+}
+
 /* 主體 */
 .wrap{width:min(1500px,calc(100% - 32px));margin:auto}
 .hero{padding:36px 0 30px}
@@ -322,6 +370,19 @@ button{cursor:pointer}
   background:#e78aad;color:#fff;font-size:11px;font-weight:900;
 }
 .top-actions{display:flex;align-items:center;gap:8px}
+.admin-login-btn{display:inline-flex;align-items:center;gap:7px;font-weight:800}
+.admin-login-btn svg{width:18px;height:18px;display:block}
+.admin-permission{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:10px;background:#101014;border:1px solid #61363b;color:#ffb0b8;font-size:12px;line-height:1.4}
+.admin-permission.allowed{color:#8cffb0;border-color:#315c43;background:#101812}
+.admin-permission svg{width:18px;height:18px;flex:none}
+.seller-contact{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border-radius:10px;background:#5865f2;color:#fff!important;border:1px solid #7280ff;text-decoration:none;font-weight:800}
+.share-preview-card{background:#101014;border:1px solid #35353b;border-radius:14px;padding:16px;line-height:1.65}
+.share-preview-title{font-size:18px;font-weight:900;margin-bottom:10px}
+.share-preview-line{font-size:13px;color:#ddd}
+.share-preview-items{margin-top:10px;padding:10px;border-radius:10px;background:#17171b}
+.share-preview-note{margin-top:10px;padding:10px;border-radius:10px;background:#17171b;color:#ffe08a;white-space:pre-wrap}
+.share-preview-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.share-preview-actions .btn{flex:1;min-width:145px}
 .cart-empty{color:#888;text-align:center;padding:28px 10px}
 .cart-list{display:grid;gap:10px;max-height:46vh;overflow:auto;padding-right:2px}
 .cart-item{
@@ -466,14 +527,27 @@ dialog::backdrop{background:#000b}
         <small>販售・收購・交流</small>
         <a class="discord-admin-link top-contact-link"
            href="https://discord.com/users/621734178228273155"
-           target="_blank" rel="noopener noreferrer">聯絡管理員</a>
+           target="_blank" rel="noopener noreferrer"
+           aria-label="使用 Discord 聯絡賣家">
+          <svg class="discord-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19.54 4.99A16.7 16.7 0 0 0 15.44 3.7l-.5 1.02a15.1 15.1 0 0 0-5.88 0L8.56 3.7a16.7 16.7 0 0 0-4.1 1.29C1.86 8.86 1.16 12.65 1.51 16.39a16.6 16.6 0 0 0 5.05 2.55l1.22-1.67c-.67-.24-1.3-.54-1.9-.9l.47-.36c3.66 1.7 7.63 1.7 11.25 0 .16.13.31.25.47.36-.6.36-1.23.66-1.9.9l1.22 1.67a16.6 16.6 0 0 0 5.05-2.55c.41-4.34-.7-8.1-2.9-11.4ZM8.73 14.96c-1.08 0-1.96-.99-1.96-2.2s.87-2.2 1.96-2.2 1.97.99 1.96 2.2c0 1.21-.87 2.2-1.96 2.2Zm6.54 0c-1.08 0-1.96-.99-1.96-2.2s.87-2.2 1.96-2.2 1.97.99 1.96 2.2c0 1.21-.87 2.2-1.96 2.2Z"/>
+          </svg>
+          <span class="discord-link-text">聯絡賣家</span>
+        </a>
+        <div class="payment-trade-note">可使用台幣或糖果交易，採先付款後交易</div>
       </div>
     </div>
   </div>
   <div class="top-actions">
     <button id="cartBtn" class="btn cart-top-btn" type="button">🛒 購物車 <span id="cartCount" class="cart-count">0</span></button>
     <button id="ordersBtn" class="btn hidden" type="button">📋 訂單管理</button>
-    <button id="adminBtn" class="btn">管理員登入</button>
+    <button id="adminBtn" class="btn admin-login-btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3 20 6v5c0 5.1-3.4 8.8-8 10-4.6-1.2-8-4.9-8-10V6l8-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M9.5 12.2 11.2 14l3.7-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span id="adminBtnText">管理員登入</span>
+    </button>
   </div>
 </header>
 
@@ -582,6 +656,10 @@ dialog::backdrop{background:#000b}
       <button class="icon-btn" type="button" data-close="loginDialog">×</button>
     </div>
     <form id="loginForm" class="form">
+      <div id="adminPermissionStatus" class="admin-permission">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6v5c0 5.1-3.4 8.8-8 10-4.6-1.2-8-4.9-8-10V6l8-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9 15 15M15 9 9 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>只有指定管理員 UID 可以管理商品與訂單。</span>
+      </div>
       <label>Email<input id="loginEmail" type="email" autocomplete="username" required></label>
       <label>密碼<input id="loginPassword" type="password" autocomplete="current-password" required></label>
       <div class="dialog-actions">
@@ -690,11 +768,30 @@ dialog::backdrop{background:#000b}
         </div>
       </div>
       <div id="paymentHint" class="checkout-note"></div>
+      <label class="checkout-note" style="display:grid;gap:6px;margin-top:10px;color:#cfcfd4">
+        交易備註
+        <textarea id="checkoutNote" maxlength="300" placeholder="可填寫希望的交易時間、其他備註（最多 300 字）" style="width:100%;min-height:80px;background:#101014;color:#fff;border:1px solid #3b3b42;border-radius:10px;padding:10px;resize:vertical"></textarea>
+      </label>
     </div>
 
     <div class="dialog-actions">
       <button class="btn" type="button" data-close="cartDialog">繼續購物</button>
       <button id="submitOrderBtn" class="btn primary hidden" type="button">送出訂單</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="sharePreviewDialog">
+  <div class="dialog-wrap" style="max-width:680px">
+    <div class="dialog-head">
+      <h3>📋 交易單預覽</h3>
+      <button class="icon-btn" type="button" data-close="sharePreviewDialog">×</button>
+    </div>
+    <div id="sharePreviewCard" class="share-preview-card"></div>
+    <div class="share-preview-actions">
+      <button id="copySharePreviewBtn" class="btn primary" type="button">📋 複製交易單</button>
+      <button id="saveSharePreviewBtn" class="btn" type="button">📸 截圖</button>
+      <a class="btn seller-contact" href="https://discord.com/users/621734178228273155" target="_blank" rel="noopener noreferrer">💬 聯絡賣家</a>
     </div>
   </div>
 </dialog>
@@ -759,6 +856,10 @@ let checkoutPayment="cash";
 let orderSubmitting=false;
 let orders=[];
 let unsubscribeOrders=null;
+let currentOrderData=null;
+let currentOrderId="";
+let currentOrderNo="";
+const saveOrderNoteCallable=httpsCallable(functions,"saveOrderNote");
 
 function toast(text, duration=2200){
   const el=$("#toast");
@@ -1097,9 +1198,9 @@ function renderProducts(){
       select.className="variant-summary-select";
       select.setAttribute("aria-label","選擇商品顏色與庫存");
 
-      colorVariants.forEach((variant,index)=>{
+      colorVariants.forEach((variant)=>{
         const option=document.createElement("option");
-        option.value=String(index);
+        option.value=String(variants.indexOf(variant));
         const s=Math.max(0,Number(variant.stock)||0);
         option.textContent=s>0
           ? `${variant.color}｜庫存 ${s}`
@@ -1135,8 +1236,7 @@ function renderProducts(){
     addButton.textContent="🛒 加入購物車 / Add to Cart";
 
     const getSelectedVariant=()=>{
-      if(!colorVariants.length) return variants[0]||{color:"",stock:0,imageIndex:0};
-      return colorVariants[selectedVariantIndex]||colorVariants[0];
+      return variants[selectedVariantIndex]||variants[0]||{color:"",stock:0,imageIndex:0};
     };
 
     const updateAddButtonState=()=>{
@@ -1252,6 +1352,7 @@ function addToCart(product,variant,variantIndex=0){
       name:product.name||"",
       nameEn:getEnglishProductName(product),
       color:String(variant?.color||""),
+      variantIndex:Math.max(0,Number(variantIndex)||0),
       quantity:1,
       stock,
       image:productImages[imageIndex]||productImages[0]||""
@@ -1271,9 +1372,12 @@ function getCartLines(){
     };
     const p=product||fallbackProduct;
     const currentVariants=Array.isArray(p.variants)&&p.variants.length?p.variants:[{color:"",stock:Number(p.stock??0),imageIndex:0}];
-    const variant=currentVariants.find(v=>String(v.color||"")===String(item.color||"")) || currentVariants[0] || {};
+    const storedIndex=Number(item.variantIndex);
+    const variant=Number.isInteger(storedIndex) && storedIndex>=0 && storedIndex<currentVariants.length
+      ? currentVariants[storedIndex]
+      : (currentVariants.find(v=>String(v.color||"")===String(item.color||"")) || currentVariants[0] || {});
     const stock=Math.max(0,Number(variant.stock)||0);
-    return {item,product:p,variant,stock};
+    return {item,product:p,variant,variantIndex:Number.isInteger(storedIndex)?storedIndex:currentVariants.indexOf(variant),stock};
   });
 }
 
@@ -1427,6 +1531,7 @@ async function submitCartOrder(){
       items:lines.map(line=>({
         productId:line.item.productId,
         color:String(line.item.color||""),
+        variantIndex:Math.max(0,Number(line.variantIndex)||0),
         quantity:Math.max(1,Number(line.item.quantity)||1)
       }))
     };
@@ -1434,6 +1539,24 @@ async function submitCartOrder(){
     const result=await createOrderCallable(payload);
     const data=result?.data||{};
     const orderNo=data.orderNo||"";
+    currentOrderId=String(data.orderId||"");
+    currentOrderNo=String(orderNo||"");
+    currentOrderData={
+      character:checkoutCharacter,
+      payment:checkoutPayment,
+      note:String($("#checkoutNote")?.value||"").trim(),
+      items:data.items||[],
+      total:Number(data.total)||0
+    };
+
+    if(currentOrderData.note && currentOrderId){
+      try{
+        await saveOrderNoteCallable({orderId:currentOrderId,note:currentOrderData.note});
+      }catch(noteError){
+        console.error("交易備註儲存失敗",noteError);
+        toast("訂單已成立，但交易備註尚未同步，稍後可重新儲存。",5000);
+      }
+    }
     const totalText=checkoutPayment==="candy"
       ? formatCandy(Number(data.total)||0)
       : formatMoney(Number(data.total)||0);
@@ -1461,6 +1584,9 @@ async function submitCartOrder(){
     $("#cartDialog").close();
     toast(`訂單 ${orderNo} 已成立，庫存已自動扣除`,5000);
 
+    renderSharePreview();
+    $("#sharePreviewDialog").showModal();
+
     // 自動開啟 Discord 聯絡管理員頁面；若瀏覽器阻擋新分頁，訂單仍已成立。
     window.open("https://discord.com/users/621734178228273155","_blank","noopener,noreferrer");
   }catch(error){
@@ -1474,6 +1600,71 @@ async function submitCartOrder(){
     if(submit){ submit.disabled=false; submit.textContent="送出訂單"; }
   }
 }
+
+function buildShareText(){
+  if(!currentOrderData) return "";
+  const payment=currentOrderData.payment==="candy"?"糖果":"現金";
+  const total=currentOrderData.payment==="candy"?formatCandy(currentOrderData.total):formatMoney(currentOrderData.total);
+  return [
+    "【O² M★STAR交易區｜交易單】",
+    `訂單編號：${currentOrderNo}`,
+    `交易角色：${currentOrderData.character}`,
+    `付款方式：${payment}`,
+    "",
+    ...(currentOrderData.items||[]).map((item,index)=>`${index+1}. ${item.name||"商品"}${item.color?`｜款式：${item.color}`:""}｜數量：${item.quantity}｜單價：${currentOrderData.payment==="candy"?formatCandy(item.unitPrice):formatMoney(item.unitPrice)}`),
+    "",
+    `訂單合計：${total}`,
+    currentOrderData.note?`交易備註：${currentOrderData.note}`:"交易備註：無",
+    "狀態：待交易",
+    "請與賣家確認交易時間。"
+  ].join("\n");
+}
+
+function renderSharePreview(){
+  const box=$("#sharePreviewCard");
+  if(!box || !currentOrderData) return;
+  box.innerHTML="";
+  const title=document.createElement("div");
+  title.className="share-preview-title";
+  title.textContent="O² M★STAR交易區｜交易單";
+  const meta=document.createElement("div");
+  meta.className="share-preview-line";
+  meta.textContent=`訂單編號：${currentOrderNo}｜${currentOrderData.character}｜${currentOrderData.payment==="candy"?"糖果":"現金"}`;
+  const items=document.createElement("div");
+  items.className="share-preview-items";
+  (currentOrderData.items||[]).forEach((item,index)=>{
+    const row=document.createElement("div");
+    row.textContent=`${index+1}. ${item.name||"商品"}${item.color?`｜${item.color}`:""} × ${item.quantity}`;
+    items.appendChild(row);
+  });
+  const total=document.createElement("div");
+  total.className="share-preview-line";
+  total.style.marginTop="10px";
+  total.style.fontWeight="900";
+  total.textContent=`合計：${currentOrderData.payment==="candy"?formatCandy(currentOrderData.total):formatMoney(currentOrderData.total)}`;
+  const note=document.createElement("div");
+  note.className="share-preview-note";
+  note.textContent=currentOrderData.note?`交易備註：${currentOrderData.note}`:"交易備註：無";
+  box.append(title,meta,items,total,note);
+}
+
+$("#copySharePreviewBtn").onclick=async()=>{
+  const text=buildShareText();
+  if(!text) return;
+  try{await navigator.clipboard.writeText(text);toast("交易單已複製",2500)}
+  catch{toast("複製失敗，請直接選取預覽內容",4000)}
+};
+
+$("#saveSharePreviewBtn").onclick=async()=>{
+  const text=buildShareText();
+  if(!text) return;
+  const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=`${currentOrderNo||"O2-交易單"}.txt`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast("交易單已輸出，可提供給賣家",2500);
+};
 
 $("#cartBtn").onclick=()=>{
   renderCart();
@@ -2173,7 +2364,15 @@ onSnapshot(
 onAuthStateChanged(auth,user=>{
   currentUser=user;
   const admin=isAdmin();
-  $("#adminBtn").textContent=admin?"登出管理員":"管理員登入";
+  const adminText=$("#adminBtnText");
+  if(adminText) adminText.textContent=admin?"登出管理員":"管理員登入";
+  const permission=$("#adminPermissionStatus");
+  if(permission){
+    permission.classList.toggle("allowed",admin);
+    permission.innerHTML=admin
+      ? `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6v5c0 5.1-3.4 8.8-8 10-4.6-1.2-8-4.9-8-10V6l8-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9.5 12.2 1.7 1.8 3.7-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>管理員權限已啟用：可新增、編輯、刪除商品及查看訂單。</span>`
+      : `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6v5c0 5.1-3.4 8.8-8 10-4.6-1.2-8-4.9-8-10V6l8-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9 15 15M15 9 9 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>只有指定管理員 UID 才有管理權限。</span>`;
+  }
   $("#addBtn").classList.toggle("hidden",!admin);
   $("#migrateImagesBtn").classList.toggle("hidden",!admin);
   $("#ordersBtn").classList.toggle("hidden",!admin);
@@ -2189,4 +2388,3 @@ ensureBuyerAuth();
 
 </body>
 </html>
-
