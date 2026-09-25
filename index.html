@@ -99,8 +99,27 @@ button{cursor:pointer}
   letter-spacing:.1px;
 }
 
+.shopping-guide{
+  margin-top:5px;
+  padding:6px 10px;
+  width:fit-content;
+  max-width:100%;
+  color:#d9d9df;
+  border-left:3px solid #8f2cff;
+  background:rgba(143,44,255,.07);
+  border-radius:0 8px 8px 0;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.5;
+  letter-spacing:.1px;
+}
+
 @media(max-width:600px){
   .payment-notice{
+    font-size:11px;
+    width:100%;
+  }
+  .shopping-guide{
     font-size:11px;
     width:100%;
   }
@@ -548,6 +567,9 @@ dialog::backdrop{background:#000b}
       </div>
       <div class="payment-notice">
         可使用台幣或糖果交易・採先付款後交易
+      </div>
+      <div class="shopping-guide">
+        選購完商品點選「加入購物車」・依照提示即可完成購物
       </div>
     </div>
   </div>
@@ -2349,6 +2371,8 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
+
 
 
 
