@@ -2336,6 +2336,10 @@ onAuthStateChanged(auth,user=>{
     $("#adminOrderNotice").textContent="0";
     $("#adminOrderNotice").classList.add("hidden");
     if(unsubscribeOrders){unsubscribeOrders();unsubscribeOrders=null;}
+  }else{
+    // 管理員登入後立即監聽訂單，不必先點「交易訂單」才能收到新訂單提示。
+    // 第一批既有訂單只建立已讀基準；之後新增的訂單會即時顯示紅色數字提示。
+    subscribeAdminOrders();
   }
   renderProducts();
 });
