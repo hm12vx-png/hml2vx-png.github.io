@@ -488,6 +488,17 @@ dialog::backdrop{background:#000b}
 .order-item-meta{margin-top:3px;color:#999;font-size:11px;line-height:1.45}
 .order-note{margin-top:8px;padding:8px 10px;border-radius:9px;background:#19191e;color:#ddd;font-size:12px;white-space:pre-wrap}
 .order-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.order-notice-badge{
+  display:inline-grid;place-items:center;min-width:21px;height:21px;padding:0 6px;
+  margin-left:2px;border-radius:999px;background:#ff304f;color:#fff;font-size:11px;
+  font-weight:900;box-shadow:0 0 8px #ff304f,0 0 16px #ff304f66;
+  animation:orderNoticePulse 1.2s ease-in-out infinite;
+}
+.order-notice-badge.hidden{display:none!important}
+@keyframes orderNoticePulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.12)}
+}
 .order-status.pending{background:#3a3217;color:#ffe98a}
 .order-status.done{background:#173c24;color:#8cffb0}
 .order-status.cancelled{background:#432027;color:#ff9aa4}
@@ -540,7 +551,7 @@ dialog::backdrop{background:#000b}
       </div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button id="cartTopBtn" class="btn primary cart-top-btn">🛒 購物車 <span id="cartCount" class="cart-count">0</span></button><button id="adminOrdersBtn" class="btn hidden">交易訂單</button><button id="adminBtn" class="btn">管理員登入</button></div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button id="cartTopBtn" class="btn primary cart-top-btn">🛒 購物車 <span id="cartCount" class="cart-count">0</span></button><button id="adminOrdersBtn" class="btn hidden">交易訂單 <span id="adminOrderNotice" class="order-notice-badge hidden">0</span></button><button id="adminBtn" class="btn">管理員登入</button></div>
 </header>
 
 <main class="wrap">
@@ -1957,6 +1968,49 @@ async function placeOrder(){
   }finally{if(!confirmedCheckoutOrder){button.disabled=false;button.textContent="① 確認交易扣庫存";}}
 }
 let adminOrdersCache=new Map();
+let adminOrderSeenIds=new Set();
+let adminOrderNotificationInitialized=false;
+
+function loadAdminOrderSeenIds(){
+  try{
+    const raw=localStorage.getItem("ostar_admin_seen_order_ids");
+    const ids=raw?JSON.parse(raw):[];
+    adminOrderSeenIds=new Set(Array.isArray(ids)?ids.map(String):[]);
+  }catch(e){
+    console.warn("讀取訂單已讀狀態失敗",e);
+    adminOrderSeenIds=new Set();
+  }
+}
+function saveAdminOrderSeenIds(){
+  try{
+    const ids=[...adminOrderSeenIds].slice(-500);
+    adminOrderSeenIds=new Set(ids);
+    localStorage.setItem("ostar_admin_seen_order_ids",JSON.stringify(ids));
+  }catch(e){ console.warn("保存訂單已讀狀態失敗",e); }
+}
+function updateAdminOrderNotice(snapshotDocs){
+  if(!isAdmin()) return;
+  const ids=snapshotDocs.map(d=>String(d.id));
+  if(!adminOrderNotificationInitialized){
+    adminOrderNotificationInitialized=true;
+    ids.forEach(id=>adminOrderSeenIds.add(id));
+    saveAdminOrderSeenIds();
+    $("#adminOrderNotice").textContent="0";
+    $("#adminOrderNotice").classList.add("hidden");
+    return;
+  }
+  const newIds=ids.filter(id=>!adminOrderSeenIds.has(id));
+  const badge=$("#adminOrderNotice");
+  badge.textContent=String(newIds.length);
+  badge.classList.toggle("hidden",newIds.length===0);
+}
+function markAdminOrdersSeen(){
+  adminOrdersCache.forEach((_,id)=>adminOrderSeenIds.add(String(id)));
+  saveAdminOrderSeenIds();
+  const badge=$("#adminOrderNotice");
+  badge.textContent="0";
+  badge.classList.add("hidden");
+}
 
 function openOrderEditor(docId){
   const entry=adminOrdersCache.get(docId);
@@ -2049,9 +2103,27 @@ async function saveOrderEdit(){
   }
 }
 
+async function deleteAdminOrder(docId, orderData){
+  if(!isAdmin()){toast("只有管理員可以刪除訂單");return;}
+  const orderNo=orderData?.displayOrderId||orderData?.orderId||docId;
+  if(!confirm(`確定要刪除訂單 ${orderNo} 嗎？\\n\\n刪除後訂單紀錄將永久移除，商品庫存不會自動回補。`)) return;
+  try{
+    await deleteDoc(doc(db,"orders",docId));
+    adminOrderSeenIds.add(String(docId));
+    saveAdminOrderSeenIds();
+    toast(`訂單 ${orderNo} 已刪除`);
+  }catch(error){
+    console.error("刪除訂單失敗",error);
+    const msg=String(error?.message||"請稍後再試");
+    toast(`刪除訂單失敗：${msg}`,7000);
+    alert(`刪除訂單失敗：${msg}`);
+  }
+}
+
 function renderAdminOrders(snapshot){
   const list=$("#adminOrderList"); list.innerHTML="";
   adminOrdersCache=new Map(snapshot.docs.map(d=>[d.id,{data:d.data()}]));
+  updateAdminOrderNotice(snapshot.docs);
   if(!snapshot.docs.length){list.innerHTML='<div class="empty">目前沒有交易訂單</div>';return;}
   snapshot.docs.forEach(s=>{
     const o=s.data();
@@ -2085,6 +2157,13 @@ function renderAdminOrders(snapshot){
     const actions=card.querySelector(".order-actions");
     const edit=document.createElement("button"); edit.className="btn small"; edit.textContent="✏️ 編輯訂單"; edit.onclick=()=>openOrderEditor(s.id);
     actions.appendChild(edit);
+
+    const remove=document.createElement("button");
+    remove.className="btn small danger";
+    remove.textContent="🗑 刪除訂單";
+    remove.onclick=()=>deleteAdminOrder(s.id,o);
+    actions.appendChild(remove);
+
     if(status!=="已交易完成"){
       const done=document.createElement("button"); done.className="btn small primary"; done.textContent="✓ 標記已交易完成";
       done.onclick=async()=>{
@@ -2200,8 +2279,9 @@ $("#finishCheckoutBtn").addEventListener("click",()=>{
   toast("訂單已保存，接著聯絡賣家 DC 即可");
 });
 $("#checkoutForm").addEventListener("submit",async e=>{e.preventDefault();await placeOrder();});
-$("#adminOrdersBtn").onclick=()=>{$("#adminOrdersDialog").showModal();subscribeAdminOrders();};
+$("#adminOrdersBtn").onclick=()=>{markAdminOrdersSeen();$("#adminOrdersDialog").showModal();subscribeAdminOrders();};
 loadCart();
+loadAdminOrderSeenIds();
 
 /* Dialog 關閉 */
 $$("[data-close]").forEach(button=>{
@@ -2247,10 +2327,16 @@ onSnapshot(
 /* 登入狀態 */
 onAuthStateChanged(auth,user=>{
   currentUser=user;
+  adminOrderNotificationInitialized=false;
   $("#adminBtn").textContent=isAdmin()?"登出管理員":"管理員登入";
   $("#addBtn").classList.toggle("hidden",!isAdmin());
   $("#migrateImagesBtn").classList.toggle("hidden",!isAdmin());
   $("#adminOrdersBtn").classList.toggle("hidden",!isAdmin());
+  if(!isAdmin()){
+    $("#adminOrderNotice").textContent="0";
+    $("#adminOrderNotice").classList.add("hidden");
+    if(unsubscribeOrders){unsubscribeOrders();unsubscribeOrders=null;}
+  }
   renderProducts();
 });
 
@@ -2259,5 +2345,6 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
 
 
