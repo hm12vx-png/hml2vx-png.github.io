@@ -754,7 +754,7 @@ dialog::backdrop{background:#000b}
       <div class="dialog-actions">
         <button class="btn" type="button" id="checkoutBackBtn">返回</button>
         <button class="btn primary" type="submit" id="placeOrderBtn">① 確認交易扣庫存</button>
-        <button class="btn" type="button" id="captureCheckoutBtn" disabled>② 📸 一鍵截圖</button>
+        <button class="btn" type="button" id="captureCheckoutBtn">② 📸 一鍵截圖</button>
       </div>
       <div id="checkoutFinishActions" class="checkout-finish hidden">
         <button class="btn primary" type="button" id="finishCheckoutBtn">③ 即可完成</button>
@@ -1942,7 +1942,6 @@ async function placeOrder(){
     confirmedCheckoutOrder={id:orderRef.id,displayOrderId};
     button.disabled=true;
     button.textContent="✓ 已確認並扣庫存";
-    $("#captureCheckoutBtn").disabled=false;
     $("#checkoutFinishActions").classList.remove("hidden");
     ["buyerName","tradeNote"].forEach(id=>$("#"+id).disabled=true);
     $$('input[name="tradeGender"],input[name="paymentMethod"]').forEach(el=>el.disabled=true);
@@ -1954,8 +1953,13 @@ async function placeOrder(){
   }catch(e){
     console.error("建立交易訂單失敗",e);
     const msg=String(e?.message||"");
-    if(msg.includes("permission")||String(e?.code||"").includes("permission")) toast("訂單建立失敗：Firebase 權限規則尚未開放交易訂單／庫存交易",7000);
-    else toast(`訂單建立失敗：${msg||"請稍後再試"}`,7000);
+    if(msg.includes("permission")||String(e?.code||"").includes("permission")){
+      const text="訂單建立失敗：Firebase 權限不足，請檢查 orders 建立權限與 products 庫存更新權限。";
+      toast(text,7000); alert(text);
+    }else{
+      const text=`訂單建立失敗：${msg||"請稍後再試"}`;
+      toast(text,7000); alert(text);
+    }
   }finally{if(!confirmedCheckoutOrder){button.disabled=false;button.textContent="① 確認交易扣庫存";}}
 }
 let adminOrdersCache=new Map();
@@ -2164,7 +2168,19 @@ $("#addVariantBtn").onclick=()=>{
 $("#cartTopBtn").onclick=()=>{$("#cartDialog").showModal();renderCart();};
 $("#cartFab").onclick=()=>{$("#cartDialog").showModal();renderCart();};
 $("#clearCartBtn").onclick=()=>{if(confirm("確定要清空購物車嗎？")){cartItems=[];saveCart();renderCart();}};
-$("#checkoutBtn").onclick=()=>{if(!getCartRows().length){toast("購物車目前沒有商品");return;}buildCheckoutSummary();$("#checkoutDialog").showModal();};
+$("#checkoutBtn").onclick=()=>{
+  if(!getCartRows().length){toast("購物車目前沒有商品");return;}
+  confirmedCheckoutOrder=null;
+  $("#placeOrderBtn").disabled=false;
+  $("#placeOrderBtn").textContent="① 確認交易扣庫存";
+  $("#captureCheckoutBtn").disabled=false;
+  $("#captureCheckoutBtn").textContent="② 📸 一鍵截圖";
+  $("#checkoutFinishActions").classList.add("hidden");
+  ["buyerName","tradeNote"].forEach(id=>$("#"+id).disabled=false);
+  $$('input[name="tradeGender"],input[name="paymentMethod"]').forEach(el=>el.disabled=false);
+  buildCheckoutSummary();
+  $("#checkoutDialog").showModal();
+};
 $("#captureCheckoutBtn").onclick=()=>{
   const gender=$("input[name=tradeGender]:checked")?.value||"男角";
   const payment=$("input[name=paymentMethod]:checked")?.value||"台幣";
