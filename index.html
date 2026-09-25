@@ -452,10 +452,6 @@ dialog::backdrop{background:#000b}
 .choice-chip{display:inline-flex;align-items:center;justify-content:center;min-width:105px;padding:10px 15px;border:1px solid #444;border-radius:999px;background:#151518;color:#ccc;font-weight:800}
 .choice-row input:checked + .choice-chip{border-color:#a85cff;background:#3b1760;color:#fff;box-shadow:0 0 12px #a85cff55}
 .payment-note{padding:10px 12px;border-left:3px solid #ffc400;background:#2a240f;color:#ffe98a;border-radius:0 9px 9px 0;font-size:12px;line-height:1.55}
-.checkout-flow{padding:11px 13px;border:1px solid #4a3a75;background:#1c1628;border-radius:11px;color:#eee;font-size:12px;line-height:1.65}
-.checkout-flow strong{color:#fff}.checkout-flow .flow-arrow{color:#a85cff;font-weight:900;padding:0 4px}
-.checkout-finish{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
-
 .capture-area{background:#17171b;border:1px solid #34343b;border-radius:14px;padding:16px;color:#fff}
 .capture-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
 .capture-head strong{font-size:18px}
@@ -749,16 +745,11 @@ dialog::backdrop{background:#000b}
       </div></div>
       <div class="board-field"><label for="buyerName">交易暱稱</label><input id="buyerName" maxlength="40" required placeholder="輸入你的交易名稱／遊戲角色名"></div>
       <div class="board-field"><label for="tradeNote">留言板備註</label><textarea id="tradeNote" maxlength="500" placeholder="例如：希望晚上 8 點交易、請先 Discord 聯絡我……"></textarea></div>
-      <div class="checkout-flow"><strong>使用說明：</strong>① 確認交易扣庫存 <span class="flow-arrow">→</span> ② 一鍵截圖 <span class="flow-arrow">→</span> ③ 即可完成 <span class="flow-arrow">→</span> ④ 聯絡賣家 DC</div>
-      <div class="payment-note">請先確認交易角色、付款方式、商品與數量。確認建立訂單後畫面會保留，接著一鍵截圖保存訂單。</div>
+      <div class="payment-note">送出後會建立交易訂單，並依照本次選擇的商品款式與數量自動扣除庫存。請確認交易角色、付款方式與數量後再送出。</div>
       <div class="dialog-actions">
-        <button class="btn" type="button" id="checkoutBackBtn">返回</button>
-        <button class="btn primary" type="submit" id="placeOrderBtn">① 確認交易扣庫存</button>
-        <button class="btn" type="button" id="captureCheckoutBtn" disabled>② 📸 一鍵截圖</button>
-      </div>
-      <div id="checkoutFinishActions" class="checkout-finish hidden">
-        <button class="btn primary" type="button" id="finishCheckoutBtn">③ 即可完成</button>
-        <a class="btn" href="https://discord.com/users/621734178228273155" target="_blank" rel="noopener noreferrer" style="text-decoration:none">④ 聯絡賣家 DC</a>
+        <button class="btn" type="button" data-close="checkoutDialog">返回</button>
+        <button class="btn" type="button" id="captureCheckoutBtn">📸 一鍵截圖</button>
+        <button class="btn primary" type="submit" id="placeOrderBtn">確認交易並扣庫存</button>
       </div>
     </form>
   </div>
@@ -837,7 +828,6 @@ let selectedImageItems=[];
 let searchTimer=null;
 let cartItems=[];
 let unsubscribeOrders=null;
-let confirmedCheckoutOrder=null;
 
 function toast(text, duration=2200){
   const el=$("#toast");
@@ -1937,26 +1927,14 @@ async function placeOrder(){
     });
     cartItems=cartItems.filter(ci=>!rows.some(r=>r.p.id===ci.productId&&r.variantIndex===Number(ci.variantIndex)));
     saveCart();
-    renderCart();
-    $("#cartDialog").close();
-    confirmedCheckoutOrder={id:orderRef.id,displayOrderId};
-    button.disabled=true;
-    button.textContent="✓ 已確認並扣庫存";
-    $("#captureCheckoutBtn").disabled=false;
-    $("#checkoutFinishActions").classList.remove("hidden");
-    ["buyerName","tradeNote"].forEach(id=>$("#"+id).disabled=true);
-    $$('input[name="tradeGender"],input[name="paymentMethod"]').forEach(el=>el.disabled=true);
-    const badge=document.createElement("div");
-    badge.style.cssText="margin-top:10px;padding:9px 11px;border-radius:9px;background:#173c24;color:#8cffb0;font-size:12px;font-weight:900";
-    badge.textContent=`✓ 訂單已建立：${displayOrderId}｜請一鍵截圖後再按「即可完成」`;
-    $("#checkoutSummary").appendChild(badge);
-    toast("訂單已建立，請一鍵截圖保存");
+    $("#checkoutDialog").close(); $("#cartDialog").close();
+    alert(`交易訂單已建立！\n訂單編號：${displayOrderId}\n付款方式：${paymentMethod}\n交易角色：${tradeGender}\n\n請透過 Discord 聯絡賣家完成交易。`);
   }catch(e){
     console.error("建立交易訂單失敗",e);
     const msg=String(e?.message||"");
     if(msg.includes("permission")||String(e?.code||"").includes("permission")) toast("訂單建立失敗：Firebase 權限規則尚未開放交易訂單／庫存交易",7000);
     else toast(`訂單建立失敗：${msg||"請稍後再試"}`,7000);
-  }finally{if(!confirmedCheckoutOrder){button.disabled=false;button.textContent="① 確認交易扣庫存";}}
+  }finally{button.disabled=false;button.textContent="確認交易並扣庫存";}
 }
 let adminOrdersCache=new Map();
 
@@ -2180,15 +2158,6 @@ $("#captureCheckoutBtn").onclick=()=>{
   $("#checkoutSummary").appendChild(extra);
   captureElement($("#checkoutSummary"),`ostar交易清單_${Date.now()}.png`).finally(()=>extra.remove());
 };
-$("#checkoutBackBtn").addEventListener("click",()=>{
-  if(confirmedCheckoutOrder && !confirm("訂單已建立並扣除庫存，確定要離開嗎？")) return;
-  $("#checkoutDialog").close();
-});
-$("#finishCheckoutBtn").addEventListener("click",()=>{
-  $("#checkoutDialog").close();
-  confirmedCheckoutOrder=null;
-  toast("訂單已保存，接著聯絡賣家 DC 即可");
-});
 $("#checkoutForm").addEventListener("submit",async e=>{e.preventDefault();await placeOrder();});
 $("#adminOrdersBtn").onclick=()=>{$("#adminOrdersDialog").showModal();subscribeAdminOrders();};
 loadCart();
@@ -2249,5 +2218,3 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
-
