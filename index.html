@@ -2449,7 +2449,7 @@ function createExportSheet(pageItems,pageIndex,totalPages){
 
   const page=document.createElement("div");
   page.className="export-sheet-page";
-  page.textContent=`${pageItems.__exportCategory||""}｜第 ${pageIndex} / ${totalPages} 張`;
+  page.textContent=`${pageItems.__exportGroup||""}｜第 ${pageIndex} / ${totalPages} 張`;
 
   head.append(title,page);
 
@@ -2496,14 +2496,19 @@ function createExportSheet(pageItems,pageIndex,totalPages){
 
     const category=document.createElement("div");
     category.className="export-product-category";
-    category.textContent=product.category||"";
+    const rawCategory=String(product.category||"");
+    if(rawCategory==="戒指限男" || rawCategory==="戒指限女"){
+      category.textContent=`戒指｜${rawCategory.endsWith("限男")?"限男":"限女"}`;
+    }else{
+      category.textContent=rawCategory;
+    }
 
     info.append(name,price,category);
     card.appendChild(info);
     grid.appendChild(card);
   });
 
-  // 保持每頁固定 40 格的版面；不足的格子留白。
+  // 保持每頁固定 56 格的版面；不足的格子留白。
   for(let i=pageItems.length;i<EXPORT_PRODUCTS_PER_IMAGE;i++){
     const empty=document.createElement("div");
     empty.className="export-product-empty";
@@ -2565,11 +2570,12 @@ async function exportAllProducts(){
 
   /*
      匯出規則：
-     1. 先依照前台分類列的順序排列全部商品。
-     2. 不以分類切開圖片；分類只決定商品的先後順序。
-     3. 每張圖片固定最多 56 格、每行 8 格。
-     4. 商品依分類順序一路往下連續生成，超過 56 格直接接下一張。
-     5. 同一分類內維持 Firebase 商品清單原本順序。
+     1. 家具＋花盆為同一個獨立匯出分組。
+     2. 戒指限男＋戒指限女為另一個獨立匯出分組。
+     3. 其餘分類依前台分類順序排列。
+     4. 每張圖片固定最多 56 格、每行 8 格。
+     5. 同一匯出分組超過 56 格才接續下一張。
+     6. 同一分類內維持 Firebase 商品清單原本順序。
   */
   const categoryOrder=$$("#tabs .tab")
     .map(tab=>tab.dataset.category)
@@ -2582,24 +2588,45 @@ async function exportAllProducts(){
     categoryMap.get(category).push(product);
   });
 
-  // 先依前台分類順序，再補上商品資料中存在但分類列沒有的分類。
-  const orderedCategories=[
-    ...categoryOrder.filter((category,index)=>categoryOrder.indexOf(category)===index),
-    ...[...categoryMap.keys()].filter(category=>!categoryOrder.includes(category))
-  ];
+  // 匯出分組：家具＋花盆為同一組；限男戒指＋限女戒指為同一組；
+  // 其餘分類依前台分類順序各自作為後續分組。每組超過 56 格才換下一張。
+  const furnitureGroup=["家具","花盆"];
+  const ringGroup=["戒指限男","戒指限女"];
+  const groupedCategories=[];
 
-  // 依分類順序攤平成單一商品序列，再以 56 格為單位切頁。
-  const orderedProducts=[];
-  orderedCategories.forEach(category=>{
-    const items=categoryMap.get(category)||[];
-    items.forEach(product=>orderedProducts.push(product));
-  });
+  const pushExistingGroup=(group)=>{
+    const exists=group.some(category=>categoryMap.has(category));
+    if(exists) groupedCategories.push(group.filter(category=>categoryMap.has(category)));
+  };
+
+  pushExistingGroup(furnitureGroup);
+  pushExistingGroup(ringGroup);
+
+  const usedCategories=new Set([...furnitureGroup,...ringGroup]);
+  const remainingCategories=[
+    ...categoryOrder.filter((category,index)=>
+      !usedCategories.has(category) && categoryOrder.indexOf(category)===index
+    ),
+    ...[...categoryMap.keys()].filter(category=>
+      !usedCategories.has(category) && !categoryOrder.includes(category)
+    )
+  ];
+  remainingCategories.forEach(category=>groupedCategories.push([category]));
 
   const exportGroups=[];
-  for(let start=0;start<orderedProducts.length;start+=EXPORT_PRODUCTS_PER_IMAGE){
-    const pageItems=orderedProducts.slice(start,start+EXPORT_PRODUCTS_PER_IMAGE);
-    exportGroups.push(pageItems);
-  }
+  groupedCategories.forEach(group=>{
+    const groupProducts=[];
+    group.forEach(category=>{
+      const items=categoryMap.get(category)||[];
+      items.forEach(product=>groupProducts.push(product));
+    });
+
+    for(let start=0;start<groupProducts.length;start+=EXPORT_PRODUCTS_PER_IMAGE){
+      const pageItems=groupProducts.slice(start,start+EXPORT_PRODUCTS_PER_IMAGE);
+      pageItems.__exportGroup=group.join("＋");
+      exportGroups.push(pageItems);
+    }
+  });
 
   const totalPages=exportGroups.length;
   let exportIndex=0;
@@ -2686,7 +2713,5 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
-
 
 
