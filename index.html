@@ -555,12 +555,12 @@ dialog::backdrop{background:#000b}
 .export-sheet-page{font-size:16px;color:#666;font-weight:800}
 .export-sheet-grid{
   display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
+  grid-template-columns:repeat(8,minmax(0,1fr));
   gap:14px;
 }
 .export-product{
   min-width:0;
-  height:238px;
+  height:220px;
   border:1px solid #d7d7d7;
   border-radius:10px;
   background:#fff;
@@ -570,14 +570,14 @@ dialog::backdrop{background:#000b}
 }
 .export-product-image{
   width:100%;
-  height:158px;
+  height:140px;
   object-fit:contain;
   display:block;
   background:#f4f4f4;
 }
 .export-product-no-image{
   width:100%;
-  height:158px;
+  height:140px;
   display:grid;
   place-items:center;
   background:#f4f4f4;
@@ -586,15 +586,15 @@ dialog::backdrop{background:#000b}
 }
 .export-product-info{
   min-height:80px;
-  padding:9px 11px;
+  padding:7px 9px;
   display:flex;
   flex-direction:column;
   justify-content:center;
   gap:4px;
 }
 .export-product-name{
-  font-size:16px;
-  line-height:1.25;
+  font-size:14px;
+  line-height:1.2;
   font-weight:900;
   overflow:hidden;
   display:-webkit-box;
@@ -602,7 +602,7 @@ dialog::backdrop{background:#000b}
   -webkit-box-orient:vertical;
 }
 .export-product-price{
-  font-size:18px;
+  font-size:15px;
   line-height:1.1;
   font-weight:900;
 }
@@ -614,7 +614,7 @@ dialog::backdrop{background:#000b}
   text-overflow:ellipsis;
 }
 .export-product-empty{
-  height:238px;
+  height:220px;
   border:1px dashed #ddd;
   border-radius:10px;
   background:#fafafa;
@@ -2424,10 +2424,10 @@ $("#productSort").addEventListener("change",renderProducts);
 /* =========================================================
    商品一鍵匯出
    規則：全部商品、不受目前分類／搜尋／排序影響
-   每張圖片最多 40 格；固定每行 6 格。
+   每張圖片最多 56 格；固定每行 8 格。
    ========================================================= */
-const EXPORT_PRODUCTS_PER_IMAGE=40;
-const EXPORT_COLUMNS=6;
+const EXPORT_PRODUCTS_PER_IMAGE=56;
+const EXPORT_COLUMNS=8;
 
 function getFirstProductImage(product){
   const images=Array.isArray(product?.images)
@@ -2449,7 +2449,7 @@ function createExportSheet(pageItems,pageIndex,totalPages){
 
   const page=document.createElement("div");
   page.className="export-sheet-page";
-  page.textContent=`第 ${pageIndex} / ${totalPages} 張`;
+  page.textContent=`${pageItems.__exportCategory||""}｜第 ${pageIndex} / ${totalPages} 張`;
 
   head.append(title,page);
 
@@ -2491,7 +2491,8 @@ function createExportSheet(pageItems,pageIndex,totalPages){
 
     const price=document.createElement("div");
     price.className="export-product-price";
-    price.textContent=product.price ? `NT$ ${product.price}` : "價格未設定";
+    const priceValue=product.price ? String(product.price) : "";
+    price.textContent=priceValue ? `NT$ ${priceValue} 🍬 ${priceValue}` : "價格未設定";
 
     const category=document.createElement("div");
     category.className="export-product-category";
@@ -2562,15 +2563,52 @@ async function exportAllProducts(){
   const oldText=button.textContent;
   button.textContent="⏳ 匯出中…";
 
-  // 依照目前 Firebase 商品清單順序匯出，但不受目前分類、搜尋、排序影響。
-  const exportProducts=[...products];
-  const totalPages=Math.ceil(exportProducts.length/EXPORT_PRODUCTS_PER_IMAGE);
+  /*
+     匯出規則：
+     1. 先依照前台分類列的順序排列全部商品。
+     2. 不以分類切開圖片；分類只決定商品的先後順序。
+     3. 每張圖片固定最多 56 格、每行 8 格。
+     4. 商品依分類順序一路往下連續生成，超過 56 格直接接下一張。
+     5. 同一分類內維持 Firebase 商品清單原本順序。
+  */
+  const categoryOrder=$$("#tabs .tab")
+    .map(tab=>tab.dataset.category)
+    .filter(Boolean);
+
+  const categoryMap=new Map();
+  products.forEach(product=>{
+    const category=String(product?.category||"未分類");
+    if(!categoryMap.has(category)) categoryMap.set(category,[]);
+    categoryMap.get(category).push(product);
+  });
+
+  // 先依前台分類順序，再補上商品資料中存在但分類列沒有的分類。
+  const orderedCategories=[
+    ...categoryOrder.filter((category,index)=>categoryOrder.indexOf(category)===index),
+    ...[...categoryMap.keys()].filter(category=>!categoryOrder.includes(category))
+  ];
+
+  // 依分類順序攤平成單一商品序列，再以 56 格為單位切頁。
+  const orderedProducts=[];
+  orderedCategories.forEach(category=>{
+    const items=categoryMap.get(category)||[];
+    items.forEach(product=>orderedProducts.push(product));
+  });
+
+  const exportGroups=[];
+  for(let start=0;start<orderedProducts.length;start+=EXPORT_PRODUCTS_PER_IMAGE){
+    const pageItems=orderedProducts.slice(start,start+EXPORT_PRODUCTS_PER_IMAGE);
+    exportGroups.push(pageItems);
+  }
+
+  const totalPages=exportGroups.length;
+  let exportIndex=0;
 
   try{
-    for(let pageIndex=0;pageIndex<totalPages;pageIndex++){
-      const start=pageIndex*EXPORT_PRODUCTS_PER_IMAGE;
-      const pageItems=exportProducts.slice(start,start+EXPORT_PRODUCTS_PER_IMAGE);
-      const sheet=createExportSheet(pageItems,pageIndex+1,totalPages);
+    for(const pageItems of exportGroups){
+      exportIndex++;
+
+      const sheet=createExportSheet(pageItems,exportIndex,totalPages);
 
       await new Promise(requestAnimationFrame);
       await waitForExportImages(sheet);
@@ -2585,20 +2623,19 @@ async function exportAllProducts(){
         logging:false
       });
 
-      const filename=`O2_MSTAR_商品清單_${String(pageIndex+1).padStart(2,"0")}.png`;
+      const filename=`O2_MSTAR_商品清單_${String(exportIndex).padStart(2,"0")}.png`;
       const ok=await downloadCanvas(canvas,filename);
       sheet.remove();
 
       if(!ok) throw new Error("瀏覽器無法建立圖片檔案");
 
-      // 多張圖片連續下載時稍微間隔，避免瀏覽器一次阻擋大量下載。
-      if(pageIndex<totalPages-1){
+      if(exportIndex<totalPages){
         await new Promise(resolve=>setTimeout(resolve,450));
       }
-      button.textContent=`⏳ 匯出中 ${pageIndex+1}/${totalPages}…`;
+      button.textContent=`⏳ 匯出中 ${exportIndex}/${totalPages}…`;
     }
 
-    toast(`已完成匯出：共 ${exportProducts.length} 件商品、${totalPages} 張圖片`,5000);
+    toast(`已完成匯出：依分類順序、${products.length} 件商品、${totalPages} 張圖片`,6000);
   }catch(error){
     console.error("商品圖片匯出失敗",error);
     toast(`商品圖片匯出失敗：${error?.message||"請稍後再試"}`,7000);
@@ -2649,9 +2686,6 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
-
-
 
 
 
