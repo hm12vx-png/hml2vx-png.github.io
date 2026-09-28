@@ -2491,14 +2491,19 @@ function createExportSheet(pageItems,pageIndex,totalPages){
 
     const price=document.createElement("div");
     price.className="export-product-price";
-    const priceValue=product.price ? String(product.price) : "";
+    // 商品價格可能已經帶有 NT$，匯出時只保留一次 NT$；
+    // 🍬 後面只顯示純數值。
+    const rawPrice=product.price==null ? "" : String(product.price);
+    const priceValue=rawPrice.replace(/^\\s*NT\\$\\s*/i,"").trim();
     price.textContent=priceValue ? `NT$ ${priceValue} 🍬 ${priceValue}` : "價格未設定";
 
     const category=document.createElement("div");
     category.className="export-product-category";
     const rawCategory=String(product.category||"");
-    if(rawCategory==="戒指限男" || rawCategory==="戒指限女"){
-      category.textContent=`戒指｜${rawCategory.endsWith("限男")?"限男":"限女"}`;
+    if(rawCategory==="戒指限男" || rawCategory==="限男戒指"){
+      category.textContent="戒指｜限男";
+    }else if(rawCategory==="戒指限女" || rawCategory==="限女戒指"){
+      category.textContent="戒指｜限女";
     }else{
       category.textContent=rawCategory;
     }
@@ -2584,48 +2589,73 @@ async function exportAllProducts(){
   const categoryMap=new Map();
   products.forEach(product=>{
     const category=String(product?.category||"未分類");
+    if(category==="作物限男" || category==="作物限女") return;
     if(!categoryMap.has(category)) categoryMap.set(category,[]);
     categoryMap.get(category).push(product);
   });
 
-  // 匯出分組：家具＋花盆為同一組；限男戒指＋限女戒指為同一組；
-  // 其餘分類依前台分類順序各自作為後續分組。每組超過 56 格才換下一張。
+  /*
+     匯出分頁規則：
+     1. 家具＋花盆是一個獨立匯出分頁序列。
+     2. 限男戒指＋限女戒指是一個獨立匯出分頁序列。
+     3. 家具／花盆不拆開；戒指男女不拆開。
+     4. 每張最多 56 格、每行 8 格。
+     5. 每個獨立分頁序列超過 56 格才進下一張。
+     6. 其他分類依目前分類順序接續匯出。
+     7. 作物限男／作物限女完全排除。
+  */
   const furnitureGroup=["家具","花盆"];
-  const ringGroup=["戒指限男","戒指限女"];
-  const groupedCategories=[];
 
-  const pushExistingGroup=(group)=>{
-    const exists=group.some(category=>categoryMap.has(category));
-    if(exists) groupedCategories.push(group.filter(category=>categoryMap.has(category)));
+  const findActualCategory=(aliases)=>{
+    return aliases.find(category=>categoryMap.has(category))||null;
   };
 
-  pushExistingGroup(furnitureGroup);
-  pushExistingGroup(ringGroup);
+  const furnitureActual=furnitureGroup
+    .map(category=>findActualCategory([category]))
+    .filter(Boolean);
 
-  const usedCategories=new Set([...furnitureGroup,...ringGroup]);
-  const remainingCategories=[
-    ...categoryOrder.filter((category,index)=>
-      !usedCategories.has(category) && categoryOrder.indexOf(category)===index
-    ),
-    ...[...categoryMap.keys()].filter(category=>
-      !usedCategories.has(category) && !categoryOrder.includes(category)
-    )
-  ];
-  remainingCategories.forEach(category=>groupedCategories.push([category]));
+  const ringMale=findActualCategory(["限男戒指","戒指限男"]);
+  const ringFemale=findActualCategory(["限女戒指","戒指限女"]);
 
   const exportGroups=[];
-  groupedCategories.forEach(group=>{
-    const groupProducts=[];
-    group.forEach(category=>{
-      const items=categoryMap.get(category)||[];
-      items.forEach(product=>groupProducts.push(product));
-    });
+  const usedCategories=new Set([
+    ...furnitureActual,
+    ...(ringMale?[ringMale]:[]),
+    ...(ringFemale?[ringFemale]:[])
+  ]);
 
+  const addGroup=(categories,label)=>{
+    const groupProducts=[];
+    categories.forEach(category=>{
+      (categoryMap.get(category)||[]).forEach(product=>groupProducts.push(product));
+    });
     for(let start=0;start<groupProducts.length;start+=EXPORT_PRODUCTS_PER_IMAGE){
       const pageItems=groupProducts.slice(start,start+EXPORT_PRODUCTS_PER_IMAGE);
-      pageItems.__exportGroup=group.join("＋");
+      pageItems.__exportGroup=label;
       exportGroups.push(pageItems);
     }
+  };
+
+  addGroup(furnitureActual,"家具＋花盆");
+  addGroup([ringMale,ringFemale].filter(Boolean),"限男戒指＋限女戒指");
+
+  const remainingCategories=[
+    ...categoryOrder.filter(category=>
+      categoryMap.has(category) &&
+      !usedCategories.has(category) &&
+      category!=="作物限男" &&
+      category!=="作物限女"
+    ),
+    ...[...categoryMap.keys()].filter(category=>
+      !usedCategories.has(category) &&
+      !categoryOrder.includes(category) &&
+      category!=="作物限男" &&
+      category!=="作物限女"
+    )
+  ];
+
+  remainingCategories.forEach(category=>{
+    addGroup([category],category);
   });
 
   const totalPages=exportGroups.length;
@@ -2713,5 +2743,6 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
 
 
