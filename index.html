@@ -379,91 +379,27 @@ button{cursor:pointer}
 .card-actions .btn{flex:1}
 .empty{grid-column:1/-1;color:#777;padding:40px 0;text-align:center}
 
-/* 商品一鍵匯出：只作用於匯出畫布，不修改前台商品卡片 */
+
+/* =========================
+   商品一鍵匯出：僅匯出畫布，不影響前台商品卡片
+   ========================= */
 .export-sheet{
-  position:fixed;
-  left:-200000px;
-  top:0;
-  z-index:-1;
-  width:1424px;
-  padding:18px;
-  background:#0d0d0f;
-  color:#fff;
+  position:fixed;left:-100000px;top:0;z-index:-1;
+  width:1424px;padding:16px;background:#0d0d0f;color:#fff;
   font-family:Arial,"Microsoft JhengHei",sans-serif;
 }
-.export-sheet-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  height:42px;
-  margin-bottom:10px;
-  padding:0 4px;
-}
-.export-sheet-title{font-size:22px;font-weight:900;letter-spacing:.5px}
-.export-sheet-page{font-size:12px;color:#999}
-.export-sheet-grid{
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:8px;
-}
-.export-product-card{
-  height:146px;
-  min-width:0;
-  overflow:hidden;
-  padding:7px;
-  border:1px solid #303038;
-  border-radius:10px;
-  background:#161619;
-  display:flex;
-  flex-direction:column;
-}
-.export-product-image{
-  width:100%;
-  height:86px;
-  min-height:86px;
-  object-fit:contain;
-  display:block;
-  background:#222;
-  border-radius:7px;
-}
-.export-product-name{
-  height:30px;
-  margin-top:5px;
-  font-size:11px;
-  line-height:15px;
-  font-weight:900;
-  overflow:hidden;
-  word-break:break-word;
-}
-.export-product-price{
-  height:17px;
-  margin-top:2px;
-  display:flex;
-  align-items:center;
-  gap:3px;
-  white-space:nowrap;
-  overflow:hidden;
-  font-size:13px;
-  line-height:17px;
-  font-weight:900;
-}
-.export-candy{font-size:14px;line-height:1}
-.export-product-empty{
-  height:146px;
-  border:1px dashed #29292f;
-  border-radius:10px;
-  background:#101014;
-}
-.export-sheet-foot{
-  height:18px;
-  margin-top:8px;
-  text-align:right;
-  color:#666;
-  font-size:9px;
-}
-.export-product-image.is-missing{
-  visibility:hidden;
-}
+.export-sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.export-sheet-title{font-size:22px;font-weight:900}
+.export-sheet-page{font-size:13px;color:#aaa;font-weight:800}
+.export-sheet-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.export-product-card{height:146px;min-width:0;padding:6px;background:#161619;border:1px solid #333;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.export-product-image{width:100%;height:82px;min-height:82px;object-fit:contain;background:#222;border-radius:7px;display:block}
+.export-product-name{height:31px;min-height:31px;margin-top:4px;font-size:11px;line-height:15px;font-weight:900;overflow:hidden;word-break:break-word}
+.export-product-variant{height:14px;min-height:14px;color:#aaa;font-size:9px;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.export-product-price{height:18px;min-height:18px;font-size:15px;line-height:18px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.export-candy{font-size:14px;margin-right:2px}
+.export-product-empty{height:146px;border:1px solid #222;border-radius:10px;background:#111;opacity:.35}
+.export-sheet-foot{margin-top:10px;color:#777;font-size:11px;text-align:right}
 
 /* Dialog */
 dialog{
@@ -2302,192 +2238,6 @@ $("#editOrderForm").addEventListener("submit",async e=>{
   }
 });
 
-/* =========================
-   商品一鍵匯出
-   只匯出「家具＋花盆」，兩個分類合併依序排列。
-   每張固定 56 格（8 × 7），超過 56 格自動接續下一張。
-   不改動原本商品資料、分類、圖片與前台商品卡片。
-   ========================= */
-function getExportProducts(){
-  const categoryOrder=["家具","花盆"];
-  const result=[];
-  categoryOrder.forEach(category=>{
-    products.forEach(product=>{
-      if(product?.category===category) result.push(product);
-    });
-  });
-  return result;
-}
-
-function getExportImage(product){
-  const variants=getProductVariants(product);
-  const firstVariant=variants[0]||{};
-  return getVariantImage(product,firstVariant);
-}
-
-function createExportSheet(pageProducts,pageIndex,totalPages){
-  const sheet=document.createElement("div");
-  sheet.className="export-sheet";
-
-  const head=document.createElement("div");
-  head.className="export-sheet-head";
-
-  const title=document.createElement("div");
-  title.className="export-sheet-title";
-  title.textContent="O² M★STAR 商品";
-
-  const page=document.createElement("div");
-  page.className="export-sheet-page";
-  page.textContent=`家具 → 花盆　｜　第 ${pageIndex} / ${totalPages} 張`;
-  head.append(title,page);
-
-  const grid=document.createElement("div");
-  grid.className="export-sheet-grid";
-
-  pageProducts.forEach(product=>{
-    const card=document.createElement("div");
-    card.className="export-product-card";
-
-    const img=document.createElement("img");
-    img.className="export-product-image";
-    img.crossOrigin="anonymous";
-    img.alt=product.name||"商品圖片";
-    img.src=getExportImage(product);
-    img.onerror=()=>{
-      img.classList.add("is-missing");
-    };
-
-    const name=document.createElement("div");
-    name.className="export-product-name";
-    name.textContent=product.name||"未命名商品";
-
-    const price=document.createElement("div");
-    price.className="export-product-price";
-
-    const candy=document.createElement("span");
-    candy.className="export-candy";
-    candy.textContent="🍬";
-
-    const number=document.createElement("span");
-    number.textContent=String(getProductPrice(product).toLocaleString("zh-TW"));
-
-    price.append(candy,number);
-    card.append(img,name,price);
-    grid.appendChild(card);
-  });
-
-  /* 固定 56 格；不足的格數留空，讓每張圖片尺寸完全一致。 */
-  for(let i=pageProducts.length;i<56;i++){
-    const empty=document.createElement("div");
-    empty.className="export-product-empty";
-    grid.appendChild(empty);
-  }
-
-  const foot=document.createElement("div");
-  foot.className="export-sheet-foot";
-  foot.textContent=`共 ${products.filter(p=>p?.category==="家具"||p?.category==="花盆").length} 件｜家具＋花盆`;
-
-  sheet.append(head,grid,foot);
-  document.body.appendChild(sheet);
-  return sheet;
-}
-
-async function waitForExportImages(sheet){
-  const images=[...sheet.querySelectorAll("img")];
-  await Promise.all(images.map(img=>new Promise(resolve=>{
-    if(!img.src || (img.complete && img.naturalWidth>0)){resolve();return;}
-    const done=()=>{
-      img.removeEventListener("load",done);
-      img.removeEventListener("error",done);
-      resolve();
-    };
-    img.addEventListener("load",done,{once:true});
-    img.addEventListener("error",done,{once:true});
-    setTimeout(done,15000);
-  })));
-}
-
-async function downloadExportSheet(sheet,filename){
-  await waitForExportImages(sheet);
-  await new Promise(requestAnimationFrame);
-
-  const canvas=await html2canvas(sheet,{
-    backgroundColor:"#0d0d0f",
-    scale:2,
-    useCORS:true,
-    allowTaint:false,
-    imageTimeout:15000,
-    logging:false
-  });
-
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
-  if(!blob) throw new Error("無法建立匯出圖片");
-
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.download=filename;
-  a.href=url;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
-}
-
-async function exportFurnitureAndFlowerPots(){
-  if(!isAdmin()){
-    toast("只有管理員可以匯出商品");
-    return;
-  }
-
-  const exportProducts=getExportProducts();
-  if(!exportProducts.length){
-    toast("目前沒有家具或花盆商品可匯出",5000);
-    return;
-  }
-
-  const button=$("#exportProductsBtn");
-  const oldText=button.textContent;
-  button.disabled=true;
-
-  const pages=[];
-  for(let i=0;i<exportProducts.length;i+=56){
-    pages.push(exportProducts.slice(i,i+56));
-  }
-
-  try{
-    for(let i=0;i<pages.length;i++){
-      button.textContent=`📤 匯出中 ${i+1}/${pages.length}…`;
-
-      const sheet=createExportSheet(pages[i],i+1,pages.length);
-      try{
-        await downloadExportSheet(
-          sheet,
-          `家具＋花盆_商品圖_${String(i+1).padStart(2,"0")}.png`
-        );
-      }finally{
-        sheet.remove();
-      }
-
-      /* 多張圖片連續下載時稍微間隔，避免瀏覽器一次攔截全部下載。 */
-      if(i<pages.length-1){
-        await new Promise(resolve=>setTimeout(resolve,700));
-      }
-    }
-
-    toast(`商品匯出完成：共 ${pages.length} 張圖片`,5000);
-  }catch(error){
-    console.error("商品匯出失敗",error);
-    toast(`商品匯出失敗：${error?.message||"請稍後再試"}`,7000);
-    alert(`商品匯出失敗：${error?.message||"請稍後再試"}`);
-  }finally{
-    button.disabled=false;
-    button.textContent=oldText;
-  }
-}
-
-$("#exportProductsBtn").onclick=exportFurnitureAndFlowerPots;
-
 /* 登入 */
 $("#loginForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -2619,6 +2369,151 @@ onSnapshot(
   }
 );
 
+
+/* =========================
+   商品一鍵匯出
+   規則：家具→花盆、金額高→低；每個商品的所有款式全部展開
+   ========================= */
+function getExportProducts(){
+  const categoryOrder=["家具","花盆"];
+  const result=[];
+  for(const category of categoryOrder){
+    products
+      .filter(product=>product?.category===category)
+      .forEach(product=>{
+        const price=getProductPrice(product);
+        const variants=getProductVariants(product);
+        variants.forEach((variant,variantIndex)=>{
+          result.push({product,variant,variantIndex,price});
+        });
+      });
+  }
+  // 只改匯出資料排序，不改前台 products 陣列與現有商品顯示。
+  result.sort((a,b)=>b.price-a.price);
+  return result;
+}
+
+function getExportVariantLabel(product,variant,variantIndex){
+  const label=String(variant?.color||variant?.name||variant?.title||"").trim();
+  if(label) return label;
+  const variants=getProductVariants(product);
+  return variants.length>1 ? `款式 ${variantIndex+1}` : "";
+}
+
+function getExportImage(product,variant){
+  return getVariantImage(product,variant);
+}
+
+function createExportSheet(pageItems,pageIndex,totalPages,totalItems){
+  const sheet=document.createElement("div");
+  sheet.className="export-sheet";
+  const head=document.createElement("div");
+  head.className="export-sheet-head";
+  head.innerHTML=`<div class="export-sheet-title">O² M★STAR 商品</div><div class="export-sheet-page">家具＋花盆｜第 ${pageIndex} / ${totalPages} 張</div>`;
+  sheet.appendChild(head);
+
+  const grid=document.createElement("div");
+  grid.className="export-sheet-grid";
+  pageItems.forEach(item=>{
+    const card=document.createElement("div");
+    card.className="export-product-card";
+
+    const img=document.createElement("img");
+    img.className="export-product-image";
+    img.src=getExportImage(item.product,item.variant);
+    img.alt=item.product?.name||"商品";
+    img.crossOrigin="anonymous";
+
+    const name=document.createElement("div");
+    name.className="export-product-name";
+    name.textContent=String(item.product?.name||"未命名商品");
+
+    const variant=document.createElement("div");
+    variant.className="export-product-variant";
+    variant.textContent=getExportVariantLabel(item.product,item.variant,item.variantIndex);
+
+    const price=document.createElement("div");
+    price.className="export-product-price";
+    price.innerHTML=`<span class="export-candy">🍬</span>${Number(item.price||0).toLocaleString("zh-TW")}`;
+
+    card.append(img,name,variant,price);
+    grid.appendChild(card);
+  });
+
+  while(grid.children.length<56){
+    const empty=document.createElement("div");
+    empty.className="export-product-empty";
+    grid.appendChild(empty);
+  }
+  sheet.appendChild(grid);
+
+  const foot=document.createElement("div");
+  foot.className="export-sheet-foot";
+  foot.textContent=`共 ${totalItems} 個商品款式｜本頁 ${pageItems.length} 個款式`;
+  sheet.appendChild(foot);
+  return sheet;
+}
+
+async function waitForExportImages(sheet){
+  const images=[...sheet.querySelectorAll("img")];
+  await Promise.all(images.map(img=>new Promise(resolve=>{
+    if(!img.src){resolve();return;}
+    if(img.complete&&img.naturalWidth>0){resolve();return;}
+    const done=()=>{img.removeEventListener("load",done);img.removeEventListener("error",done);resolve();};
+    img.addEventListener("load",done,{once:true});
+    img.addEventListener("error",done,{once:true});
+  })));
+  await new Promise(requestAnimationFrame);
+}
+
+async function downloadExportSheet(sheet,filename){
+  await waitForExportImages(sheet);
+  const canvas=await html2canvas(sheet,{
+    backgroundColor:"#0d0d0f",scale:2,useCORS:true,allowTaint:false,
+    imageTimeout:15000,logging:false
+  });
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+  if(!blob) throw new Error("無法建立 PNG");
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function exportFurnitureAndFlowerPots(){
+  if(!isAdmin()) return toast("只有管理員可以匯出商品");
+  const btn=$("#exportProductsBtn");
+  const items=getExportProducts();
+  if(!items.length) return toast("家具與花盆目前沒有可匯出的商品");
+
+  const pages=[];
+  for(let i=0;i<items.length;i+=56) pages.push(items.slice(i,i+56));
+
+  btn.disabled=true;
+  try{
+    for(let i=0;i<pages.length;i++){
+      btn.textContent=`📤 匯出 ${i+1}/${pages.length}…`;
+      const sheet=createExportSheet(pages[i],i+1,pages.length,items.length);
+      document.body.appendChild(sheet);
+      try{
+        await downloadExportSheet(sheet,`家具＋花盆_商品圖_${String(i+1).padStart(2,"0")}.png`);
+      }finally{
+        sheet.remove();
+      }
+      if(i<pages.length-1) await new Promise(resolve=>setTimeout(resolve,700));
+    }
+    toast(`匯出完成：${items.length} 個商品款式，共 ${pages.length} 張圖片`,5000);
+  }catch(error){
+    console.error("商品匯出失敗",error);
+    toast("商品匯出失敗，請稍後再試",5000);
+  }finally{
+    btn.disabled=false;
+    btn.textContent="📤 一鍵匯出商品";
+  }
+}
+
+$("#exportProductsBtn").onclick=exportFurnitureAndFlowerPots;
+
 /* 登入狀態 */
 onAuthStateChanged(auth,user=>{
   currentUser=user;
@@ -2645,8 +2540,5 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
-
-
 
 
