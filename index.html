@@ -379,6 +379,92 @@ button{cursor:pointer}
 .card-actions .btn{flex:1}
 .empty{grid-column:1/-1;color:#777;padding:40px 0;text-align:center}
 
+/* 商品一鍵匯出：只作用於匯出畫布，不修改前台商品卡片 */
+.export-sheet{
+  position:fixed;
+  left:-200000px;
+  top:0;
+  z-index:-1;
+  width:1424px;
+  padding:18px;
+  background:#0d0d0f;
+  color:#fff;
+  font-family:Arial,"Microsoft JhengHei",sans-serif;
+}
+.export-sheet-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  height:42px;
+  margin-bottom:10px;
+  padding:0 4px;
+}
+.export-sheet-title{font-size:22px;font-weight:900;letter-spacing:.5px}
+.export-sheet-page{font-size:12px;color:#999}
+.export-sheet-grid{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:8px;
+}
+.export-product-card{
+  height:146px;
+  min-width:0;
+  overflow:hidden;
+  padding:7px;
+  border:1px solid #303038;
+  border-radius:10px;
+  background:#161619;
+  display:flex;
+  flex-direction:column;
+}
+.export-product-image{
+  width:100%;
+  height:86px;
+  min-height:86px;
+  object-fit:contain;
+  display:block;
+  background:#222;
+  border-radius:7px;
+}
+.export-product-name{
+  height:30px;
+  margin-top:5px;
+  font-size:11px;
+  line-height:15px;
+  font-weight:900;
+  overflow:hidden;
+  word-break:break-word;
+}
+.export-product-price{
+  height:17px;
+  margin-top:2px;
+  display:flex;
+  align-items:center;
+  gap:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  font-size:13px;
+  line-height:17px;
+  font-weight:900;
+}
+.export-candy{font-size:14px;line-height:1}
+.export-product-empty{
+  height:146px;
+  border:1px dashed #29292f;
+  border-radius:10px;
+  background:#101014;
+}
+.export-sheet-foot{
+  height:18px;
+  margin-top:8px;
+  text-align:right;
+  color:#666;
+  font-size:9px;
+}
+.export-product-image.is-missing{
+  visibility:hidden;
+}
+
 /* Dialog */
 dialog{
   width:min(520px,calc(100% - 28px));border:1px solid #3d3d44;
@@ -532,93 +618,6 @@ dialog::backdrop{background:#000b}
   .topbar{gap:8px}.cart-fab{right:12px;bottom:12px}.cart-item{grid-template-columns:58px minmax(0,1fr);}.cart-item img{width:58px;height:52px}.cart-item-price{grid-column:2}.cart-top-btn{padding:8px 10px}.capture-table{font-size:11px}
 }
 
-/* 商品一鍵匯出 */
-.export-sheet{
-  position:fixed;
-  left:-100000px;
-  top:0;
-  width:1800px;
-  padding:34px;
-  background:#fff;
-  color:#111;
-  font-family:Arial,"Microsoft JhengHei",sans-serif;
-}
-.export-sheet-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:end;
-  margin-bottom:22px;
-  padding-bottom:12px;
-  border-bottom:2px solid #222;
-}
-.export-sheet-title{font-size:30px;font-weight:900}
-.export-sheet-page{font-size:16px;color:#666;font-weight:800}
-.export-sheet-grid{
-  display:grid;
-  grid-template-columns:repeat(8,minmax(0,1fr));
-  gap:14px;
-}
-.export-product{
-  min-width:0;
-  height:220px;
-  border:1px solid #d7d7d7;
-  border-radius:10px;
-  background:#fff;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-}
-.export-product-image{
-  width:100%;
-  height:140px;
-  object-fit:contain;
-  display:block;
-  background:#f4f4f4;
-}
-.export-product-no-image{
-  width:100%;
-  height:140px;
-  display:grid;
-  place-items:center;
-  background:#f4f4f4;
-  color:#999;
-  font-size:14px;
-}
-.export-product-info{
-  min-height:80px;
-  padding:7px 9px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:4px;
-}
-.export-product-name{
-  font-size:14px;
-  line-height:1.2;
-  font-weight:900;
-  overflow:hidden;
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-}
-.export-product-price{
-  font-size:15px;
-  line-height:1.1;
-  font-weight:900;
-}
-.export-product-category{
-  color:#777;
-  font-size:11px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.export-product-empty{
-  height:220px;
-  border:1px dashed #ddd;
-  border-radius:10px;
-  background:#fafafa;
-}
 /* RWD */
 @media(max-width:1200px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:850px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -669,7 +668,7 @@ dialog::backdrop{background:#000b}
   <input id="searchInput" class="search" placeholder="搜尋商品名稱…">
   <button id="addBtn" class="btn primary hidden">＋ 新增商品</button>
   <button id="migrateImagesBtn" class="btn hidden">☁ 舊圖片搬到 Firebase Storage</button>
-  <button id="exportProductsBtn" class="btn hidden">🖼️ 一鍵匯出商品圖</button>
+  <button id="exportProductsBtn" class="btn primary hidden">📤 一鍵匯出商品</button>
 </section>
 
 <!-- 風格 3：霓虹分類列 -->
@@ -2303,6 +2302,192 @@ $("#editOrderForm").addEventListener("submit",async e=>{
   }
 });
 
+/* =========================
+   商品一鍵匯出
+   只匯出「家具＋花盆」，兩個分類合併依序排列。
+   每張固定 56 格（8 × 7），超過 56 格自動接續下一張。
+   不改動原本商品資料、分類、圖片與前台商品卡片。
+   ========================= */
+function getExportProducts(){
+  const categoryOrder=["家具","花盆"];
+  const result=[];
+  categoryOrder.forEach(category=>{
+    products.forEach(product=>{
+      if(product?.category===category) result.push(product);
+    });
+  });
+  return result;
+}
+
+function getExportImage(product){
+  const variants=getProductVariants(product);
+  const firstVariant=variants[0]||{};
+  return getVariantImage(product,firstVariant);
+}
+
+function createExportSheet(pageProducts,pageIndex,totalPages){
+  const sheet=document.createElement("div");
+  sheet.className="export-sheet";
+
+  const head=document.createElement("div");
+  head.className="export-sheet-head";
+
+  const title=document.createElement("div");
+  title.className="export-sheet-title";
+  title.textContent="O² M★STAR 商品";
+
+  const page=document.createElement("div");
+  page.className="export-sheet-page";
+  page.textContent=`家具 → 花盆　｜　第 ${pageIndex} / ${totalPages} 張`;
+  head.append(title,page);
+
+  const grid=document.createElement("div");
+  grid.className="export-sheet-grid";
+
+  pageProducts.forEach(product=>{
+    const card=document.createElement("div");
+    card.className="export-product-card";
+
+    const img=document.createElement("img");
+    img.className="export-product-image";
+    img.crossOrigin="anonymous";
+    img.alt=product.name||"商品圖片";
+    img.src=getExportImage(product);
+    img.onerror=()=>{
+      img.classList.add("is-missing");
+    };
+
+    const name=document.createElement("div");
+    name.className="export-product-name";
+    name.textContent=product.name||"未命名商品";
+
+    const price=document.createElement("div");
+    price.className="export-product-price";
+
+    const candy=document.createElement("span");
+    candy.className="export-candy";
+    candy.textContent="🍬";
+
+    const number=document.createElement("span");
+    number.textContent=String(getProductPrice(product).toLocaleString("zh-TW"));
+
+    price.append(candy,number);
+    card.append(img,name,price);
+    grid.appendChild(card);
+  });
+
+  /* 固定 56 格；不足的格數留空，讓每張圖片尺寸完全一致。 */
+  for(let i=pageProducts.length;i<56;i++){
+    const empty=document.createElement("div");
+    empty.className="export-product-empty";
+    grid.appendChild(empty);
+  }
+
+  const foot=document.createElement("div");
+  foot.className="export-sheet-foot";
+  foot.textContent=`共 ${products.filter(p=>p?.category==="家具"||p?.category==="花盆").length} 件｜家具＋花盆`;
+
+  sheet.append(head,grid,foot);
+  document.body.appendChild(sheet);
+  return sheet;
+}
+
+async function waitForExportImages(sheet){
+  const images=[...sheet.querySelectorAll("img")];
+  await Promise.all(images.map(img=>new Promise(resolve=>{
+    if(!img.src || (img.complete && img.naturalWidth>0)){resolve();return;}
+    const done=()=>{
+      img.removeEventListener("load",done);
+      img.removeEventListener("error",done);
+      resolve();
+    };
+    img.addEventListener("load",done,{once:true});
+    img.addEventListener("error",done,{once:true});
+    setTimeout(done,15000);
+  })));
+}
+
+async function downloadExportSheet(sheet,filename){
+  await waitForExportImages(sheet);
+  await new Promise(requestAnimationFrame);
+
+  const canvas=await html2canvas(sheet,{
+    backgroundColor:"#0d0d0f",
+    scale:2,
+    useCORS:true,
+    allowTaint:false,
+    imageTimeout:15000,
+    logging:false
+  });
+
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+  if(!blob) throw new Error("無法建立匯出圖片");
+
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.download=filename;
+  a.href=url;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+
+async function exportFurnitureAndFlowerPots(){
+  if(!isAdmin()){
+    toast("只有管理員可以匯出商品");
+    return;
+  }
+
+  const exportProducts=getExportProducts();
+  if(!exportProducts.length){
+    toast("目前沒有家具或花盆商品可匯出",5000);
+    return;
+  }
+
+  const button=$("#exportProductsBtn");
+  const oldText=button.textContent;
+  button.disabled=true;
+
+  const pages=[];
+  for(let i=0;i<exportProducts.length;i+=56){
+    pages.push(exportProducts.slice(i,i+56));
+  }
+
+  try{
+    for(let i=0;i<pages.length;i++){
+      button.textContent=`📤 匯出中 ${i+1}/${pages.length}…`;
+
+      const sheet=createExportSheet(pages[i],i+1,pages.length);
+      try{
+        await downloadExportSheet(
+          sheet,
+          `家具＋花盆_商品圖_${String(i+1).padStart(2,"0")}.png`
+        );
+      }finally{
+        sheet.remove();
+      }
+
+      /* 多張圖片連續下載時稍微間隔，避免瀏覽器一次攔截全部下載。 */
+      if(i<pages.length-1){
+        await new Promise(resolve=>setTimeout(resolve,700));
+      }
+    }
+
+    toast(`商品匯出完成：共 ${pages.length} 張圖片`,5000);
+  }catch(error){
+    console.error("商品匯出失敗",error);
+    toast(`商品匯出失敗：${error?.message||"請稍後再試"}`,7000);
+    alert(`商品匯出失敗：${error?.message||"請稍後再試"}`);
+  }finally{
+    button.disabled=false;
+    button.textContent=oldText;
+  }
+}
+
+$("#exportProductsBtn").onclick=exportFurnitureAndFlowerPots;
+
 /* 登入 */
 $("#loginForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -2421,289 +2606,6 @@ $("#searchInput").addEventListener("input",()=>{
 /* 排序 */
 $("#productSort").addEventListener("change",renderProducts);
 
-/* =========================================================
-   商品一鍵匯出
-   規則：全部商品、不受目前分類／搜尋／排序影響
-   每張圖片最多 56 格；固定每行 8 格。
-   ========================================================= */
-const EXPORT_PRODUCTS_PER_IMAGE=56;
-const EXPORT_COLUMNS=8;
-
-function getFirstProductImage(product){
-  const images=Array.isArray(product?.images)
-    ? product.images.filter(Boolean)
-    : (product?.image ? [product.image] : []);
-  return images[0]||"";
-}
-
-function createExportSheet(pageItems,pageIndex,totalPages){
-  const sheet=document.createElement("div");
-  sheet.className="export-sheet";
-
-  const head=document.createElement("div");
-  head.className="export-sheet-head";
-
-  const title=document.createElement("div");
-  title.className="export-sheet-title";
-  title.textContent="O² M★STAR 商品清單";
-
-  const page=document.createElement("div");
-  page.className="export-sheet-page";
-  page.textContent=`${pageItems.__exportGroup||""}｜第 ${pageIndex} / ${totalPages} 張`;
-
-  head.append(title,page);
-
-  const grid=document.createElement("div");
-  grid.className="export-sheet-grid";
-
-  pageItems.forEach(product=>{
-    const card=document.createElement("div");
-    card.className="export-product";
-
-    const src=getFirstProductImage(product);
-    if(src){
-      const img=document.createElement("img");
-      img.className="export-product-image";
-      img.crossOrigin="anonymous";
-      img.alt=product.name||"商品圖片";
-      img.src=src;
-      img.onerror=()=>{
-        const fallback=document.createElement("div");
-        fallback.className="export-product-no-image";
-        fallback.textContent="圖片無法載入";
-        img.replaceWith(fallback);
-      };
-      card.appendChild(img);
-    }else{
-      const empty=document.createElement("div");
-      empty.className="export-product-no-image";
-      empty.textContent="無商品圖片";
-      card.appendChild(empty);
-    }
-
-    const info=document.createElement("div");
-    info.className="export-product-info";
-
-    const name=document.createElement("div");
-    name.className="export-product-name";
-    name.textContent=product.name||"未命名商品";
-    name.title=product.name||"";
-
-    const price=document.createElement("div");
-    price.className="export-product-price";
-    // 商品價格可能已經帶有 NT$，匯出時只保留一次 NT$；
-    // 🍬 後面只顯示純數值。
-    const rawPrice=product.price==null ? "" : String(product.price);
-    const priceValue=rawPrice.replace(/^\\s*NT\\$\\s*/i,"").trim();
-    price.textContent=priceValue ? `NT$ ${priceValue} 🍬 ${priceValue}` : "價格未設定";
-
-    const category=document.createElement("div");
-    category.className="export-product-category";
-    const rawCategory=String(product.category||"");
-    if(rawCategory==="戒指限男" || rawCategory==="限男戒指"){
-      category.textContent="戒指｜限男";
-    }else if(rawCategory==="戒指限女" || rawCategory==="限女戒指"){
-      category.textContent="戒指｜限女";
-    }else{
-      category.textContent=rawCategory;
-    }
-
-    info.append(name,price,category);
-    card.appendChild(info);
-    grid.appendChild(card);
-  });
-
-  // 保持每頁固定 56 格的版面；不足的格子留白。
-  for(let i=pageItems.length;i<EXPORT_PRODUCTS_PER_IMAGE;i++){
-    const empty=document.createElement("div");
-    empty.className="export-product-empty";
-    grid.appendChild(empty);
-  }
-
-  sheet.append(head,grid);
-  document.body.appendChild(sheet);
-  return sheet;
-}
-
-async function waitForExportImages(sheet){
-  const images=[...sheet.querySelectorAll("img")];
-  await Promise.all(images.map(img=>new Promise(resolve=>{
-    if(img.complete && img.naturalWidth>0){resolve();return;}
-    const done=()=>{
-      img.removeEventListener("load",done);
-      img.removeEventListener("error",done);
-      resolve();
-    };
-    img.addEventListener("load",done,{once:true});
-    img.addEventListener("error",done,{once:true});
-  })));
-}
-
-function downloadCanvas(canvas,filename){
-  return new Promise(resolve=>{
-    canvas.toBlob(blob=>{
-      if(!blob){resolve(false);return;}
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a");
-      a.download=filename;
-      a.href=url;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),1500);
-      resolve(true);
-    },"image/png");
-  });
-}
-
-async function exportAllProducts(){
-  if(!isAdmin()){
-    toast("只有管理員可以匯出商品圖");
-    return;
-  }
-  if(!products.length){
-    toast("目前沒有可匯出的商品");
-    return;
-  }
-
-  const button=$("#exportProductsBtn");
-  if(button.disabled) return;
-
-  button.disabled=true;
-  const oldText=button.textContent;
-  button.textContent="⏳ 匯出中…";
-
-  /*
-     匯出規則：
-     1. 家具＋花盆為同一個獨立匯出分組。
-     2. 戒指限男＋戒指限女為另一個獨立匯出分組。
-     3. 其餘分類依前台分類順序排列。
-     4. 每張圖片固定最多 56 格、每行 8 格。
-     5. 同一匯出分組超過 56 格才接續下一張。
-     6. 同一分類內維持 Firebase 商品清單原本順序。
-  */
-  const categoryOrder=$$("#tabs .tab")
-    .map(tab=>tab.dataset.category)
-    .filter(Boolean);
-
-  const categoryMap=new Map();
-  products.forEach(product=>{
-    const category=String(product?.category||"未分類");
-    if(category==="作物限男" || category==="作物限女") return;
-    if(!categoryMap.has(category)) categoryMap.set(category,[]);
-    categoryMap.get(category).push(product);
-  });
-
-  /*
-     匯出分頁規則：
-     1. 家具＋花盆是一個獨立匯出分頁序列。
-     2. 限男戒指＋限女戒指是一個獨立匯出分頁序列。
-     3. 家具／花盆不拆開；戒指男女不拆開。
-     4. 每張最多 56 格、每行 8 格。
-     5. 每個獨立分頁序列超過 56 格才進下一張。
-     6. 其他分類依目前分類順序接續匯出。
-     7. 作物限男／作物限女完全排除。
-  */
-  const furnitureGroup=["家具","花盆"];
-
-  const findActualCategory=(aliases)=>{
-    return aliases.find(category=>categoryMap.has(category))||null;
-  };
-
-  const furnitureActual=furnitureGroup
-    .map(category=>findActualCategory([category]))
-    .filter(Boolean);
-
-  const ringMale=findActualCategory(["限男戒指","戒指限男"]);
-  const ringFemale=findActualCategory(["限女戒指","戒指限女"]);
-
-  const exportGroups=[];
-  const usedCategories=new Set([
-    ...furnitureActual,
-    ...(ringMale?[ringMale]:[]),
-    ...(ringFemale?[ringFemale]:[])
-  ]);
-
-  const addGroup=(categories,label)=>{
-    const groupProducts=[];
-    categories.forEach(category=>{
-      (categoryMap.get(category)||[]).forEach(product=>groupProducts.push(product));
-    });
-    for(let start=0;start<groupProducts.length;start+=EXPORT_PRODUCTS_PER_IMAGE){
-      const pageItems=groupProducts.slice(start,start+EXPORT_PRODUCTS_PER_IMAGE);
-      pageItems.__exportGroup=label;
-      exportGroups.push(pageItems);
-    }
-  };
-
-  addGroup(furnitureActual,"家具＋花盆");
-  addGroup([ringMale,ringFemale].filter(Boolean),"限男戒指＋限女戒指");
-
-  const remainingCategories=[
-    ...categoryOrder.filter(category=>
-      categoryMap.has(category) &&
-      !usedCategories.has(category) &&
-      category!=="作物限男" &&
-      category!=="作物限女"
-    ),
-    ...[...categoryMap.keys()].filter(category=>
-      !usedCategories.has(category) &&
-      !categoryOrder.includes(category) &&
-      category!=="作物限男" &&
-      category!=="作物限女"
-    )
-  ];
-
-  remainingCategories.forEach(category=>{
-    addGroup([category],category);
-  });
-
-  const totalPages=exportGroups.length;
-  let exportIndex=0;
-
-  try{
-    for(const pageItems of exportGroups){
-      exportIndex++;
-
-      const sheet=createExportSheet(pageItems,exportIndex,totalPages);
-
-      await new Promise(requestAnimationFrame);
-      await waitForExportImages(sheet);
-      await new Promise(requestAnimationFrame);
-
-      const canvas=await html2canvas(sheet,{
-        backgroundColor:"#fff",
-        scale:1.5,
-        useCORS:true,
-        allowTaint:false,
-        imageTimeout:15000,
-        logging:false
-      });
-
-      const filename=`O2_MSTAR_商品清單_${String(exportIndex).padStart(2,"0")}.png`;
-      const ok=await downloadCanvas(canvas,filename);
-      sheet.remove();
-
-      if(!ok) throw new Error("瀏覽器無法建立圖片檔案");
-
-      if(exportIndex<totalPages){
-        await new Promise(resolve=>setTimeout(resolve,450));
-      }
-      button.textContent=`⏳ 匯出中 ${exportIndex}/${totalPages}…`;
-    }
-
-    toast(`已完成匯出：依分類順序、${products.length} 件商品、${totalPages} 張圖片`,6000);
-  }catch(error){
-    console.error("商品圖片匯出失敗",error);
-    toast(`商品圖片匯出失敗：${error?.message||"請稍後再試"}`,7000);
-  }finally{
-    button.disabled=false;
-    button.textContent=oldText;
-  }
-}
-
-$("#exportProductsBtn").addEventListener("click",exportAllProducts);
-
 /* Firebase 商品即時監聽 */
 onSnapshot(
   query(collection(db,"products"),orderBy("createdAt","desc")),
@@ -2743,6 +2645,8 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
+
 
 
 
