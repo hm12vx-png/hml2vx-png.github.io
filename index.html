@@ -1444,18 +1444,31 @@ function refreshVariantImageOptions(){
       select.appendChild(option);
     });
 
-    if([...select.options].some(o=>o.value===old)) select.value=old;
-    else select.value=String(Math.min(
-      Number(row.dataset.defaultImageIndex||0),
-      selectedImageItems.length-1
-    ));
+    if([...select.options].some(o=>o.value===old)) {
+      select.value=old;
+    }else{
+      /*
+       * 編輯既有商品時優先保留資料庫 imageIndex；
+       * 不因重新整理圖片選項而自動跳到另一張圖。
+       */
+      const savedIndex=Math.max(0,Number(row.dataset.savedImageIndex||row.dataset.defaultImageIndex||0)||0);
+      select.value=String(Math.min(savedIndex,selectedImageItems.length-1));
+    }
   });
 }
 
 function createVariantRow(variant={}){
   const row=document.createElement("div");
   row.className="variant-row";
-  row.dataset.defaultImageIndex=Number(variant.imageIndex||0);
+
+  /*
+   * 商品既有的「款式 ↔ 商品圖片」對應必須原封不動保留。
+   * 除非管理員真的手動改變圖片下拉選單，儲存時不重新指定 imageIndex。
+   */
+  const originalImageIndex=Math.max(0,Number(variant.imageIndex)||0);
+  row.dataset.defaultImageIndex=String(originalImageIndex);
+  row.dataset.savedImageIndex=String(originalImageIndex);
+  row.dataset.imageMappingTouched="0";
 
   const color=document.createElement("input");
   color.className="variant-color";
@@ -1487,6 +1500,12 @@ function createVariantRow(variant={}){
   row.append(color,stock,image,remove);
 
   stock.addEventListener("input",updateVariantTotal);
+
+  /* 只有管理員實際手動改下拉選單，才允許改變既有圖片對應。 */
+  image.addEventListener("change",()=>{
+    row.dataset.imageMappingTouched="1";
+  });
+
   return row;
 }
 
@@ -1506,11 +1525,19 @@ function ensureOneVariantRow(){
 }
 
 function getVariantsFromForm(){
-  return $$("#variantList .variant-row").map(row=>({
-    color:row.querySelector(".variant-color").value.trim(),
-    stock:Math.max(0,parseInt(row.querySelector(".variant-stock").value,10)||0),
-    imageIndex:Math.max(0,Number(row.querySelector(".variant-image").value)||0)
-  }));
+  return $$("#variantList .variant-row").map(row=>{
+    const select=row.querySelector(".variant-image");
+    const touched=row.dataset.imageMappingTouched==="1";
+    const savedIndex=Math.max(0,Number(row.dataset.savedImageIndex||0)||0);
+    const selectedIndex=Math.max(0,Number(select?.value)||0);
+
+    return {
+      color:row.querySelector(".variant-color").value.trim(),
+      stock:Math.max(0,parseInt(row.querySelector(".variant-stock").value,10)||0),
+      /* 未手動修改時，永遠沿用資料庫原本的圖片對應。 */
+      imageIndex:touched ? selectedIndex : savedIndex
+    };
+  });
 }
 
 function setVariantsInForm(variants){
