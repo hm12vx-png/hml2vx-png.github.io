@@ -1468,6 +1468,7 @@ function createVariantRow(variant={}){
   const originalImageIndex=Math.max(0,Number(variant.imageIndex)||0);
   row.dataset.defaultImageIndex=String(originalImageIndex);
   row.dataset.savedImageIndex=String(originalImageIndex);
+  row.dataset.savedImageSrc=String(variant.imageSrc||variant.imageUrl||"");
   row.dataset.imageMappingTouched="0";
 
   const color=document.createElement("input");
@@ -1525,17 +1526,32 @@ function ensureOneVariantRow(){
 }
 
 function getVariantsFromForm(){
+  const images=selectedImageItems.map(item=>item.src||item.processed||"");
   return $$("#variantList .variant-row").map(row=>{
     const select=row.querySelector(".variant-image");
     const touched=row.dataset.imageMappingTouched==="1";
     const savedIndex=Math.max(0,Number(row.dataset.savedImageIndex||0)||0);
-    const selectedIndex=Math.max(0,Number(select?.value)||0);
+    const savedSrc=String(row.dataset.savedImageSrc||"");
+    let imageIndex=0;
+    let imageSrc="";
+
+    if(touched){
+      imageIndex=Math.max(0,Number(select?.value)||0);
+      imageSrc=images[imageIndex]||"";
+    }else if(savedSrc){
+      const matchedIndex=images.indexOf(savedSrc);
+      imageIndex=matchedIndex>=0 ? matchedIndex : Math.min(savedIndex,Math.max(0,images.length-1));
+      imageSrc=images[imageIndex]||savedSrc;
+    }else{
+      imageIndex=Math.min(savedIndex,Math.max(0,images.length-1));
+      imageSrc=images[imageIndex]||"";
+    }
 
     return {
       color:row.querySelector(".variant-color").value.trim(),
       stock:Math.max(0,parseInt(row.querySelector(".variant-stock").value,10)||0),
-      /* 未手動修改時，永遠沿用資料庫原本的圖片對應。 */
-      imageIndex:touched ? selectedIndex : savedIndex
+      imageIndex,
+      imageSrc
     };
   });
 }
@@ -1613,16 +1629,22 @@ function openProductDialog(product=null){
   }
   $("#productPrice").value=formatPriceInput(product?.price||"");
 
-  setVariantsInForm(
-    product?.variants?.length
-      ? product.variants
-      : [{color:"",stock:Number(product?.stock??0),imageIndex:0}]
-  );
-
   selectedImageItems=(Array.isArray(product?.images)
     ? product.images.filter(Boolean)
     : (product?.image?[product.image]:[])
   ).map(src=>({src,existing:true}));
+
+  const existingVariants=product?.variants?.length
+    ? product.variants.map(v=>{
+        const idx=Math.max(0,Number(v?.imageIndex)||0);
+        return {
+          ...v,
+          imageSrc:String(v?.imageSrc||v?.imageUrl||selectedImageItems[idx]?.src||"")
+        };
+      })
+    : [{color:"",stock:Number(product?.stock??0),imageIndex:0,imageSrc:selectedImageItems[0]?.src||""}];
+
+  setVariantsInForm(existingVariants);
 
   $("#productImage").value="";
   renderImagePreview();
@@ -1969,6 +1991,8 @@ function getProductImages(product){
 }
 function getVariantImage(product,variant){
   const imgs=getProductImages(product);
+  const savedSrc=String(variant?.imageSrc||variant?.imageUrl||"");
+  if(savedSrc && imgs.includes(savedSrc)) return savedSrc;
   const index=Number.isInteger(Number(variant?.imageIndex)) ? Number(variant.imageIndex) : 0;
   return imgs[index]||imgs[0]||"";
 }
@@ -2745,6 +2769,8 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
+
 
 
 
