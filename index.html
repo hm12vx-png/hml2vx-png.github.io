@@ -2318,13 +2318,12 @@ function formatOrderAmount(paymentMethod,n){
 function getOrderTotalByPayment(order){
   return Number(order?.total||0);
 }
-async function createDailyOrderNumber(transaction, orderDate=new Date()){
+function createDailyOrderNumber(orderRef, orderDate=new Date()){
   const dateKey=getTaipeiDateKey(orderDate);
-  const counterRef=doc(db,"orderCounters",dateKey);
-  const counterSnap=await transaction.get(counterRef);
-  const nextNumber=Math.max(0,Number(counterSnap.exists()?counterSnap.data()?.count:0)||0)+1;
-  transaction.set(counterRef,{dateKey,count:nextNumber,updatedAt:serverTimestamp()},{merge:true});
-  return `${dateKey}${String(nextNumber).padStart(2,"0")}`;
+  // 訂單編號只使用本次訂單自己的 Firestore document ID。
+  // 不再讀寫 orderCounters，避免一般買家建立訂單時因該集合的 Firestore 規則被拒絕。
+  const uniquePart=String(orderRef?.id||"").replace(/[^a-zA-Z0-9]/g,"").slice(0,8).toUpperCase();
+  return `${dateKey}-${uniquePart}`;
 }
 function orderStatusClass(status){
   if(status==="已交易完成") return "done";
@@ -2349,7 +2348,7 @@ async function placeOrder(){
     const orderItems=rows.map(r=>({productId:r.p.id,productName:r.p.name||"",variantIndex:r.variantIndex,imageIndex:Number(r.v.imageIndex)||0,color:r.v.color||"",qty:r.qty,unitPrice:priceNumber(r.p),subtotal:priceNumber(r.p)*r.qty}));
     const total=orderItems.reduce((s,x)=>s+x.subtotal,0);
     await runTransaction(db,async transaction=>{
-      displayOrderId=await createDailyOrderNumber(transaction,new Date());
+      displayOrderId=createDailyOrderNumber(orderRef,new Date());
       const refs=[...new Set(orderItems.map(x=>x.productId))].map(id=>doc(db,"products",id));
       const snaps=[]; for(const ref of refs) snaps.push(await transaction.get(ref));
       const byId=new Map(snaps.map(s=>[s.id,s]));
@@ -2866,9 +2865,6 @@ ensureOneVariantRow();
 
 </body>
 </html>
-
-
-
 
 
 
