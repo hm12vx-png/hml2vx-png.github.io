@@ -996,6 +996,7 @@ let searchTimer=null;
 let cartItems=[];
 let unsubscribeOrders=null;
 let confirmedCheckoutOrder=null;
+let confirmedCheckoutSnapshot=null;
 
 function toast(text, duration=2200){
   const el=$("#toast");
@@ -2374,9 +2375,20 @@ async function placeOrder(){
       }
       transaction.set(orderRef,{orderId:orderRef.id,displayOrderId,buyerName,tradeGender,paymentMethod,note,items:orderItems,total,status:"待交易",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     });
-    cartItems=cartItems.filter(ci=>!rows.some(r=>r.p.id===ci.productId&&r.variantIndex===Number(ci.variantIndex)));
+    // 訂單確認成功後，立即清除本次購買人的購物車與交易表單資料，避免下一位購買人看到上一位的資訊。
+    confirmedCheckoutSnapshot={
+      gender:tradeGender,
+      payment:paymentMethod,
+      buyer:buyerName,
+      note:note
+    };
+    cartItems=[];
     saveCart();
     renderCart();
+    $("#buyerName").value="";
+    $("#tradeNote").value="";
+    $("input[name=tradeGender][value=男角]").checked=true;
+    $("input[name=paymentMethod][value=台幣]").checked=true;
     $("#cartDialog").close();
     confirmedCheckoutOrder={id:orderRef.id,displayOrderId};
     button.disabled=true;
@@ -2769,10 +2781,11 @@ $("#checkoutBtn").onclick=()=>{
   $("#checkoutDialog").showModal();
 };
 $("#captureCheckoutBtn").onclick=()=>{
-  const gender=$("input[name=tradeGender]:checked")?.value||"男角";
-  const payment=$("input[name=paymentMethod]:checked")?.value||"台幣";
-  const buyer=$("#buyerName").value.trim()||"未填交易暱稱";
-  const note=$("#tradeNote").value.trim()||"無";
+  const snapshot=confirmedCheckoutSnapshot||{};
+  const gender=snapshot.gender||$("input[name=tradeGender]:checked")?.value||"男角";
+  const payment=snapshot.payment||$("input[name=paymentMethod]:checked")?.value||"台幣";
+  const buyer=snapshot.buyer||$("#buyerName").value.trim()||"未填交易暱稱";
+  const note=snapshot.note||$("#tradeNote").value.trim()||"無";
   const extra=document.createElement("div");
   extra.style.cssText="margin-top:14px;padding-top:12px;border-top:1px solid #333;font-size:13px;line-height:1.8";
   extra.innerHTML='<div><b>交易角色：</b></div><div><b>付款方式：</b></div><div><b>交易暱稱：</b></div><div><b>留言：</b></div>';
@@ -2790,6 +2803,9 @@ $("#checkoutBackBtn").addEventListener("click",()=>{
 $("#finishCheckoutBtn").addEventListener("click",()=>{
   $("#checkoutDialog").close();
   confirmedCheckoutOrder=null;
+  confirmedCheckoutSnapshot=null;
+  $("#buyerName").value="";
+  $("#tradeNote").value="";
   toast("訂單已保存，接著聯絡賣家 DC 即可");
 });
 $("#checkoutForm").addEventListener("submit",async e=>{e.preventDefault();await placeOrder();});
@@ -2865,6 +2881,7 @@ ensureOneVariantRow();
 
 </body>
 </html>
+
 
 
 
