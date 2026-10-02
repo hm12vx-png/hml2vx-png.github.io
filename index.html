@@ -647,10 +647,10 @@ dialog::backdrop{background:#000b}
 .order-status.cancelled{background:#432027;color:#ff9aa4}
 .order-completed{margin-top:6px;color:#8cffb0;font-size:11px;font-weight:800}
 .order-edit-items{display:grid;gap:8px;max-height:280px;overflow:auto}
-.order-edit-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 120px;gap:8px;align-items:end;padding:9px;border:1px solid #34343b;border-radius:10px;background:#111216}
+.order-edit-row{display:grid;grid-template-columns:minmax(0,1fr) 80px 110px 120px;gap:8px;align-items:end;padding:9px;border:1px solid #34343b;border-radius:10px;background:#111216}
 .order-edit-row label{display:grid;gap:5px;color:#aaa;font-size:11px}
 .order-edit-row input{width:100%;background:#101014;color:#fff;border:1px solid #3b3b42;border-radius:9px;padding:9px}
-@media(max-width:600px){.order-edit-row{grid-template-columns:1fr 82px 105px}}
+@media(max-width:600px){.order-edit-row{grid-template-columns:1fr 72px 92px 105px}}
 
 @media(max-width:600px){
   .topbar{gap:8px}.cart-fab{right:12px;bottom:12px}.cart-item{grid-template-columns:58px minmax(0,1fr);}.cart-item img{width:58px;height:52px}.cart-item-price{grid-column:2}.cart-top-btn{padding:8px 10px}.capture-table{font-size:11px}
@@ -2481,7 +2481,13 @@ function openOrderEditor(docId){
     const pLabel=document.createElement("label"); pLabel.textContent="單價";
     const price=document.createElement("input"); price.type="number"; price.min="0"; price.step="1"; price.value=Math.max(0,Number(item.unitPrice)||0); price.className="edit-item-price";
     pLabel.appendChild(price);
-    row.append(name,qLabel,pLabel); box.appendChild(row);
+
+    const amountLabel=document.createElement("label"); amountLabel.textContent="金額";
+    const amount=document.createElement("input"); amount.type="number"; amount.min="0"; amount.step="1"; amount.value=Math.max(0,Number(item.subtotal)||0); amount.className="edit-item-amount";
+    amount.title="可直接手動輸入此商品金額，不會強制依單價×數量計算";
+    amountLabel.appendChild(amount);
+
+    row.append(name,qLabel,pLabel,amountLabel); box.appendChild(row);
   });
   $("#editOrderDialog").showModal();
 }
@@ -2498,8 +2504,10 @@ async function saveOrderEdit(){
     const row=rows[index];
     const qty=Math.max(0,Math.floor(Number(row?.querySelector(".edit-item-qty")?.value)||0));
     const unitPrice=Math.max(0,Number(row?.querySelector(".edit-item-price")?.value)||0);
-    return {...item,qty,unitPrice,subtotal:qty*unitPrice};
+    const subtotal=Math.max(0,Number(row?.querySelector(".edit-item-amount")?.value)||0);
+    return {...item,qty,unitPrice,subtotal};
   });
+  // 金額改為可手動輸入；不再強制用「數量 × 單價」重新計算。
   const total=newItems.reduce((sum,x)=>sum+(Number(x.subtotal)||0),0);
   const button=$("#saveOrderEditBtn"); button.disabled=true; button.textContent="儲存中…";
   try{
